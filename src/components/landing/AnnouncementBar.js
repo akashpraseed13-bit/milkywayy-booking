@@ -16,21 +16,38 @@ const AnnouncementBar = ({ onHeightChange }) => {
   }, [onHeightChange]);
 
   return (
-    <div 
-      className="text-center text-sm font-medium overflow-hidden transition-all duration-150 bg-gray-300 text-black"
-      style={{
-        height: `${36 * (1 - scrollProgress)}px`,
-        opacity: 1 - scrollProgress,
-        paddingTop: `${8 * (1 - scrollProgress)}px`,
-        paddingBottom: `${8 * (1 - scrollProgress)}px`,
-      }}
-    >
-      <div className="container mx-auto flex items-center justify-center gap-2 px-4">
-        <Sparkles className="w-4 h-4" />
-        <span>🚀 Launch Offer: Flat 50% off your first property shoot</span>
-        <Sparkles className="w-4 h-4" />
+    <>
+      <div 
+        className="text-center text-sm font-medium overflow-hidden transition-all duration-150 bg-gray-300 text-black hidden md:block"
+        style={{
+          height: `${36 * (1 - scrollProgress)}px`,
+          opacity: 1 - scrollProgress,
+          paddingTop: `${8 * (1 - scrollProgress)}px`,
+          paddingBottom: `${8 * (1 - scrollProgress)}px`,
+        }}
+      >
+        <div className="container mx-auto flex items-center justify-center gap-2 px-4">
+          <Sparkles className="w-4 h-4" />
+          <span>🚀 Launch Offer: Flat 50% off your first property shoot</span>
+          <Sparkles className="w-4 h-4" />
+        </div>
       </div>
-    </div>
+      <div 
+        className="text-center text-sm font-medium overflow-hidden transition-all duration-150 bg-gray-300 text-black md:hidden"
+        style={{
+          height: `${56 * (1 - scrollProgress)}px`,
+          opacity: 1 - scrollProgress,
+          paddingTop: `${8 * (1 - scrollProgress)}px`,
+          paddingBottom: `${8 * (1 - scrollProgress)}px`,
+        }}
+      >
+        <div className="container mx-auto flex items-center justify-center gap-2 px-4">
+          <Sparkles className="w-4 h-4" />
+          <span>🚀 Launch Offer: Flat 50% off your first property shoot</span>
+          <Sparkles className="w-4 h-4" />
+        </div>
+      </div>
+    </>
   );
 };
 

@@ -28,7 +28,7 @@ export default function Page() {
           <AnnouncementBar />
           <NewNavbar />
         </div>
-        <main className="pt-[100px]">
+        <main className="pt-[126px] md:pt-[100px]">
           <HeroSection onWatchVideo={() => setShowVideoModal(true)} />
       {/* <SocialProofStrip /> */}
           <PainSolutionSection />
