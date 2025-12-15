@@ -62,9 +62,9 @@ const ContactSection = () => {
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="photography">Photography</SelectItem>
-                  <SelectItem value="video">Video</SelectItem>
+                  <SelectItem value="videography">Videography</SelectItem>
                   <SelectItem value="360-tour">360 Virtual Tour</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
+                  <SelectItem value="other">Others</SelectItem>
                 </SelectContent>
               </Select>
               <Textarea placeholder="Message" value={formData.message} onChange={e => setFormData({
@@ -134,7 +134,7 @@ Tap to chat - we typically respond within minutes.
               href: "https://www.instagram.com/milkywayy_com/"
             }, {
               icon: Linkedin,
-              href: "https://www.linkedin.com/milkywayy-com/"
+              href: "https://www.linkedin.com/company/milkywayy-com/"
             }].map((social, i) => <a key={i} href={social.href} className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors">
                   <social.icon className="w-5 h-5" />
                 </a>)}
