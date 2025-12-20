@@ -1,6 +1,6 @@
 export const PROPERTY_TYPES = {
   APARTMENT: "Apartment",
-  VILLA: "Villa",
+  VILLA: "Villa/Townhouse",
   TOWNHOUSE: "Townhouse/Penthouse",
   COMMERCIAL: "Commercial",
 };
@@ -14,7 +14,7 @@ export const SERVICES = {
 export const PROPERTY_TYPE_ORDER = [
   PROPERTY_TYPES.APARTMENT,
   PROPERTY_TYPES.VILLA,
-  PROPERTY_TYPES.TOWNHOUSE,
+  // PROPERTY_TYPES.TOWNHOUSE,
   PROPERTY_TYPES.COMMERCIAL,
 ];
 
@@ -137,50 +137,6 @@ export const PRICING_CONFIG = {
             allowEvening: false,
           },
           [SERVICES.TOUR_360]: 1350,
-        },
-      },
-    ],
-  },
-  [PROPERTY_TYPES.TOWNHOUSE]: {
-    sizes: [
-      {
-        label: "2 Bed",
-        prices: {
-          [SERVICES.PHOTOGRAPHY]: { price: 700, slots: 1, allowEvening: false },
-          [SERVICES.VIDEOGRAPHY]: { price: 750, slots: 1, allowEvening: false },
-          [SERVICES.TOUR_360]: 800,
-        },
-      },
-      {
-        label: "3 Bed",
-        prices: {
-          [SERVICES.PHOTOGRAPHY]: { price: 800, slots: 1, allowEvening: false },
-          [SERVICES.VIDEOGRAPHY]: { price: 850, slots: 1, allowEvening: false },
-          [SERVICES.TOUR_360]: 900,
-        },
-      },
-      {
-        label: "4 Bed",
-        prices: {
-          [SERVICES.PHOTOGRAPHY]: { price: 900, slots: 1, allowEvening: false },
-          [SERVICES.VIDEOGRAPHY]: { price: 950, slots: 1, allowEvening: false },
-          [SERVICES.TOUR_360]: 1000,
-        },
-      },
-      {
-        label: "5 Bed",
-        prices: {
-          [SERVICES.PHOTOGRAPHY]: {
-            price: 1000,
-            slots: 1,
-            allowEvening: false,
-          },
-          [SERVICES.VIDEOGRAPHY]: {
-            price: 1050,
-            slots: 1,
-            allowEvening: false,
-          },
-          [SERVICES.TOUR_360]: 1100,
         },
       },
     ],

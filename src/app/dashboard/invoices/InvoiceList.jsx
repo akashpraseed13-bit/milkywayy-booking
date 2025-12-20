@@ -16,12 +16,10 @@ export default function InvoiceList({ invoices }) {
         >
           <div>
             <div className="text-xl font-semibold mb-2 text-white">
-              Invoice #INV{(invoice.id+'').padStart(3, '0')}
+              Invoice #INV{(invoice.id + "").padStart(3, "0")}
             </div>
             <div className="text-gray-400 space-y-1 text-sm">
-              <p>
-                {new Date(invoice.createdAt).toLocaleDateString()}
-              </p>
+              <p>{new Date(invoice.createdAt).toLocaleDateString()}</p>
             </div>
           </div>
 

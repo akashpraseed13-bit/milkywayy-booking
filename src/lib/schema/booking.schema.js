@@ -10,6 +10,7 @@ const propertySchema = z.object({
   building: z.string().min(1, "Building/Tower Name is required"),
   community: z.string().min(1, "Community/Area is required"),
   unitNumber: z.string().optional(),
+  /*
   contactName: z.string().min(1, "Contact Name is required"),
   contactPhone: z.string().min(1, "Contact Phone is required"),
   contactEmail: z
@@ -17,6 +18,7 @@ const propertySchema = z.object({
     .email("Invalid email address")
     .optional()
     .or(z.literal("")),
+  */
 });
 
 // Main booking schema

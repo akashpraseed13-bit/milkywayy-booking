@@ -13,9 +13,7 @@ export default function WalletView({ data }) {
           <h2 className="text-gray-300 text-sm font-medium uppercase tracking-wider mb-2">
             Current Balance
           </h2>
-          <div className="text-3xl font-bold text-white">
-            AED {balance}
-          </div>
+          <div className="text-3xl font-bold text-white">AED {balance}</div>
         </div>
       </div>
 

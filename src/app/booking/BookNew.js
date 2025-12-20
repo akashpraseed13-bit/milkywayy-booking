@@ -441,7 +441,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                   type="button"
                   variant="ghost"
                   onClick={addProperty}
-                  className="w-full text-muted-foreground hover:bg-zinc-800"
+                  className="w-full text-muted-foreground border border-border border-dashed hover:border-solid"
                 >
                   <Plus size={20} className="mr-2" />
                   Add Another Property

@@ -31,7 +31,7 @@ export function PaymentStep({
       </Button>
 
       <h2
-        className={`text-2xl font-bold text-white mb-6 ${michroma.className}`}
+        className={`text-2xl font-bold text-foreground mb-6 font-heading`}
       >
         Payment Verification
       </h2>
@@ -39,43 +39,43 @@ export function PaymentStep({
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-4">
           {properties.map((property, index) => (
-            <Card key={index} className="bg-[#181818bb] border border-zinc-800">
+            <Card key={index} className="bg-card/50 border-border">
               <CardHeader className="flex flex-row justify-between items-start pb-2 space-y-0">
                 <div>
-                  <h3 className="text-lg font-semibold text-white">
+                  <h3 className="text-lg font-semibold text-foreground">
                     {property.community || "Unknown Location"} -{" "}
                     {property.propertyType || "Unknown Type"}
                   </h3>
-                  <p className="text-sm text-gray-400">
+                  <p className="text-sm text-muted-foreground">
                     {property.building}{" "}
                     {property.unitNumber && `- ${property.unitNumber}`}
                   </p>
                 </div>
                 <div className="text-right">
-                  <div className="bg-zinc-800 px-3 py-1 rounded-md text-sm font-medium text-white">
+                  <div className="bg-secondary px-3 py-1 rounded-md text-sm font-medium text-secondary-foreground">
                     AED {getPropertyPrice(property)}
                   </div>
                 </div>
               </CardHeader>
-              <Separator className="bg-zinc-800 my-2" />
-              <CardContent className="space-y-3 text-sm text-gray-300">
+              <Separator className="bg-border my-2" />
+              <CardContent className="space-y-3 text-sm text-foreground/90">
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Size</span>
+                  <span className="text-muted-foreground">Size</span>
                   <span>{property.propertySize}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Date & Time</span>
+                  <span className="text-muted-foreground">Date & Time</span>
                   <span>
                     {property.preferredDate} | {property.timeSlot}
                   </span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Services</span>
+                  <span className="text-muted-foreground">Services</span>
                   <div className="flex gap-2 flex-wrap justify-end">
                     {property.services?.map((s) => (
                       <span
                         key={s}
-                        className="bg-zinc-800 px-2 py-0.5 rounded text-xs"
+                        className="bg-secondary px-2 py-0.5 rounded text-xs text-secondary-foreground"
                       >
                         {s}
                       </span>
@@ -83,7 +83,7 @@ export function PaymentStep({
                   </div>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-500">Contact</span>
+                  <span className="text-muted-foreground">Contact</span>
                   <span>
                     {property.contactName} ({property.contactPhone})
                   </span>
@@ -94,14 +94,14 @@ export function PaymentStep({
         </div>
 
         <div className="space-y-6">
-          <Card className="bg-[#181818bb] border border-zinc-800">
+          <Card className="bg-card/50 border-border">
             <CardContent className="space-y-4 pt-6">
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-foreground">
                 Order Summary
               </h3>
 
               <div className="space-y-2">
-                <div className="flex justify-between items-center text-gray-400">
+                <div className="flex justify-between items-center text-muted-foreground">
                   <span>Subtotal</span>
                   <span className="whitespace-nowrap">
                     AED {calculateTotal().toLocaleString()}
@@ -127,7 +127,7 @@ export function PaymentStep({
                   ))}
 
                 {discountAmount > 0 && (
-                  <div className="flex justify-between items-center text-gray-400">
+                  <div className="flex justify-between items-center text-muted-foreground">
                     <span>Coupon Discount</span>
                     <span className="text-green-500 whitespace-nowrap">
                       - AED {discountAmount.toLocaleString()}
@@ -135,8 +135,8 @@ export function PaymentStep({
                   </div>
                 )}
 
-                <Separator className="bg-zinc-800 my-2" />
-                <div className="flex justify-between items-center text-xl font-bold text-white">
+                <Separator className="bg-border my-2" />
+                <div className="flex justify-between items-center text-xl font-bold text-foreground">
                   <span>Total Payable</span>
                   <span className="whitespace-nowrap">
                     AED {(amountAfterAuto - discountAmount).toLocaleString()}
@@ -157,12 +157,12 @@ export function PaymentStep({
                       placeholder="Coupon Code"
                       value={couponCode}
                       onChange={(e) => setCouponCode(e.target.value)}
-                      className="bg-[#272727] border-zinc-700 hover:border-zinc-500 focus-visible:border-white text-white pr-20"
+                      className="bg-secondary/50 border-border hover:border-accent focus-visible:ring-ring text-foreground pr-20"
                     />
                     <div className="absolute right-1 top-1/2 -translate-y-1/2">
                       <Button
                         size="sm"
-                        className="bg-white text-black font-semibold h-8 hover:bg-gray-200"
+                        className="font-semibold h-8"
                         onClick={handleApplyCoupon}
                         type="button"
                       >
@@ -171,7 +171,7 @@ export function PaymentStep({
                     </div>
                   </div>
                   {couponError && (
-                    <p className="text-red-500 text-xs">{couponError}</p>
+                    <p className="text-destructive text-xs">{couponError}</p>
                   )}
                   {couponSuccess && (
                     <p className="text-green-500 text-xs">{couponSuccess}</p>
@@ -181,7 +181,7 @@ export function PaymentStep({
 
               <Button
                 size="lg"
-                className="w-full font-semibold bg-white text-black hover:bg-gray-200"
+                className="w-full font-semibold"
                 onClick={handleFinalSubmit}
                 disabled={isProcessingPayment}
               >

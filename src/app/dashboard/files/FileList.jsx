@@ -16,13 +16,13 @@ export default function FileList({ bookings }) {
         >
           <div>
             <div className="text-lg mb-1 font-semibold text-white">
-                {[
-                  booking.propertyDetails?.unit,
-                  booking.propertyDetails?.building,
-                  booking.propertyDetails?.community,
-                ]
-                  .filter(Boolean)
-                  .join(", ") || "Property Shoot"}
+              {[
+                booking.propertyDetails?.unit,
+                booking.propertyDetails?.building,
+                booking.propertyDetails?.community,
+              ]
+                .filter(Boolean)
+                .join(", ") || "Property Shoot"}
             </div>
             <p className="text-gray-400 text-sm">Date: {booking.date}</p>
           </div>

@@ -46,9 +46,13 @@ export default function BookingList({ bookings }) {
 
   const getStatusChip = (booking) => {
     if (booking.cancelledAt) {
-      return <span className="text-red-500 text-sm font-medium">Cancelled</span>;
+      return (
+        <span className="text-red-500 text-sm font-medium">Cancelled</span>
+      );
     } else if (booking.completedAt) {
-      return <span className="text-green-500 text-sm font-medium">Completed</span>;
+      return (
+        <span className="text-green-500 text-sm font-medium">Completed</span>
+      );
     } else {
       return (
         <span className="text-zinc-400 text-sm">
@@ -103,16 +107,15 @@ export default function BookingList({ bookings }) {
                   .join(", ") || "Property Shoot"}
               </h3>
               <p className="text-zinc-500 text-sm font-medium">
-                {booking.shootDetails?.services?.join(" + ") || "Standard Shoot"}
+                {booking.shootDetails?.services?.join(" + ") ||
+                  "Standard Shoot"}
               </p>
             </div>
             <div className="text-right">
               <div className="text-zinc-100 font-bold">
                 {formatDate(booking.date)}
               </div>
-              <div className="mt-1">
-                {getStatusChip(booking)}
-              </div>
+              <div className="mt-1">{getStatusChip(booking)}</div>
             </div>
           </div>
 
