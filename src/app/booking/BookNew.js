@@ -1,8 +1,9 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus } from "lucide-react";
+import { Plus, Loader2 } from "lucide-react";
 import { use, useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
+import { toast } from "sonner";
 import StarBackground from "@/components/StarBackground";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +13,7 @@ import {
   saveDrafts,
 } from "@/lib/actions/bookings";
 import { validateCoupon } from "@/lib/actions/coupons";
-import {
-  PRICING_CONFIG as STATIC_PRICING_CONFIG,
-} from "@/lib/config/pricing";
+import { PRICING_CONFIG as STATIC_PRICING_CONFIG } from "@/lib/config/pricing";
 import { useAuth } from "@/lib/contexts/auth";
 import { bookingSchema } from "@/lib/schema/booking.schema";
 
@@ -23,12 +22,7 @@ import { PropertyCard } from "./components/PropertyCard";
 import { PaymentStep } from "./components/PaymentStep";
 import { PricingSummary } from "./components/PricingSummary";
 
-export default function BookNew({
-  bookingsPromise,
-  pricingsPromise,
-  discountsPromise,
-}) {
-  const bookings = use(bookingsPromise);
+export default function BookNew({ pricingsPromise, discountsPromise }) {
   const pricingsRes = use(pricingsPromise);
   const discountsRes = use(discountsPromise);
 
@@ -44,6 +38,7 @@ export default function BookNew({
   const [couponError, setCouponError] = useState("");
   const [couponSuccess, setCouponSuccess] = useState("");
   const [bookingIds, setBookingIds] = useState([]);
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const { authState, login } = useAuth();
 
   const {
@@ -212,11 +207,12 @@ export default function BookNew({
       setStep("payment");
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (error) {
-      alert(error.message || "Failed to save bookings");
+      toast.error(error.message || "Failed to save bookings");
     }
   };
 
   const handleFinalSubmit = async () => {
+    setIsProcessingPayment(true);
     try {
       const res = await createTransactionAndPaymentIntent(
         bookingIds,
@@ -230,7 +226,9 @@ export default function BookNew({
         throw new Error("No payment URL returned");
       }
     } catch (error) {
-      alert(error.message || "Failed to process payment");
+      toast.error(error.message || "Failed to process payment");
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
@@ -409,77 +407,80 @@ export default function BookNew({
           </p>
         </div>
 
-        {step === "details" ? (
-          <form onSubmit={handleSubmit(onContinue)} className="space-y-6">
-            <div className="space-y-6">
-              {properties?.map((property, index) => (
-                <PropertyCard
-                  key={index}
-                  index={index}
-                  property={property}
-                  isOpen={index === openPropertyIndex}
-                  onToggle={() =>
-                    setOpenPropertyIndex(index === openPropertyIndex ? -1 : index)
-                  }
-                  onDuplicate={duplicateProperty}
-                  onRemove={removeProperty}
-                  control={control}
-                  setValue={setValue}
-                  errors={errors}
-                  pricingConfig={PRICING_CONFIG}
-                  getPropertyPrice={getPropertyPrice}
-                  getPropertyDurationAndEvening={getPropertyDurationAndEvening}
-                  getOccupiedSlots={getOccupiedSlots}
-                  toggleService={toggleService}
-                  isOnlyProperty={properties.length === 1}
-                />
-              ))}
+        {step === "details"
+          ? <form onSubmit={handleSubmit(onContinue)} className="space-y-6">
+              <div className="space-y-6">
+                {properties?.map((property, index) => (
+                  <PropertyCard
+                    key={index}
+                    index={index}
+                    property={property}
+                    isOpen={index === openPropertyIndex}
+                    onToggle={() =>
+                      setOpenPropertyIndex(
+                        index === openPropertyIndex ? -1 : index,
+                      )
+                    }
+                    onDuplicate={duplicateProperty}
+                    onRemove={removeProperty}
+                    control={control}
+                    setValue={setValue}
+                    errors={errors}
+                    pricingConfig={PRICING_CONFIG}
+                    getPropertyPrice={getPropertyPrice}
+                    getPropertyDurationAndEvening={
+                      getPropertyDurationAndEvening
+                    }
+                    getOccupiedSlots={getOccupiedSlots}
+                    toggleService={toggleService}
+                    isOnlyProperty={properties.length === 1}
+                  />
+                ))}
 
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={addProperty}
-                className="w-full text-muted-foreground hover:bg-zinc-800"
-              >
-                <Plus size={20} className="mr-2" />
-                Add Another Property
-              </Button>
-            </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={addProperty}
+                  className="w-full text-muted-foreground hover:bg-zinc-800"
+                >
+                  <Plus size={20} className="mr-2" />
+                  Add Another Property
+                </Button>
+              </div>
 
-            <PricingSummary
-              propertyCount={properties.length}
-              totalAmount={totalAmount}
-            />
+              <PricingSummary
+                propertyCount={properties.length}
+                totalAmount={totalAmount}
+              />
 
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isSubmitting}
-                className="px-8 w-full"
-              >
-                {isSubmitting ? "Submitting..." : "Continue to Payment"}
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <PaymentStep
-            properties={properties}
-            onBack={() => setStep("details")}
-            getPropertyPrice={getPropertyPrice}
-            calculateTotal={calculateTotal}
-            appliedAutoDiscounts={appliedAutoDiscounts}
-            discountAmount={discountAmount}
-            amountAfterAuto={amountAfterAuto}
-            autoWalletCredits={autoWalletCredits}
-            couponCode={couponCode}
-            setCouponCode={setCouponCode}
-            handleApplyCoupon={handleApplyCoupon}
-            couponError={couponError}
-            couponSuccess={couponSuccess}
-            handleFinalSubmit={handleFinalSubmit}
-          />
-        )}
+              <div className="flex justify-end">
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={isSubmitting}
+                  className="px-8 w-full"
+                >
+                  {isSubmitting ? "Submitting..." : "Continue to Payment"}
+                </Button>
+              </div>
+            </form>
+          : <PaymentStep
+              properties={properties}
+              onBack={() => setStep("details")}
+              getPropertyPrice={getPropertyPrice}
+              calculateTotal={calculateTotal}
+              appliedAutoDiscounts={appliedAutoDiscounts}
+              discountAmount={discountAmount}
+              amountAfterAuto={amountAfterAuto}
+              autoWalletCredits={autoWalletCredits}
+              couponCode={couponCode}
+              setCouponCode={setCouponCode}
+              handleApplyCoupon={handleApplyCoupon}
+              couponError={couponError}
+              couponSuccess={couponSuccess}
+              handleFinalSubmit={handleFinalSubmit}
+              isProcessingPayment={isProcessingPayment}
+            />}
       </div>
     </div>
   );
