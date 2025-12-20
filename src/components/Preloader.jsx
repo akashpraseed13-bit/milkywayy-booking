@@ -16,7 +16,7 @@ const Preloader = () => {
   if (!isLoading) return null;
 
   return (
-    <div className="fixed inset-0 z-[100] bg-background flex items-center justify-center">
+    <div className="fixed inset-0 z-100 bg-background flex items-center justify-center">
       <div className="relative flex flex-col items-center gap-6">
         <div className="relative">
           <div className="absolute inset-0 animate-ping opacity-20">

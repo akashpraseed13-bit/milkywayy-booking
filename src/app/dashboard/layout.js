@@ -57,7 +57,7 @@ export default function DashboardLayout({ children }) {
                 key={item.key}
                 value={item.key}
                 asChild
-                className="py-1.5 px-4 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground transition-colors rounded-lg flex items-center gap-2 justify-start flex-1 justify-center text-center"
+                className="py-1.5 px-4 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground transition-colors rounded-lg flex items-center gap-2 flex-1 justify-center text-center"
               >
                 <Link href={item.href}>
                   {item.icon}

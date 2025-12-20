@@ -10,7 +10,7 @@ export default async function Booking() {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-[#121212] flex items-center justify-center text-white">
+        <div className="min-h-screen flex items-center justify-center">
           Loading...
         </div>
       }
