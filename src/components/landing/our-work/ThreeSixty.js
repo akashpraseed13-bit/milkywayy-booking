@@ -1,6 +1,6 @@
 const ThreeSixty = ({ items }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+    <div className="grid md:grid-cols-3 gap-4 mb-12">
       {items.map((item, index) => (
         <div
           key={`360-${index}`}

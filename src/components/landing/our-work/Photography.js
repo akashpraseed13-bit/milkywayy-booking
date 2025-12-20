@@ -2,7 +2,7 @@ import { InstagramEmbed } from 'react-social-media-embed';
 
 const Photography = ({ items }) => {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-12">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-12">
       {items.map((item, index) => (
         <div
           key={`photo-${index}`}

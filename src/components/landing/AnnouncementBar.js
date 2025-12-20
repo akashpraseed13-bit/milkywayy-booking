@@ -18,7 +18,7 @@ const AnnouncementBar = ({ onHeightChange }) => {
   return (
     <>
       <div 
-        className="text-center text-sm font-medium overflow-hidden transition-all duration-150 bg-gray-300 text-black hidden md:block"
+        className="text-center text-sm font-medium overflow-hidden transition-all duration-150 bg-neutral-300 text-black hidden sm:block"
         style={{
           height: `${36 * (1 - scrollProgress)}px`,
           opacity: 1 - scrollProgress,
@@ -33,7 +33,7 @@ const AnnouncementBar = ({ onHeightChange }) => {
         </div>
       </div>
       <div 
-        className="text-center text-sm font-medium overflow-hidden transition-all duration-150 bg-gray-300 text-black md:hidden"
+        className="text-center text-sm font-medium overflow-hidden transition-all duration-150 bg-neutral-300 text-black sm:hidden display:flex"
         style={{
           height: `${56 * (1 - scrollProgress)}px`,
           opacity: 1 - scrollProgress,
@@ -41,7 +41,7 @@ const AnnouncementBar = ({ onHeightChange }) => {
           paddingBottom: `${8 * (1 - scrollProgress)}px`,
         }}
       >
-        <div className="container mx-auto flex items-center justify-center gap-2 px-4">
+        <div className="container mx-auto flex items-center justify-center gap-2 px-4 my-auto">
           <Sparkles className="w-4 h-4" />
           <span>🚀 Launch Offer: Flat 50% off your first property shoot</span>
           <Sparkles className="w-4 h-4" />
