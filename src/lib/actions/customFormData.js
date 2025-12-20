@@ -1,5 +1,5 @@
-import path from "path";
 import fs from "fs/promises";
+import path from "path";
 
 export const breakCustomFormData = async (fd) => {
   const files = fd.getAll("file");
@@ -30,7 +30,7 @@ const parser = (obj, files) => {
     }
     return out;
   } else if (typeof obj === "string") {
-    const res = /^\%\%(\d+)\%\%$/.exec(obj);
+    const res = /^%%(\d+)%%$/.exec(obj);
     if (res) return files[Number(res[1])];
     return obj;
   }

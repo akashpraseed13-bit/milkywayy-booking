@@ -1,10 +1,10 @@
-import User from "./user.js";
-import Booking from "./booking.js";
-import Transaction from "./transaction.js";
-import Coupon from "./coupon.js";
-import WalletTransaction from "./wallettransaction.js";
-import DynamicConfig from "./dynamicconfig.js";
 import { sequelize } from "../db.js";
+import Booking from "./booking.js";
+import Coupon from "./coupon.js";
+import DynamicConfig from "./dynamicconfig.js";
+import Transaction from "./transaction.js";
+import User from "./user.js";
+import WalletTransaction from "./wallettransaction.js";
 
 const models = {
   User,

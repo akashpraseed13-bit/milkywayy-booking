@@ -1,9 +1,9 @@
 "use server";
 
 import "@/lib/db/relations";
-import models from "@/lib/db/models";
 import bcrypt from "bcrypt";
 import { USER_ROLES } from "@/lib/config/app.config";
+import models from "@/lib/db/models";
 import { setSessionUser } from "@/lib/helpers/auth";
 import { actionWrapper } from "./utils";
 

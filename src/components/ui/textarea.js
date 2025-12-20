@@ -2,7 +2,7 @@ import * as React from "react";
 
 import { cn } from "@/lib/utils";
 
-const Textarea = (({ className, ...props }, ref) => {
+const Textarea = ({ className, ...props }, ref) => {
   return (
     <textarea
       className={cn(
@@ -13,7 +13,7 @@ const Textarea = (({ className, ...props }, ref) => {
       {...props}
     />
   );
-});
+};
 Textarea.displayName = "Textarea";
 
 export { Textarea };

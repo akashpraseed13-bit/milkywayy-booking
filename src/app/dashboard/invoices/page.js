@@ -1,7 +1,7 @@
-import { getInvoices } from "@/lib/actions/wallet";
-import InvoiceList from "./InvoiceList";
 import { redirect } from "next/navigation";
+import { getInvoices } from "@/lib/actions/wallet";
 import { auth } from "@/lib/helpers/auth";
+import InvoiceList from "./InvoiceList";
 
 export default async function InvoicesPage() {
   const session = await auth();
@@ -11,7 +11,7 @@ export default async function InvoicesPage() {
   const invoices = res.success ? res.data : [];
 
   return (
-    <div className="min-h-screen bg-black text-white p-4 md:p-8">
+    <div className="min-h-screen">
       <div className="max-w-4xl mx-auto">
         <InvoiceList invoices={invoices} />
       </div>

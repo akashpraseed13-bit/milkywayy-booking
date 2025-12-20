@@ -1,8 +1,8 @@
 import { NextResponse } from "next/server";
 import { Op } from "sequelize";
 import Booking from "@/lib/db/models/booking";
-import User from "@/lib/db/models/user";
 import Transaction from "@/lib/db/models/transaction";
+import User from "@/lib/db/models/user";
 import "@/lib/db/relations";
 
 export async function GET() {

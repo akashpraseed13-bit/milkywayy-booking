@@ -1,5 +1,3 @@
-"use strict";
-
 require("dotenv").config();
 const bcrypt = require("bcrypt");
 const { USER_ROLES } = require("../../config/app.config");

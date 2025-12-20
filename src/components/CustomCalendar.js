@@ -1,7 +1,7 @@
 "use client";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 export default function CustomCalendar({
   selectedDate,
@@ -133,11 +133,12 @@ export default function CustomCalendar({
             }
             className={`w-8 h-8 text-sm rounded-full flex items-center justify-center transition-colors
               ${!day ? "invisible" : ""}
-              ${isSelected(day)
-                ? "bg-primary text-primary-foreground hover:bg-primary/90"
-                : isToday(day)
-                  ? "bg-accent text-accent-foreground"
-                  : "text-foreground hover:bg-accent hover:text-accent-foreground"
+              ${
+                isSelected(day)
+                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                  : isToday(day)
+                    ? "bg-accent text-accent-foreground"
+                    : "text-foreground hover:bg-accent hover:text-accent-foreground"
               }
               disabled:opacity-50 disabled:hover:bg-transparent disabled:cursor-not-allowed
             `}

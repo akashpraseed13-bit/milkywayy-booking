@@ -1,6 +1,6 @@
 "use server";
+import { jwtVerify, SignJWT } from "jose";
 import { cookies } from "next/headers";
-import { SignJWT, jwtVerify } from "jose";
 
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"; // Use environment variable in production
 const key = new TextEncoder().encode(JWT_SECRET);

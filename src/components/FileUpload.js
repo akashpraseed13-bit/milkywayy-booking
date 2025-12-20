@@ -44,44 +44,44 @@ export default function FileUpload({
             />
             {!value || !(value instanceof File || typeof value === "string")
               ? <Button
-                variant="outline"
-                onClick={handleButtonClick}
-                className="w-full justify-start"
-                type="button"
-              >
-                {buttonText}
-              </Button>
-              : <div className="flex items-center space-x-3">
-                {accept.includes("image") && (
-                  <img
-                    src={
-                      value instanceof File
-                        ? URL.createObjectURL(value)
-                        : process.env.NEXT_PUBLIC_FILE_URL + value
-                    }
-                    alt="Preview"
-                    className="w-12 h-12 object-cover rounded-lg border border-gray-200"
-                  />
-                )}
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-900">
-                    {value instanceof File ? value.name : value}
-                  </p>
-                  {value instanceof File && (
-                    <p className="text-xs text-gray-500">
-                      {(value.size / 1024).toFixed(1)} KB
-                    </p>
-                  )}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
+                  variant="outline"
                   onClick={handleButtonClick}
+                  className="w-full justify-start"
                   type="button"
                 >
-                  {changeButtonText}
+                  {buttonText}
                 </Button>
-              </div>}
+              : <div className="flex items-center space-x-3">
+                  {accept.includes("image") && (
+                    <img
+                      src={
+                        value instanceof File
+                          ? URL.createObjectURL(value)
+                          : process.env.NEXT_PUBLIC_FILE_URL + value
+                      }
+                      alt="Preview"
+                      className="w-12 h-12 object-cover rounded-lg border border-gray-200"
+                    />
+                  )}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-gray-900">
+                      {value instanceof File ? value.name : value}
+                    </p>
+                    {value instanceof File && (
+                      <p className="text-xs text-gray-500">
+                        {(value.size / 1024).toFixed(1)} KB
+                      </p>
+                    )}
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleButtonClick}
+                    type="button"
+                  >
+                    {changeButtonText}
+                  </Button>
+                </div>}
             {fieldState.error && (
               <p className="mt-1 text-sm text-red-600">
                 {fieldState.error.message}

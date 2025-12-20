@@ -1,18 +1,18 @@
 "use client";
 
-import { useState } from "react";
-import { cancelBooking } from "@/lib/actions/bookings";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import { cancelBooking } from "@/lib/actions/bookings";
 
 export default function BookingList({ bookings }) {
   const router = useRouter();
@@ -46,28 +46,41 @@ export default function BookingList({ bookings }) {
 
   const getStatusChip = (booking) => {
     if (booking.cancelledAt) {
-      return (
-        <Badge variant="destructive">
-          Cancelled
-        </Badge>
-      );
+      return <span className="text-red-500 text-sm font-medium">Cancelled</span>;
     } else if (booking.completedAt) {
-      return (
-        <Badge className="bg-green-500 hover:bg-green-600">
-          Completed
-        </Badge>
-      );
+      return <span className="text-green-500 text-sm font-medium">Completed</span>;
     } else {
       return (
-        <Badge className="bg-blue-500 hover:bg-blue-600">
-          Upcoming
-        </Badge>
+        <span className="text-zinc-400 text-sm">
+          {booking.slot === 1
+            ? "10:00 AM"
+            : booking.slot === 2
+              ? "02:00 PM"
+              : "06:00 PM"}
+        </span>
       );
     }
   };
 
+  const formatDate = (dateStr) => {
+    try {
+      const date = new Date(dateStr);
+      return new Intl.DateTimeFormat("en-US", {
+        month: "short",
+        day: "numeric",
+        year: "numeric",
+      }).format(date);
+    } catch (e) {
+      return dateStr;
+    }
+  };
+
   if (!bookings || bookings.length === 0) {
-    return <p className="text-gray-400">No bookings found.</p>;
+    return (
+      <div className="text-center py-12 rounded-xl border">
+        <p className="">No bookings found.</p>
+      </div>
+    );
   }
 
   return (
@@ -75,79 +88,57 @@ export default function BookingList({ bookings }) {
       {bookings.map((booking) => (
         <div
           key={booking.id}
-          className="bg-gray-900 p-6 rounded-lg border border-gray-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 cursor-pointer hover:bg-gray-800 transition-colors"
+          className="bg-card/70 p-5 rounded-xl border hover:bg-secondary transition-all cursor-pointer group"
           onClick={() => handleBookingClick(booking)}
         >
-          <div>
-            <div className="text-xl font-semibold mb-2 text-white">
-              {booking.shootDetails?.services?.join(", ") || "Property Shoot"}
-            </div>
-            <div className="text-gray-400 space-y-1 text-sm">
-              <p>
-                <span className="font-medium text-gray-300">Date:</span>{" "}
-                {booking.date}
-              </p>
-              <p>
-                <span className="font-medium text-gray-300">Time:</span>{" "}
-                {booking.slot === 1
-                  ? "Morning"
-                  : booking.slot === 2
-                    ? "Afternoon"
-                    : "Evening"}
-              </p>
-              <p>
-                <span className="font-medium text-gray-300">Address:</span>{" "}
+          <div className="flex justify-between items-start mb-4">
+            <div className="space-y-1">
+              <h3 className="text-lg font-bold text-zinc-100 leading-tight">
                 {[
                   booking.propertyDetails?.unit,
                   booking.propertyDetails?.building,
                   booking.propertyDetails?.community,
                 ]
                   .filter(Boolean)
-                  .join(", ")}
+                  .join(", ") || "Property Shoot"}
+              </h3>
+              <p className="text-zinc-500 text-sm font-medium">
+                {booking.shootDetails?.services?.join(" + ") || "Standard Shoot"}
               </p>
-              <div className="flex items-center">
-                <span className="font-medium text-gray-300 mr-2">Status:</span>{" "}
+            </div>
+            <div className="text-right">
+              <div className="text-zinc-100 font-bold">
+                {formatDate(booking.date)}
+              </div>
+              <div className="mt-1">
                 {getStatusChip(booking)}
               </div>
             </div>
           </div>
 
-          <div className="flex gap-3 w-full md:w-auto">
-            {booking.filesUrl && (
-              <a
-                href={booking.filesUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="flex-1 md:flex-none px-4 py-2 bg-green-600 hover:bg-green-700 text-white rounded-md text-sm font-medium transition-colors text-center flex items-center justify-center"
-                onClick={(e) => e.stopPropagation()} // Prevent modal from opening when clicking download
+          {!booking.cancelledAt && !booking.completedAt && (
+            <div className="flex gap-3 mt-2">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleReschedule(booking.id);
+                }}
+                className="px-4 py-1.5 border border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800 text-zinc-300 rounded-lg text-sm font-medium transition-all"
               >
-                Download Files
-              </a>
-            )}
-            {!booking.cancelledAt && !booking.completedAt && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent modal from opening
-                    handleReschedule(booking.id);
-                  }}
-                  className="flex-1 md:flex-none px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors"
-                >
-                  Reschedule
-                </button>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation(); // Prevent modal from opening
-                    handleCancel(booking.id);
-                  }}
-                  disabled={loadingId === booking.id}
-                  className="flex-1 md:flex-none px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {loadingId === booking.id ? "Cancelling..." : "Cancel"}
-                </button>
-              </>
-            )}
-          </div>
+                Reschedule
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleCancel(booking.id);
+                }}
+                disabled={loadingId === booking.id}
+                className="px-4 py-1.5 border border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800 text-red-500 rounded-lg text-sm font-medium transition-all disabled:opacity-50"
+              >
+                {loadingId === booking.id ? "Cancelling..." : "Cancel"}
+              </button>
+            </div>
+          )}
         </div>
       ))}
 
@@ -179,9 +170,7 @@ export default function BookingList({ bookings }) {
               </div>
 
               <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800">
-                <h3 className="font-semibold mb-3 text-zinc-300">
-                  Services
-                </h3>
+                <h3 className="font-semibold mb-3 text-zinc-300">Services</h3>
                 <p className="text-sm text-zinc-400">
                   {selectedBooking.shootDetails?.services?.join(", ") ||
                     "No services specified."}
@@ -246,12 +235,11 @@ export default function BookingList({ bookings }) {
                     </p>
                   </div>
                   {selectedBooking.transaction?.invoiceUrl ? (
-                    <Button
-                      asChild
-                      variant="secondary"
-                      size="sm"
-                    >
-                      <Link href={selectedBooking.transaction.invoiceUrl} target="_blank">
+                    <Button asChild variant="secondary" size="sm">
+                      <Link
+                        href={selectedBooking.transaction.invoiceUrl}
+                        target="_blank"
+                      >
                         Download Invoice
                       </Link>
                     </Button>
@@ -262,28 +250,15 @@ export default function BookingList({ bookings }) {
                   )}
                 </div>
               </div>
-
-              {selectedBooking.filesUrl && (
-                <div className="border-t border-zinc-800 pt-4">
-                  <h3 className="font-semibold mb-3 text-zinc-300">
-                    Uploaded Files
-                  </h3>
-                  <div className="mb-4 p-3 bg-blue-900/20 border border-blue-900/50 rounded-lg">
-                    <Link
-                      href={selectedBooking.filesUrl}
-                      target="_blank"
-                      className="text-blue-400 hover:text-blue-300 hover:underline break-all"
-                    >
-                      {selectedBooking.filesUrl}
-                    </Link>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
           <DialogFooter className="border-t border-zinc-800 pt-4">
-            <Button variant="ghost" onClick={() => setIsOpen(false)} className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
+            <Button
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+            >
               Close
             </Button>
           </DialogFooter>

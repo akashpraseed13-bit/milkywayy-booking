@@ -9,7 +9,8 @@ const FAQSection = () => {
   const faqs = [
     {
       question: "What's the starting price?",
-      answer: "Studio apartment photography starts from AED 350. Exact pricing is shown in the portal before payment.",
+      answer:
+        "Studio apartment photography starts from AED 350. Exact pricing is shown in the portal before payment.",
     },
     {
       question: "How fast is delivery?",
@@ -25,11 +26,13 @@ const FAQSection = () => {
     },
     {
       question: "Do you provide invoices?",
-      answer: "Yes, invoices are available to download from your dashboard anytime.",
+      answer:
+        "Yes, invoices are available to download from your dashboard anytime.",
     },
     {
       question: "Can I reschedule?",
-      answer: "Yes—rescheduling options are available. If needed, contact us via WhatsApp.",
+      answer:
+        "Yes—rescheduling options are available. If needed, contact us via WhatsApp.",
     },
   ];
 

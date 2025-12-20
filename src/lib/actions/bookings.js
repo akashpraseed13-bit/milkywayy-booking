@@ -4,14 +4,14 @@ import "@/lib/db/relations";
 import { Op } from "sequelize";
 import Stripe from "stripe";
 import { getDiscounts } from "@/lib/actions/discounts";
-import { getPricingConfig } from "@/lib/helpers/pricing";
+import { actionWrapper } from "@/lib/actions/utils";
 import { sequelize as db } from "@/lib/db/db";
 import Booking from "@/lib/db/models/booking";
 import Coupon from "@/lib/db/models/coupon";
 import Transaction from "@/lib/db/models/transaction";
 import WalletTransaction from "@/lib/db/models/wallettransaction";
 import { auth } from "@/lib/helpers/auth";
-import { actionWrapper } from "@/lib/actions/utils";
+import { getPricingConfig } from "@/lib/helpers/pricing";
 import { USER_ROLES } from "../config/app.config";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -292,23 +292,18 @@ const getDraftsHandler = async () => {
 export const getDrafts = actionWrapper(getDraftsHandler);
 
 const saveDraftsHandler = async (properties) => {
-
-  // No try-catch needed here because wrapper handles it, 
+  // No try-catch needed here because wrapper handles it,
 
   // but original code had it to re-throw. We can keep it clean.
 
-  
+  const session = await auth();
 
-    const session = await auth();
+  if (!session?.id)
+    throw new Error("Unauthorized: Please login to save drafts");
 
-    if (!session?.id) throw new Error("Unauthorized: Please login to save drafts");
+  const userId = session.id;
 
-    const userId = session.id;
-
-
-
-    // Delete existing drafts for this user to avoid duplicates
-
+  // Delete existing drafts for this user to avoid duplicates
 
   // We only delete DRAFT status bookings, preserving history of confirmed/cancelled ones
   await Booking.destroy({
@@ -378,23 +373,17 @@ export const saveDrafts = actionWrapper(saveDraftsHandler);
 export const createBookings = saveDrafts;
 
 const createTransactionAndPaymentIntentHandler = async (
-
   bookingIds,
 
   couponCode,
-
 ) => {
+  const session = await auth();
 
-    const session = await auth();
+  if (!session?.id) throw new Error("Unauthorized");
 
-    if (!session?.id) throw new Error("Unauthorized");
+  const userId = session.id;
 
-    const userId = session.id;
-
-
-
-    // Fetch bookings to calculate total and verify ownership
-
+  // Fetch bookings to calculate total and verify ownership
 
   const bookings = await Booking.findAll({
     where: {
@@ -415,7 +404,10 @@ const createTransactionAndPaymentIntentHandler = async (
   }));
   await checkAvailability(propertiesToCheck, bookingIds);
 
-  const totalAmount = bookings.reduce((sum, b) => Number(sum) + Number(b.total), 0);
+  const totalAmount = bookings.reduce(
+    (sum, b) => Number(sum) + Number(b.total),
+    0,
+  );
 
   // 1. Apply Automatic Discounts
   const discountsRes = await getDiscounts();

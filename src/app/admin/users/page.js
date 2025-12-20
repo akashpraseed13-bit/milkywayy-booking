@@ -1,8 +1,8 @@
-import { getSessionUser } from "@/lib/helpers/auth";
 import { redirect } from "next/navigation";
 import UserTable from "@/components/UserTable";
 import { sequelize } from "@/lib/db";
 import models from "@/lib/db/models";
+import { getSessionUser } from "@/lib/helpers/auth";
 
 async function getUsers(page = 1, limit = 10) {
   try {

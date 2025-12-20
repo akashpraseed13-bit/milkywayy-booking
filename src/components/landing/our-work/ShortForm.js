@@ -1,4 +1,4 @@
-import { InstagramEmbed } from 'react-social-media-embed';
+import { InstagramEmbed } from "react-social-media-embed";
 
 const ShortForm = ({ items }) => {
   return (
@@ -11,7 +11,7 @@ const ShortForm = ({ items }) => {
         >
           <div className="absolute inset-0 bg-gradient-to-br from-secondary to-muted">
             <InstagramEmbed
-              url={'https://www.instagram.com/reel/DQ9SUZoCaZZ'}
+              url={"https://www.instagram.com/reel/DQ9SUZoCaZZ"}
               width={328}
             />
           </div>

@@ -1,10 +1,10 @@
 "use server";
 
-import { sequelize as db } from "@/lib/db/db";
-import WalletTransaction from "@/lib/db/models/wallettransaction";
-import Transaction from "@/lib/db/models/transaction";
-import { auth } from "@/lib/helpers/auth";
 import { actionWrapper } from "@/lib/actions/utils";
+import { sequelize as db } from "@/lib/db/db";
+import Transaction from "@/lib/db/models/transaction";
+import WalletTransaction from "@/lib/db/models/wallettransaction";
+import { auth } from "@/lib/helpers/auth";
 
 const getWalletDataHandler = async () => {
   const session = await auth();

@@ -1,13 +1,15 @@
-import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { X } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 const VideoModal = ({ open, onOpenChange }) => {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-4xl bg-card border-border p-0 overflow-hidden">
-        <DialogTitle className="sr-only">How Milkywayy Portal Works</DialogTitle>
+        <DialogTitle className="sr-only">
+          How Milkywayy Portal Works
+        </DialogTitle>
         <div className="relative">
           {/* Close button */}
           <button

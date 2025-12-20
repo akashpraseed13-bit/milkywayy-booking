@@ -1,4 +1,5 @@
 "use client";
+import { Wallet } from "lucide-react";
 
 export default function WalletView({ data }) {
   const { balance, transactions } = data;
@@ -6,22 +7,24 @@ export default function WalletView({ data }) {
   return (
     <div className="space-y-8">
       {/* Balance Card */}
-      <div className="bg-gradient-to-r from-purple-900 to-blue-900 p-8 rounded-2xl border border-purple-500/30 shadow-2xl">
-        <h2 className="text-gray-300 text-sm font-medium uppercase tracking-wider mb-2">
-          Current Balance
-        </h2>
-        <div className="text-5xl font-bold text-white">
-          {balance}{" "}
-          <span className="text-2xl text-gray-400 font-normal">Credits</span>
+      <div className="bg-gradient-to-r from-card/90 to-secondary/70 p-8 rounded-2xl border border-purple-500/30 shadow-2xl flex flex-row items-center gap-4">
+        <Wallet size={60} />
+        <div className="">
+          <h2 className="text-gray-300 text-sm font-medium uppercase tracking-wider mb-2">
+            Current Balance
+          </h2>
+          <div className="text-3xl font-bold text-white">
+            AED {balance}
+          </div>
         </div>
       </div>
 
       {/* Transactions List */}
       <div>
-        <h3 className="text-xl font-semibold text-white mb-4">
+        <h3 className="text-xl font-semibold font-heading mb-4">
           Transaction History
         </h3>
-        <div className="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+        <div className="rounded-xl border bg-card/70 overflow-hidden">
           {transactions.length === 0 ? (
             <div className="p-8 text-center text-gray-400">
               No wallet transactions found.
@@ -31,7 +34,7 @@ export default function WalletView({ data }) {
               {transactions.map((t) => (
                 <div
                   key={t.id}
-                  className="p-4 flex justify-between items-center hover:bg-gray-800/50 transition-colors"
+                  className="p-4 flex justify-between items-center transition-colors"
                 >
                   <div>
                     <div className="flex items-center gap-2">

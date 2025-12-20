@@ -1,8 +1,8 @@
 import fs from "fs";
 import { stat } from "fs/promises";
+import mime from "mime-types";
 import { NextResponse } from "next/server";
 import path from "path";
-import mime from "mime-types";
 
 export const GET = async (req, ctx) => {
   const { path: fileName } = await ctx.params;

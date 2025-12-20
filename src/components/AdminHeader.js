@@ -1,9 +1,9 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/contexts/auth";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function AdminHeader() {
   const { logout } = useAuth();
@@ -22,7 +22,11 @@ export default function AdminHeader() {
         </Link>
       </div>
       <div className="flex items-center justify-end">
-        <Button variant="ghost" className="text-red-600 hover:text-red-600 hover:bg-red-50" onClick={handleLogout}>
+        <Button
+          variant="ghost"
+          className="text-red-600 hover:text-red-600 hover:bg-red-50"
+          onClick={handleLogout}
+        >
           Log Out
         </Button>
       </div>

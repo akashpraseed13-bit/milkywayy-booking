@@ -1,6 +1,6 @@
-import { Button } from "@/components/ui/button";
-import { Play, Clock, MapPin, Receipt, BadgeCheck } from "lucide-react";
+import { BadgeCheck, Clock, MapPin, Play, Receipt } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const HeroSection = ({ onWatchVideo }) => {
   const trustChips = [
@@ -21,13 +21,18 @@ const HeroSection = ({ onWatchVideo }) => {
               Book property shoots in 60 seconds.
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl">
-              Dubai's first property shoot booking portal — book photography, video, and 360° tours instantly, then manage files & invoices from one dashboard.
+              Dubai's first property shoot booking portal — book photography,
+              video, and 360° tours instantly, then manage files & invoices from
+              one dashboard.
             </p>
 
             {/* CTA Row */}
             <div className="flex flex-col sm:flex-row gap-4">
               <Link href="/booking">
-                <Button size="lg" className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 glow-pulse text-base px-8">
+                <Button
+                  size="lg"
+                  className="w-full sm:w-auto bg-accent text-accent-foreground hover:bg-accent/90 glow-pulse text-base px-8"
+                >
                   Book Now
                 </Button>
               </Link>
@@ -82,7 +87,9 @@ const HeroSection = ({ onWatchVideo }) => {
                 {/* Booking flow preview */}
                 <div className="p-6 space-y-4">
                   <div className="flex items-center justify-between mb-4">
-                    <span className="text-xs text-muted-foreground">Step 1 of 3</span>
+                    <span className="text-xs text-muted-foreground">
+                      Step 1 of 3
+                    </span>
                     <div className="flex gap-1">
                       <div className="w-8 h-1 bg-accent rounded" />
                       <div className="w-8 h-1 bg-border rounded" />
@@ -94,15 +101,20 @@ const HeroSection = ({ onWatchVideo }) => {
                   <div className="space-y-3">
                     <p className="text-sm font-medium">Select Service</p>
                     <div className="grid grid-cols-3 gap-2">
-                      {["Photography", "Video", "360° Tour"].map((service, i) => (
-                        <div
-                          key={service}
-                          className={`p-3 rounded-lg border text-center text-xs ${i === 0 ? "border-accent bg-accent/10" : "border-border"
+                      {["Photography", "Video", "360° Tour"].map(
+                        (service, i) => (
+                          <div
+                            key={service}
+                            className={`p-3 rounded-lg border text-center text-xs ${
+                              i === 0
+                                ? "border-accent bg-accent/10"
+                                : "border-border"
                             }`}
-                        >
-                          {service}
-                        </div>
-                      ))}
+                          >
+                            {service}
+                          </div>
+                        ),
+                      )}
                     </div>
                   </div>
 

@@ -1,21 +1,21 @@
-'use client';
-import { useState } from 'react';
-import AnnouncementBar from '@/components/landing/AnnouncementBar';
-import NewNavbar from '@/components/NewNavbar';
-import HeroSection from '@/components/landing/HeroSection';
-import SocialProofStrip from '@/components/landing/SocialProofStrip';
-import PainSolutionSection from '@/components/landing/PainSolutionSection';
-import SeeItInActionSection from '@/components/landing/SeeItInActionSection';
-import PortalUSPSection from '@/components/landing/PortalUSPSection';
-import ServicesSection from '@/components/landing/ServicesSection';
-import OurWorkPreview from '@/components/landing/OurWorkPreview';
-import ReviewsSection from '@/components/landing/ReviewsSection';
-import FAQSection from '@/components/landing/FAQSection';
-import FinalCTASection from '@/components/landing/FinalCTASection';
-import ContactSection from '@/components/landing/ContactSection';
-import VideoModal from '@/components/VideoModal';
-import Footer from '@/components/Footer';
-import StarBackground from '@/components/StarBackground';
+"use client";
+import { useState } from "react";
+import Footer from "@/components/Footer";
+import AnnouncementBar from "@/components/landing/AnnouncementBar";
+import ContactSection from "@/components/landing/ContactSection";
+import FAQSection from "@/components/landing/FAQSection";
+import FinalCTASection from "@/components/landing/FinalCTASection";
+import HeroSection from "@/components/landing/HeroSection";
+import OurWorkPreview from "@/components/landing/OurWorkPreview";
+import PainSolutionSection from "@/components/landing/PainSolutionSection";
+import PortalUSPSection from "@/components/landing/PortalUSPSection";
+import ReviewsSection from "@/components/landing/ReviewsSection";
+import SeeItInActionSection from "@/components/landing/SeeItInActionSection";
+import ServicesSection from "@/components/landing/ServicesSection";
+import SocialProofStrip from "@/components/landing/SocialProofStrip";
+import NewNavbar from "@/components/NewNavbar";
+import StarBackground from "@/components/StarBackground";
+import VideoModal from "@/components/VideoModal";
 
 export default function Page() {
   const [showVideoModal, setShowVideoModal] = useState(false);
@@ -30,7 +30,7 @@ export default function Page() {
         </div>
         <main className="pt-[126px] md:pt-[100px]">
           <HeroSection onWatchVideo={() => setShowVideoModal(true)} />
-      {/* <SocialProofStrip /> */}
+          {/* <SocialProofStrip /> */}
           <PainSolutionSection />
           <SeeItInActionSection onWatchVideo={() => setShowVideoModal(true)} />
           <PortalUSPSection />

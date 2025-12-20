@@ -1,17 +1,17 @@
 "use client";
-import { useState, useEffect } from "react";
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { Download } from "lucide-react";
+import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Download } from "lucide-react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function InvoicesPage() {
   const [invoices, setInvoices] = useState([]);
@@ -53,12 +53,17 @@ export default function InvoicesPage() {
               </TableRow>
             ) : (
               invoices.map((invoice) => (
-                <TableRow key={invoice.id} className="hover:bg-zinc-800 border-zinc-800">
+                <TableRow
+                  key={invoice.id}
+                  className="hover:bg-zinc-800 border-zinc-800"
+                >
                   <TableCell className="text-zinc-300">#{invoice.id}</TableCell>
                   <TableCell className="text-zinc-300">
                     <div>
                       <p>{invoice.user?.fullName}</p>
-                      <p className="text-xs text-zinc-500">{invoice.user?.email}</p>
+                      <p className="text-xs text-zinc-500">
+                        {invoice.user?.email}
+                      </p>
                     </div>
                   </TableCell>
                   <TableCell className="text-zinc-300">
@@ -66,10 +71,14 @@ export default function InvoicesPage() {
                       ? new Date(invoice.createdAt).toLocaleDateString()
                       : "-"}
                   </TableCell>
-                  <TableCell className="text-zinc-300">AED {invoice.amount}</TableCell>
+                  <TableCell className="text-zinc-300">
+                    AED {invoice.amount}
+                  </TableCell>
                   <TableCell>
                     <Badge
-                      variant={invoice.status === "success" ? "success" : "secondary"}
+                      variant={
+                        invoice.status === "success" ? "success" : "secondary"
+                      }
                       className={
                         invoice.status === "success"
                           ? "bg-green-500/15 text-green-500 hover:bg-green-500/25 border-green-500/20"
@@ -87,7 +96,11 @@ export default function InvoicesPage() {
                         size="icon"
                         className="text-blue-400 hover:text-blue-300 hover:bg-blue-500/10"
                       >
-                        <Link href={invoice.invoiceUrl} target="_blank" aria-label="Download Invoice">
+                        <Link
+                          href={invoice.invoiceUrl}
+                          target="_blank"
+                          aria-label="Download Invoice"
+                        >
                           <Download size={20} />
                         </Link>
                       </Button>

@@ -1,25 +1,25 @@
 "use client";
 
-import { useState } from "react";
-import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import PhoneNumberInput from "@/components/PhoneInput";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import {
   InputOTP,
   InputOTPGroup,
-  InputOTPSlot,
   InputOTPSeparator,
+  InputOTPSlot,
 } from "@/components/ui/input-otp";
-import PhoneNumberInput from "@/components/PhoneInput";
 import { customerSendOtp, customerVerifyOtp } from "@/lib/actions/auth";
-import { phoneSchema, otpSchema } from "@/lib/schema/auth.schema";
+import { otpSchema, phoneSchema } from "@/lib/schema/auth.schema";
 
 export default function LoginModal({ isOpen, onClose, onSuccess }) {
   const [step, setStep] = useState(1); // 1: phone input, 2: OTP input
@@ -126,7 +126,9 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>{step === 1 ? "Enter Phone Number" : "Enter OTP"}</DialogTitle>
+          <DialogTitle>
+            {step === 1 ? "Enter Phone Number" : "Enter OTP"}
+          </DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           {error && (
@@ -135,111 +137,119 @@ export default function LoginModal({ isOpen, onClose, onSuccess }) {
             </div>
           )}
 
-          {step === 1 ? (
-            <form
-              onSubmit={phoneForm.handleSubmit(handleSendOtp)}
-              className="space-y-4"
-            >
-              <Controller
-                name="phone"
-                control={phoneForm.control}
-                render={({ field }) => (
-                  <div className="flex flex-col gap-2">
-                    <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                      Phone Number
-                    </label>
-                    <PhoneNumberInput
-                      value={field.value}
-                      onChange={field.onChange}
-                      name={field.name}
-                      classNames={{
-                        inputWrapper:
-                          "flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
-                        input:
-                          "bg-transparent border-none outline-none w-full h-full placeholder:text-muted-foreground",
-                        countryIcon: "mr-2 flex items-center h-full",
-                      }}
-                    />
-                    {phoneForm.formState.errors.phone && (
-                      <div className="text-xs text-red-500">
-                        {phoneForm.formState.errors.phone.message}
-                      </div>
-                    )}
-                  </div>
-                )}
-              />
-              <p className="text-sm text-muted-foreground">
-                We will send an OTP to verify your phone number.
-              </p>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full"
+          {step === 1
+            ? <form
+                onSubmit={phoneForm.handleSubmit(handleSendOtp)}
+                className="space-y-4"
               >
-                {isLoading ? "Sending..." : "Send OTP"}
-              </Button>
-            </form>
-          ) : (
-            <form
-              onSubmit={otpForm.handleSubmit(handleVerifyOtp)}
-              className="space-y-4"
-            >
-              <div className="flex justify-center">
                 <Controller
-                  control={otpForm.control}
-                  name="otp"
+                  name="phone"
+                  control={phoneForm.control}
                   render={({ field }) => (
-                    <InputOTP
-                      className="text-white"
-                      maxLength={6}
-                      value={field.value}
-                      onChange={field.onChange}
-                    >
-                      <InputOTPGroup>
-                        <InputOTPSlot index={0} char={field.value.substring(0, 1)} />
-                        <InputOTPSlot index={1} char={field.value.substring(1, 2)} />
-                        <InputOTPSlot index={2} char={field.value.substring(2, 3)} />
-                        <InputOTPSlot index={3} char={field.value.substring(3, 4)} />
-                        <InputOTPSlot index={4} char={field.value.substring(4, 5)} />
-                        <InputOTPSlot index={5} char={field.value.substring(5, 6)} />
-                      </InputOTPGroup>
-                    </InputOTP>
+                    <div className="flex flex-col gap-2">
+                      <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                        Phone Number
+                      </label>
+                      <PhoneNumberInput
+                        value={field.value}
+                        onChange={field.onChange}
+                        name={field.name}
+                        classNames={{
+                          inputWrapper:
+                            "flex h-10 w-full items-center rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2",
+                          input:
+                            "bg-transparent border-none outline-none w-full h-full placeholder:text-muted-foreground",
+                          countryIcon: "mr-2 flex items-center h-full",
+                        }}
+                      />
+                      {phoneForm.formState.errors.phone && (
+                        <div className="text-xs text-red-500">
+                          {phoneForm.formState.errors.phone.message}
+                        </div>
+                      )}
+                    </div>
                   )}
                 />
-              </div>
-              {otpForm.formState.errors.otp && (
-                <div className="text-center text-xs text-red-500">
-                  {otpForm.formState.errors.otp.message}
-                </div>
-              )}
-              <div className="flex gap-2 justify-center">
-                <Button
-                  variant="ghost"
-                  onClick={handleChangePhone}
-                  size="sm"
-                  type="button"
-                >
-                  Change Phone Number
+                <p className="text-sm text-muted-foreground">
+                  We will send an OTP to verify your phone number.
+                </p>
+                <Button type="submit" disabled={isLoading} className="w-full">
+                  {isLoading ? "Sending..." : "Send OTP"}
                 </Button>
-                <Button
-                  variant="ghost"
-                  onClick={handleResendOtp}
-                  size="sm"
-                  disabled={isLoading}
-                  type="button"
-                >
-                  Resend OTP
-                </Button>
-              </div>
-              <Button
-                type="submit"
-                disabled={isLoading}
-                className="w-full"
+              </form>
+            : <form
+                onSubmit={otpForm.handleSubmit(handleVerifyOtp)}
+                className="space-y-4"
               >
-                {isLoading ? "Verifying..." : "Verify OTP"}
-              </Button>
-            </form>
-          )}
+                <div className="flex justify-center">
+                  <Controller
+                    control={otpForm.control}
+                    name="otp"
+                    render={({ field }) => (
+                      <InputOTP
+                        className="text-white"
+                        maxLength={6}
+                        value={field.value}
+                        onChange={field.onChange}
+                      >
+                        <InputOTPGroup>
+                          <InputOTPSlot
+                            index={0}
+                            char={field.value.substring(0, 1)}
+                          />
+                          <InputOTPSlot
+                            index={1}
+                            char={field.value.substring(1, 2)}
+                          />
+                          <InputOTPSlot
+                            index={2}
+                            char={field.value.substring(2, 3)}
+                          />
+                          <InputOTPSlot
+                            index={3}
+                            char={field.value.substring(3, 4)}
+                          />
+                          <InputOTPSlot
+                            index={4}
+                            char={field.value.substring(4, 5)}
+                          />
+                          <InputOTPSlot
+                            index={5}
+                            char={field.value.substring(5, 6)}
+                          />
+                        </InputOTPGroup>
+                      </InputOTP>
+                    )}
+                  />
+                </div>
+                {otpForm.formState.errors.otp && (
+                  <div className="text-center text-xs text-red-500">
+                    {otpForm.formState.errors.otp.message}
+                  </div>
+                )}
+                <div className="flex gap-2 justify-center">
+                  <Button
+                    variant="ghost"
+                    onClick={handleChangePhone}
+                    size="sm"
+                    type="button"
+                  >
+                    Change Phone Number
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    onClick={handleResendOtp}
+                    size="sm"
+                    disabled={isLoading}
+                    type="button"
+                  >
+                    Resend OTP
+                  </Button>
+                </div>
+                <Button type="submit" disabled={isLoading} className="w-full">
+                  {isLoading ? "Verifying..." : "Verify OTP"}
+                </Button>
+              </form>}
         </div>
       </DialogContent>
     </Dialog>

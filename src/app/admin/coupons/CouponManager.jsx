@@ -1,33 +1,33 @@
 "use client";
 
+import { Percent, Plus, Power, Tag, Trash2 } from "lucide-react";
 import { useState } from "react";
-import {
-  createCoupon,
-  toggleCouponStatus,
-  deleteCoupon,
-} from "@/lib/actions/coupons";
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Trash2, Power, Percent, Tag } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { michroma } from "@/fonts";
+import {
+  createCoupon,
+  deleteCoupon,
+  toggleCouponStatus,
+} from "@/lib/actions/coupons";
 
 export default function CouponManager({ initialCoupons }) {
   const [coupons, setCoupons] = useState(initialCoupons);
@@ -116,19 +116,27 @@ export default function CouponManager({ initialCoupons }) {
                   <TableHead className="text-gray-300">DISCOUNT</TableHead>
                   <TableHead className="text-gray-300">MIN SPEND</TableHead>
                   <TableHead className="text-gray-300">STATUS</TableHead>
-                  <TableHead className="text-center text-gray-300">ACTIONS</TableHead>
+                  <TableHead className="text-center text-gray-300">
+                    ACTIONS
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {coupons.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center text-gray-400">
+                    <TableCell
+                      colSpan={5}
+                      className="text-center text-gray-400"
+                    >
                       No coupons found
                     </TableCell>
                   </TableRow>
                 ) : (
                   coupons.map((item) => (
-                    <TableRow key={item.id} className="border-zinc-800 hover:bg-zinc-800/50">
+                    <TableRow
+                      key={item.id}
+                      className="border-zinc-800 hover:bg-zinc-800/50"
+                    >
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Tag size={16} className="text-blue-500" />
@@ -147,11 +155,17 @@ export default function CouponManager({ initialCoupons }) {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-gray-300">AED {item.minimumAmount}</TableCell>
+                      <TableCell className="text-gray-300">
+                        AED {item.minimumAmount}
+                      </TableCell>
                       <TableCell>
                         <Badge
                           variant={item.isActive ? "success" : "destructive"}
-                          className={item.isActive ? "bg-green-500/20 text-green-500 hover:bg-green-500/30" : "bg-red-500/20 text-red-500 hover:bg-red-500/30"}
+                          className={
+                            item.isActive
+                              ? "bg-green-500/20 text-green-500 hover:bg-green-500/30"
+                              : "bg-red-500/20 text-red-500 hover:bg-red-500/30"
+                          }
                         >
                           {item.isActive ? "Active" : "Inactive"}
                         </Badge>
@@ -161,7 +175,11 @@ export default function CouponManager({ initialCoupons }) {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className={item.isActive ? "text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10" : "text-green-500 hover:text-green-400 hover:bg-green-500/10"}
+                            className={
+                              item.isActive
+                                ? "text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
+                                : "text-green-500 hover:text-green-400 hover:bg-green-500/10"
+                            }
                             onClick={() => handleToggle(item.id, item.isActive)}
                             title={item.isActive ? "Deactivate" : "Activate"}
                           >
@@ -224,7 +242,10 @@ export default function CouponManager({ initialCoupons }) {
                     }
                     className="bg-[#272727] border-zinc-700 text-white focus-visible:ring-offset-0 pr-8"
                   />
-                  <Percent size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Percent
+                    size={16}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+                  />
                 </div>
               </div>
               <div className="space-y-2">
@@ -277,7 +298,11 @@ export default function CouponManager({ initialCoupons }) {
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsOpen(false)} className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
+            <Button
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+            >
               Cancel
             </Button>
             <Button

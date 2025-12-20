@@ -1,7 +1,7 @@
-import { sequelize } from "../db.js";
 import { DataTypes } from "sequelize";
-import User from "./user.js";
+import { sequelize } from "../db.js";
 import Transaction from "./transaction.js";
+import User from "./user.js";
 
 const Booking = sequelize.define(
   "Booking",

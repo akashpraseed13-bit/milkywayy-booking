@@ -1,8 +1,8 @@
 "use server";
 
-import DynamicConfig from "@/lib/db/models/dynamicconfig";
 import { revalidatePath } from "next/cache";
 import { actionWrapper } from "@/lib/actions/utils";
+import DynamicConfig from "@/lib/db/models/dynamicconfig";
 
 const CONFIG_KEY = "discounts";
 

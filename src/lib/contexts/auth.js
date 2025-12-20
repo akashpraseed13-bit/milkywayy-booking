@@ -1,8 +1,8 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect } from "react";
-import { logout as logoutAction } from "@/lib/actions/auth";
+import { createContext, useContext, useEffect, useState } from "react";
 import LoginModal from "@/components/LoginModal";
+import { logout as logoutAction } from "@/lib/actions/auth";
 
 const AuthContext = createContext();
 

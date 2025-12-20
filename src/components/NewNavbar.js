@@ -1,28 +1,30 @@
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
+import Link from "next/link";
+import { usePathname, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-// import logo from "@/assets/logo.png";
-import DashboardLoginModal from "./LoginModal";
+import { useAuth } from "@/lib/contexts/auth";
 import VideoModal from "./VideoModal";
+import HeaderBackground from "@/components/HeaderBackground";
 
 const logo = "/logo-with-title.png";
 
 const NewNavbar = () => {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
   const [showVideoModal, setShowVideoModal] = useState(false);
+  const [pendingDashboardRedirect, setPendingDashboardRedirect] =
+    useState(false);
+
   const pathname = usePathname();
+  const router = useRouter();
+  const { authState, login } = useAuth();
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+    if (pendingDashboardRedirect && authState.isAuthenticated) {
+      router.push("/dashboard");
+      setPendingDashboardRedirect(false);
+    }
+  }, [authState.isAuthenticated, pendingDashboardRedirect, router]);
 
   const scrollToSection = (id) => {
     if (pathname !== "/") {
@@ -33,6 +35,15 @@ const NewNavbar = () => {
     if (element) {
       element.scrollIntoView({ behavior: "smooth" });
       setIsMobileMenuOpen(false);
+    }
+  };
+
+  const handleDashboardClick = () => {
+    if (authState.isAuthenticated) {
+      router.push("/dashboard");
+    } else {
+      setPendingDashboardRedirect(true);
+      login();
     }
   };
 
@@ -47,10 +58,7 @@ const NewNavbar = () => {
 
   return (
     <>
-      <nav
-        className={`transition-all duration-300 ${isScrolled ? "bg-background/90 backdrop-blur-lg shadow-lg" : "bg-transparent"
-          }`}
-      >
+      <HeaderBackground>
         <div className="container mx-auto pl-2 pr-6 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -61,36 +69,33 @@ const NewNavbar = () => {
             {/* Desktop Nav */}
             <div className="hidden lg:flex items-center space-x-6">
               {navItems.map((item) =>
-                item.href ? (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className="text-sm font-medium hover:text-accent"
-                  >
-                    {item.label}
-                  </Link>
-                ) : (
-                  <button
-                    key={item.label}
-                    onClick={item.action}
-                    className="text-sm font-medium hover:text-accent transition-colors"
-                  >
-                    {item.label}
-                  </button>
-                )
+                item.href
+                  ? <Link
+                      key={item.label}
+                      href={item.href}
+                      className="text-sm font-medium hover:text-accent"
+                    >
+                      {item.label}
+                    </Link>
+                  : <button
+                      key={item.label}
+                      onClick={item.action}
+                      className="text-sm font-medium hover:text-accent transition-colors"
+                    >
+                      {item.label}
+                    </button>,
               )}
             </div>
 
             {/* Desktop CTAs */}
             <div className="hidden lg:flex items-center space-x-4">
-
               <Link href="/booking">
                 <Button className="bg-accent text-accent-foreground hover:bg-accent/90 glow-pulse">
                   Book Now
                 </Button>
               </Link>
               <Button
-                onClick={() => setShowLoginModal(true)}
+                onClick={handleDashboardClick}
                 variant="outline"
                 className="border-border hover:bg-secondary"
               >
@@ -111,42 +116,44 @@ const NewNavbar = () => {
           {isMobileMenuOpen && (
             <div className="lg:hidden mt-4 pb-4 space-y-4 border-t border-border pt-4 bg-background/90 backdrop-blur-lg shadow-lg">
               {navItems.map((item) =>
-                item.href ? (
-                  <Link
-                    key={item.label}
-                    href={item.href}
-                    className="block text-sm font-medium hover:text-accent transition-colors"
-                    onClick={() => setIsMobileMenuOpen(false)}
-                  >
-                    {item.label}
-                  </Link>
-                ) : (
-                  <button
-                    key={item.label}
-                    onClick={() => {
-                      item.action?.();
-                      if (item.label !== "How it works") setIsMobileMenuOpen(false);
-                    }}
-                    className="block w-full text-left text-sm font-medium hover:text-accent transition-colors"
-                  >
-                    {item.label}
-                  </button>
-                )
+                item.href
+                  ? <Link
+                      key={item.label}
+                      href={item.href}
+                      className="block text-sm font-medium hover:text-accent transition-colors"
+                      onClick={() => setIsMobileMenuOpen(false)}
+                    >
+                      {item.label}
+                    </Link>
+                  : <button
+                      key={item.label}
+                      onClick={() => {
+                        item.action?.();
+                        if (item.label !== "How it works")
+                          setIsMobileMenuOpen(false);
+                      }}
+                      className="block w-full text-left text-sm font-medium hover:text-accent transition-colors"
+                    >
+                      {item.label}
+                    </button>,
               )}
               <div className="space-y-2 pt-2">
-                <Link href="/booking" className="block" onClick={() => setIsMobileMenuOpen(false)}>
+                <Link
+                  href="/booking"
+                  className="block"
+                  onClick={() => setIsMobileMenuOpen(false)}
+                >
                   <Button className="w-full bg-accent text-accent-foreground hover:bg-accent/90">
                     Book Now
                   </Button>
                 </Link>
                 <Button
                   onClick={() => {
-                    setShowLoginModal(true);
+                    handleDashboardClick();
                     setIsMobileMenuOpen(false);
                   }}
                   variant="outline"
                   className="w-full border-border"
-                  onClickCapture={() => setIsMobileMenuOpen(false)}
                 >
                   Dashboard
                 </Button>
@@ -154,9 +161,8 @@ const NewNavbar = () => {
             </div>
           )}
         </div>
-      </nav>
+      </HeaderBackground>
 
-      <DashboardLoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
       <VideoModal open={showVideoModal} onOpenChange={setShowVideoModal} />
     </>
   );

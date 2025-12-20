@@ -1,14 +1,9 @@
 "use client";
-import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import {
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
-} from "@/components/ui/table";
+import { useMemo } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Pagination,
   PaginationContent,
@@ -24,9 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const getRoleBadgeVariant = (role) => {
   switch (role) {
@@ -50,7 +50,7 @@ const getRoleBadgeClass = (role) => {
     default:
       return "";
   }
-}
+};
 
 const getLimitFromParams = (searchParams) => {
   const limitParam = searchParams.get("limit");
@@ -104,7 +104,7 @@ export default function UserTable({ users, pagination }) {
             >
               {i}
             </PaginationLink>
-          </PaginationItem>
+          </PaginationItem>,
         );
       } else if (
         (i === currentPage - 2 && currentPage > 3) ||
@@ -121,9 +121,7 @@ export default function UserTable({ users, pagination }) {
     <div>
       <div className="flex justify-between items-center mb-4">
         <h2 className="text-xl font-semibold">Users</h2>
-        <Button
-          onClick={() => router.push("/admin/users/create")}
-        >
+        <Button onClick={() => router.push("/admin/users/create")}>
           + New User
         </Button>
       </div>
@@ -139,56 +137,58 @@ export default function UserTable({ users, pagination }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center">
-                  No users found
-                </TableCell>
-              </TableRow>
-            ) : (
-              users.map((user) => (
-                <TableRow key={user.id}>
-                  <TableCell>
-                    <div className="flex items-center gap-2">
-                      <Avatar>
-                        <AvatarImage src="" alt={user.fullName} />
-                        <AvatarFallback>{user.fullName?.slice(0, 2).toUpperCase()}</AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col">
-                        <span className="font-medium">{user.fullName}</span>
-                        <span className="text-xs text-muted-foreground">ID: {user.id}</span>
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell>{user.email}</TableCell>
-                  <TableCell>{user.phone || "N/A"}</TableCell>
-                  <TableCell>
-                    <Badge
-                      variant={getRoleBadgeVariant(user.role)}
-                      className={getRoleBadgeClass(user.role)}
-                    >
-                      {user.role}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      <button
-                        className="text-blue-600 hover:text-blue-800 text-sm font-medium"
-                        onClick={() => console.log("Edit user:", user.id)}
-                      >
-                        Edit
-                      </button>
-                      <button
-                        className="text-red-600 hover:text-red-800 text-sm font-medium"
-                        onClick={() => console.log("Delete user:", user.id)}
-                      >
-                        Delete
-                      </button>
-                    </div>
+            {users.length === 0
+              ? <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    No users found
                   </TableCell>
                 </TableRow>
-              ))
-            )}
+              : users.map((user) => (
+                  <TableRow key={user.id}>
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <Avatar>
+                          <AvatarImage src="" alt={user.fullName} />
+                          <AvatarFallback>
+                            {user.fullName?.slice(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{user.fullName}</span>
+                          <span className="text-xs text-muted-foreground">
+                            ID: {user.id}
+                          </span>
+                        </div>
+                      </div>
+                    </TableCell>
+                    <TableCell>{user.email}</TableCell>
+                    <TableCell>{user.phone || "N/A"}</TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={getRoleBadgeVariant(user.role)}
+                        className={getRoleBadgeClass(user.role)}
+                      >
+                        {user.role}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        <button
+                          className="text-blue-600 hover:text-blue-800 text-sm font-medium"
+                          onClick={() => console.log("Edit user:", user.id)}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          className="text-red-600 hover:text-red-800 text-sm font-medium"
+                          onClick={() => console.log("Delete user:", user.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
           </TableBody>
         </Table>
       </div>
@@ -198,25 +198,36 @@ export default function UserTable({ users, pagination }) {
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
-                onClick={() => handlePageChange(Math.max(1, pagination.page - 1))}
-                className={pagination.page === 1 ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                onClick={() =>
+                  handlePageChange(Math.max(1, pagination.page - 1))
+                }
+                className={
+                  pagination.page === 1
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
               />
             </PaginationItem>
             {renderPaginationItems()}
             <PaginationItem>
               <PaginationNext
-                onClick={() => handlePageChange(Math.min(pagination.totalPages, pagination.page + 1))}
-                className={pagination.page === pagination.totalPages ? "pointer-events-none opacity-50" : "cursor-pointer"}
+                onClick={() =>
+                  handlePageChange(
+                    Math.min(pagination.totalPages, pagination.page + 1),
+                  )
+                }
+                className={
+                  pagination.page === pagination.totalPages
+                    ? "pointer-events-none opacity-50"
+                    : "cursor-pointer"
+                }
               />
             </PaginationItem>
           </PaginationContent>
         </Pagination>
 
         <div className="w-36">
-          <Select
-            value={limit}
-            onValueChange={(val) => handleLimitChange(val)}
-          >
+          <Select value={limit} onValueChange={(val) => handleLimitChange(val)}>
             <SelectTrigger>
               <SelectValue placeholder="Per Page" />
             </SelectTrigger>

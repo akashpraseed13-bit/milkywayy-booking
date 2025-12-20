@@ -1,6 +1,6 @@
-'use client';
+"use client";
 import { Sparkles } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
 const AnnouncementBar = ({ onHeightChange }) => {
   const [scrollProgress, setScrollProgress] = useState(0);
@@ -17,7 +17,7 @@ const AnnouncementBar = ({ onHeightChange }) => {
 
   return (
     <>
-      <div 
+      <div
         className="text-center text-sm font-medium overflow-hidden transition-all duration-150 bg-neutral-300 text-black hidden sm:block"
         style={{
           height: `${36 * (1 - scrollProgress)}px`,
@@ -32,7 +32,7 @@ const AnnouncementBar = ({ onHeightChange }) => {
           <Sparkles className="w-4 h-4" />
         </div>
       </div>
-      <div 
+      <div
         className="text-center text-sm font-medium overflow-hidden transition-all duration-150 bg-neutral-300 text-black sm:hidden display:flex"
         style={{
           height: `${56 * (1 - scrollProgress)}px`,

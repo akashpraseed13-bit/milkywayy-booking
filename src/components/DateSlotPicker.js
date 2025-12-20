@@ -1,23 +1,23 @@
 "use client";
-import { useState, useEffect, useMemo } from "react";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { getAvailabilityForRange } from "@/lib/actions/bookings";
-import {
+  Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  Calendar as CalendarIcon,
   Clock,
   Loader2,
 } from "lucide-react";
+import { useEffect, useMemo, useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { getAvailabilityForRange } from "@/lib/actions/bookings";
+import { cn } from "@/lib/utils";
 
 const TIME_SLOTS = [
   { value: "morning", label: "Morning" },
@@ -248,7 +248,7 @@ export default function DateSlotPicker({
             readOnly
             className={cn(
               "pl-9 cursor-pointer bg-[#272727] border-zinc-700 text-white placeholder:text-muted-foreground focus-visible:ring-offset-0 focus-visible:ring-1 focus-visible:ring-white",
-              error && "border-red-500 focus-visible:ring-red-500"
+              error && "border-red-500 focus-visible:ring-red-500",
             )}
           />
         </div>
@@ -326,7 +326,7 @@ export default function DateSlotPicker({
                             ? "bg-zinc-800 text-white border border-zinc-600"
                             : "text-gray-300 hover:bg-zinc-800",
                         disabled &&
-                        "opacity-30 cursor-not-allowed hover:bg-transparent text-zinc-600",
+                          "opacity-30 cursor-not-allowed hover:bg-transparent text-zinc-600",
                       )}
                     >
                       {day}
@@ -345,56 +345,60 @@ export default function DateSlotPicker({
 
               {!date
                 ? <div className="flex-1 flex items-center justify-center text-gray-500 text-sm italic">
-                  Select a date to view slots
-                </div>
-                : <div className="space-y-3">
-                  <p className="text-sm text-gray-400 mb-2">
-                    For {new Date(date).toLocaleDateString()}
-                  </p>
-                  <div className="grid grid-cols-1 gap-3">
-                    {TIME_SLOTS.map((timeSlot) => {
-                      const isAvailable = isSlotAvailable(
-                        timeSlot.value,
-                        currentBlockedSlots,
-                      );
-                      const isSelectedSlot = slot === timeSlot.value;
-
-                      return (
-                        <button
-                          key={timeSlot.value}
-                          onClick={() =>
-                            isAvailable && onSlotChange(timeSlot.value)
-                          }
-                          disabled={!isAvailable}
-                          type="button"
-                          className={cn(
-                            "px-4 py-3 rounded-xl border text-sm font-medium transition-all flex justify-between items-center w-full",
-                            isSelectedSlot
-                              ? "bg-white text-black border-white"
-                              : "bg-[#272727] text-gray-300 border-zinc-700 hover:border-zinc-500",
-                            !isAvailable &&
-                            "opacity-50 cursor-not-allowed hover:border-zinc-700 bg-[#1a1a1a] text-zinc-600",
-                          )}
-                        >
-                          <span>{timeSlot.label}</span>
-                          {!isAvailable && (
-                            <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-gray-400">
-                              Unavailable
-                            </span>
-                          )}
-                          {isSelectedSlot && (
-                            <span className="w-2 h-2 rounded-full bg-black"></span>
-                          )}
-                        </button>
-                      );
-                    })}
+                    Select a date to view slots
                   </div>
-                </div>}
+                : <div className="space-y-3">
+                    <p className="text-sm text-gray-400 mb-2">
+                      For {new Date(date).toLocaleDateString()}
+                    </p>
+                    <div className="grid grid-cols-1 gap-3">
+                      {TIME_SLOTS.map((timeSlot) => {
+                        const isAvailable = isSlotAvailable(
+                          timeSlot.value,
+                          currentBlockedSlots,
+                        );
+                        const isSelectedSlot = slot === timeSlot.value;
+
+                        return (
+                          <button
+                            key={timeSlot.value}
+                            onClick={() =>
+                              isAvailable && onSlotChange(timeSlot.value)
+                            }
+                            disabled={!isAvailable}
+                            type="button"
+                            className={cn(
+                              "px-4 py-3 rounded-xl border text-sm font-medium transition-all flex justify-between items-center w-full",
+                              isSelectedSlot
+                                ? "bg-white text-black border-white"
+                                : "bg-[#272727] text-gray-300 border-zinc-700 hover:border-zinc-500",
+                              !isAvailable &&
+                                "opacity-50 cursor-not-allowed hover:border-zinc-700 bg-[#1a1a1a] text-zinc-600",
+                            )}
+                          >
+                            <span>{timeSlot.label}</span>
+                            {!isAvailable && (
+                              <span className="text-[10px] bg-zinc-800 px-2 py-0.5 rounded text-gray-400">
+                                Unavailable
+                              </span>
+                            )}
+                            {isSelectedSlot && (
+                              <span className="w-2 h-2 rounded-full bg-black"></span>
+                            )}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>}
             </div>
           </div>
 
           <DialogFooter className="p-6 border-t border-zinc-800">
-            <Button variant="ghost" onClick={() => setIsOpen(false)} className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
+            <Button
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+            >
               Cancel
             </Button>
             <Button

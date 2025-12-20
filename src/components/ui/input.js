@@ -12,7 +12,7 @@ const Input = ({ className, type, ...props }, ref) => {
       {...props}
     />
   );
-}
+};
 Input.displayName = "Input";
 
 export { Input };

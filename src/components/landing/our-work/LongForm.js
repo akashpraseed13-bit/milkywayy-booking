@@ -1,4 +1,4 @@
-import { YouTubeEmbed } from 'react-social-media-embed';
+import { YouTubeEmbed } from "react-social-media-embed";
 
 const LongForm = ({ items }) => {
   return (
@@ -10,7 +10,10 @@ const LongForm = ({ items }) => {
           style={{ animationDelay: `${index * 0.05}s` }}
         >
           <div className="absolute inset-0 bg-gradient-to-br from-secondary to-muted">
-            <YouTubeEmbed url="https://www.youTube.com/watch?v=4jnzf1yj48M" width={328} />
+            <YouTubeEmbed
+              url="https://www.youTube.com/watch?v=4jnzf1yj48M"
+              width={328}
+            />
           </div>
         </div>
       ))}

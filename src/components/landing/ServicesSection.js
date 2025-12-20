@@ -1,13 +1,14 @@
-import { Button } from "@/components/ui/button";
-import { Camera, Video, Globe } from "lucide-react";
+import { Camera, Globe, Video } from "lucide-react";
 import Link from "next/link";
+import { Button } from "@/components/ui/button";
 
 const ServicesSection = () => {
   const services = [
     {
       icon: Camera,
       title: "Photography",
-      description: "Professional HDR photos that make listings shine and sell faster",
+      description:
+        "Professional HDR photos that make listings shine and sell faster",
       price: "From AED 350",
       delivery: "Photos delivered within 24h",
     },
@@ -50,11 +51,19 @@ const ServicesSection = () => {
               <div className="w-12 h-12 rounded-xl bg-secondary flex items-center justify-center mb-4 group-hover:bg-accent/20 transition-colors">
                 <service.icon className="w-6 h-6 text-accent" />
               </div>
-              <h3 className="font-heading text-lg font-bold mb-2">{service.title}</h3>
-              <p className="text-sm text-muted-foreground mb-4">{service.description}</p>
+              <h3 className="font-heading text-lg font-bold mb-2">
+                {service.title}
+              </h3>
+              <p className="text-sm text-muted-foreground mb-4">
+                {service.description}
+              </p>
               <div className="space-y-1 mb-4">
-                <p className="text-sm font-medium text-accent">{service.price}</p>
-                <p className="text-xs text-muted-foreground">{service.delivery}</p>
+                <p className="text-sm font-medium text-accent">
+                  {service.price}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {service.delivery}
+                </p>
               </div>
               <Link href="/booking">
                 <Button

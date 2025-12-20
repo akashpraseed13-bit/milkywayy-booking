@@ -1,10 +1,10 @@
 import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
-import Transaction from "@/lib/db/models/transaction";
 import Booking from "@/lib/db/models/booking";
-import WalletTransaction from "@/lib/db/models/wallettransaction";
+import Transaction from "@/lib/db/models/transaction";
 import User from "@/lib/db/models/user";
+import WalletTransaction from "@/lib/db/models/wallettransaction";
 import { generateAndUploadInvoice } from "@/lib/helpers/invoice";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
@@ -25,10 +25,11 @@ export async function POST(req) {
 
   try {
     switch (event.type) {
-      case "checkout.session.completed":
+      case "checkout.session.completed": {
         const session = event.data.object;
         await handleCheckoutSessionCompleted(session);
         break;
+      }
       default:
         console.log(`Unhandled event type ${event.type}`);
     }

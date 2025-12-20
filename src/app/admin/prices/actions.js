@@ -1,8 +1,8 @@
 "use server";
 
-import { getPricingConfig as fetchPricingConfig } from "@/lib/helpers/pricing";
-import { DynamicConfig } from "@/lib/db/models";
 import { actionWrapper } from "@/lib/actions/utils";
+import { DynamicConfig } from "@/lib/db/models";
+import { getPricingConfig as fetchPricingConfig } from "@/lib/helpers/pricing";
 
 const getPricingConfigHandler = async () => {
   return fetchPricingConfig();

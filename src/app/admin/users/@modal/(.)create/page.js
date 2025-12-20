@@ -1,13 +1,13 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import CreateUserForm from "@/components/CreateUserForm";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import CreateUserForm from "@/components/CreateUserForm";
 
 export default function CreateUserModal() {
   const router = useRouter();

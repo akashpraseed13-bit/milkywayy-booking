@@ -1,7 +1,7 @@
 import { Suspense } from "react";
-import BookNew from "./BookNew";
 import { getPricingConfig } from "@/app/admin/prices/actions";
 import { getDiscounts } from "@/lib/actions/discounts";
+import BookNew from "./BookNew";
 
 export default async function Booking() {
   const pricingsPromise = getPricingConfig();

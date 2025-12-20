@@ -1,14 +1,14 @@
 "use client";
 
 import { useState } from "react";
-import { savePricingConfig } from "./actions";
-import { SERVICES } from "@/lib/config/pricing";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { SERVICES } from "@/lib/config/pricing";
+import { savePricingConfig } from "./actions";
 
 export default function PricingEditor({ initialConfig }) {
   const [config, setConfig] = useState(initialConfig);
@@ -85,7 +85,9 @@ export default function PricingEditor({ initialConfig }) {
         {Object.entries(config).map(([type, typeConfig]) => (
           <Card key={type} className="overflow-hidden">
             <CardHeader className="bg-gray-50 px-6 py-4 border-b border-gray-200">
-              <CardTitle className="text-xl font-semibold text-gray-800">{type}</CardTitle>
+              <CardTitle className="text-xl font-semibold text-gray-800">
+                {type}
+              </CardTitle>
             </CardHeader>
             <CardContent className="p-6">
               <div className="grid grid-cols-1 gap-4">

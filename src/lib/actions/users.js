@@ -1,10 +1,10 @@
 "use server";
 
-import { sequelize } from "@/lib/db";
-import models from "@/lib/db/models";
 import bcrypt from "bcrypt";
 import { revalidatePath } from "next/cache";
 import { actionWrapper } from "@/lib/actions/utils";
+import { sequelize } from "@/lib/db";
+import models from "@/lib/db/models";
 
 const createUserHandler = async (userData) => {
   const { fullName, email, phone, role, password } = userData;

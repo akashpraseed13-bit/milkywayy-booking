@@ -1,5 +1,5 @@
-import DynamicConfig from "@/lib/db/models/dynamicconfig";
 import { PRICING_CONFIG } from "@/lib/config/pricing";
+import DynamicConfig from "@/lib/db/models/dynamicconfig";
 
 export async function getPricingConfig() {
   try {

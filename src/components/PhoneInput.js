@@ -1,8 +1,8 @@
 "use client";
 import { useEffect, useMemo } from "react";
 import countryFlags from "@/lib/config/countryFlags.json";
-import dialCodeCountries from "@/lib/config/dialCodeCountries.json";
 import countryNames from "@/lib/config/countryNames.json";
+import dialCodeCountries from "@/lib/config/dialCodeCountries.json";
 
 const uae = {
   code: "AE",
@@ -36,15 +36,40 @@ export default function PhoneNumberInput({
           name: countryNames[countryCode],
         };
         const restText = toCheck.substring(i);
-        if(restText.length > 0) {
-          if(restText.length > 9)
-            return [countryData, countryData.dial_code+' '+restText.substring(0, 3)+' '+restText.substring(3, 6)+' '+restText.substring(6)]
-          else if(restText.length>5)
-            return [countryData, countryData.dial_code+' '+restText.substring(0, 2)+' '+restText.substring(2, 5)+' '+restText.substring(5)];
-          else if(restText.length>2)
-            return [countryData, countryData.dial_code+' '+restText.substring(0, 2)+' '+restText.substring(2)];
-          return [countryData, countryData.dial_code+' '+restText];
-        } else return [countryData, countryData.dial_code+restText];
+        if (restText.length > 0) {
+          if (restText.length > 9)
+            return [
+              countryData,
+              countryData.dial_code +
+                " " +
+                restText.substring(0, 3) +
+                " " +
+                restText.substring(3, 6) +
+                " " +
+                restText.substring(6),
+            ];
+          else if (restText.length > 5)
+            return [
+              countryData,
+              countryData.dial_code +
+                " " +
+                restText.substring(0, 2) +
+                " " +
+                restText.substring(2, 5) +
+                " " +
+                restText.substring(5),
+            ];
+          else if (restText.length > 2)
+            return [
+              countryData,
+              countryData.dial_code +
+                " " +
+                restText.substring(0, 2) +
+                " " +
+                restText.substring(2),
+            ];
+          return [countryData, countryData.dial_code + " " + restText];
+        } else return [countryData, countryData.dial_code + restText];
       }
     }
     return [null, value];

@@ -1,11 +1,11 @@
-'use client';
-import { Button } from "@/components/ui/button";
-import Link from 'next/link';
+"use client";
+import Link from "next/link";
 import { useState } from "react";
-import Photography from "./our-work/Photography";
-import ThreeSixty from "./our-work/ThreeSixty";
-import ShortForm from "./our-work/ShortForm";
+import { Button } from "@/components/ui/button";
 import LongForm from "./our-work/LongForm";
+import Photography from "./our-work/Photography";
+import ShortForm from "./our-work/ShortForm";
+import ThreeSixty from "./our-work/ThreeSixty";
 
 const OurWorkPreview = () => {
   const [activeCategory, setActiveCategory] = useState("Photography");
@@ -20,9 +20,21 @@ const OurWorkPreview = () => {
     { type: "short-form", title: "Palm Villa Reel", category: "Short-form" },
     { type: "short-form", title: "Marina Lifestyle", category: "Short-form" },
     { type: "short-form", title: "Downtown Living", category: "Short-form" },
-    { type: "long-form", title: "Palm Villa Walkthrough", category: "Long-form" },
-    { type: "long-form", title: "Emirates Hills Estate", category: "Long-form" },
-    { type: "long-form", title: "Downtown Sky Collection", category: "Long-form" },
+    {
+      type: "long-form",
+      title: "Palm Villa Walkthrough",
+      category: "Long-form",
+    },
+    {
+      type: "long-form",
+      title: "Emirates Hills Estate",
+      category: "Long-form",
+    },
+    {
+      type: "long-form",
+      title: "Downtown Sky Collection",
+      category: "Long-form",
+    },
   ];
 
   const categories = ["Photography", "360°", "Short-form", "Long-form"];
@@ -57,23 +69,35 @@ const OurWorkPreview = () => {
         </div>
 
         {/* Work Components */}
-        <div className={activeCategory === 'Photography' ? 'block' : 'hidden'}>
-          <Photography items={allWorkItems.filter(i => i.category === 'Photography')} />
+        <div className={activeCategory === "Photography" ? "block" : "hidden"}>
+          <Photography
+            items={allWorkItems.filter((i) => i.category === "Photography")}
+          />
         </div>
-        <div className={activeCategory === '360°' ? 'block' : 'hidden'}>
-          <ThreeSixty items={allWorkItems.filter(i => i.category === '360°')} />
+        <div className={activeCategory === "360°" ? "block" : "hidden"}>
+          <ThreeSixty
+            items={allWorkItems.filter((i) => i.category === "360°")}
+          />
         </div>
-        <div className={activeCategory === 'Short-form' ? 'block' : 'hidden'}>
-          <ShortForm items={allWorkItems.filter(i => i.category === 'Short-form')} />
+        <div className={activeCategory === "Short-form" ? "block" : "hidden"}>
+          <ShortForm
+            items={allWorkItems.filter((i) => i.category === "Short-form")}
+          />
         </div>
-        <div className={activeCategory === 'Long-form' ? 'block' : 'hidden'}>
-          <LongForm items={allWorkItems.filter(i => i.category === 'Long-form')} />
+        <div className={activeCategory === "Long-form" ? "block" : "hidden"}>
+          <LongForm
+            items={allWorkItems.filter((i) => i.category === "Long-form")}
+          />
         </div>
 
         {/* Load More button */}
         <div className="text-center">
           <Link href="/portfolio">
-            <Button size="lg" variant="outline" className="border-accent text-accent hover:bg-accent hover:text-accent-foreground">
+            <Button
+              size="lg"
+              variant="outline"
+              className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+            >
               Load More
             </Button>
           </Link>

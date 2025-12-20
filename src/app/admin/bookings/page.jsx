@@ -1,24 +1,24 @@
 "use client";
-import { useState, useEffect } from "react";
-import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import Link from "next/link";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { completeBooking } from "@/lib/actions/bookings";
 
 export default function BookingsPage() {
@@ -157,8 +157,12 @@ export default function BookingsPage() {
                       {booking.propertyDetails?.type}
                     </p>
                   </TableCell>
-                  <TableCell className="text-zinc-300">{booking.date}</TableCell>
-                  <TableCell className="text-zinc-300">AED {booking.total}</TableCell>
+                  <TableCell className="text-zinc-300">
+                    {booking.date}
+                  </TableCell>
+                  <TableCell className="text-zinc-300">
+                    AED {booking.total}
+                  </TableCell>
                   <TableCell>
                     <Badge
                       variant={
@@ -204,9 +208,7 @@ export default function BookingsPage() {
                   </p>
                 </div>
                 <div>
-                  <p className="text-zinc-500 text-sm mb-1">
-                    Date & Slot
-                  </p>
+                  <p className="text-zinc-500 text-sm mb-1">Date & Slot</p>
                   <p className="font-medium">{selectedBooking.date}</p>
                   <p className="text-sm text-zinc-400">
                     Slot: {selectedBooking.slot}
@@ -215,9 +217,7 @@ export default function BookingsPage() {
               </div>
 
               <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800">
-                <h3 className="font-semibold mb-3 text-zinc-300">
-                  Services
-                </h3>
+                <h3 className="font-semibold mb-3 text-zinc-300">Services</h3>
                 <p className="text-sm text-zinc-400">
                   {selectedBooking.shootDetails?.services?.join(", ") ||
                     "No services specified."}
@@ -238,9 +238,7 @@ export default function BookingsPage() {
                     {selectedBooking.propertyDetails?.size}
                   </p>
                   <p>
-                    <span className="font-medium text-zinc-300">
-                      Address:
-                    </span>{" "}
+                    <span className="font-medium text-zinc-300">Address:</span>{" "}
                     {[
                       selectedBooking.propertyDetails?.unit,
                       selectedBooking.propertyDetails?.building,
@@ -290,12 +288,11 @@ export default function BookingsPage() {
                     </p>
                   </div>
                   {selectedBooking.transaction?.invoiceUrl ? (
-                    <Button
-                      asChild
-                      variant="secondary"
-                      size="sm"
-                    >
-                      <Link href={selectedBooking.transaction.invoiceUrl} target="_blank">
+                    <Button asChild variant="secondary" size="sm">
+                      <Link
+                        href={selectedBooking.transaction.invoiceUrl}
+                        target="_blank"
+                      >
                         Download Invoice
                       </Link>
                     </Button>
@@ -316,15 +313,13 @@ export default function BookingsPage() {
                     {selectedBooking.cancelledAt
                       ? "This booking has been cancelled."
                       : selectedBooking.status === "COMPLETED" ||
-                        selectedBooking.completedAt
+                          selectedBooking.completedAt
                         ? "This booking is completed."
                         : "Mark booking as completed when service is done."}
                   </p>
                 </div>
                 {selectedBooking.cancelledAt ? (
-                  <Badge variant="destructive">
-                    Cancelled
-                  </Badge>
+                  <Badge variant="destructive">Cancelled</Badge>
                 ) : selectedBooking.status === "COMPLETED" ||
                   selectedBooking.completedAt ? (
                   <Badge className="bg-green-500 hover:bg-green-600">
@@ -343,45 +338,47 @@ export default function BookingsPage() {
 
               {(selectedBooking.status === "COMPLETED" ||
                 selectedBooking.completedAt) && (
-                  <div className="border-t border-zinc-800 pt-4">
-                    <h3 className="font-semibold mb-3 text-zinc-300">
-                      Files
-                    </h3>
-                    {selectedBooking.filesUrl && (
-                      <div className="mb-4 p-3 bg-blue-900/20 border border-blue-900/50 rounded-lg">
-                        <p className="text-xs text-blue-300 mb-1">
-                          Current File:
-                        </p>
-                        <Link
-                          href={selectedBooking.filesUrl}
-                          target="_blank"
-                          className="text-blue-400 hover:text-blue-300 hover:underline break-all"
-                        >
-                          {selectedBooking.filesUrl}
-                        </Link>
-                      </div>
-                    )}
-                    <div className="flex gap-3 items-center">
-                      <Input
-                        type="file"
-                        onChange={(e) => setFile(e.target.files[0])}
-                        className="max-w-xs bg-zinc-900 border-zinc-700 text-zinc-300"
-                      />
-                      <Button
-                        onClick={handleUpload}
-                        disabled={uploading || !file}
-                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                <div className="border-t border-zinc-800 pt-4">
+                  <h3 className="font-semibold mb-3 text-zinc-300">Files</h3>
+                  {selectedBooking.filesUrl && (
+                    <div className="mb-4 p-3 bg-blue-900/20 border border-blue-900/50 rounded-lg">
+                      <p className="text-xs text-blue-300 mb-1">
+                        Current File:
+                      </p>
+                      <Link
+                        href={selectedBooking.filesUrl}
+                        target="_blank"
+                        className="text-blue-400 hover:text-blue-300 hover:underline break-all"
                       >
-                        {uploading ? "Uploading..." : "Upload to S3"}
-                      </Button>
+                        {selectedBooking.filesUrl}
+                      </Link>
                     </div>
+                  )}
+                  <div className="flex gap-3 items-center">
+                    <Input
+                      type="file"
+                      onChange={(e) => setFile(e.target.files[0])}
+                      className="max-w-xs bg-zinc-900 border-zinc-700 text-zinc-300"
+                    />
+                    <Button
+                      onClick={handleUpload}
+                      disabled={uploading || !file}
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      {uploading ? "Uploading..." : "Upload to S3"}
+                    </Button>
                   </div>
-                )}
+                </div>
+              )}
             </div>
           )}
 
           <DialogFooter className="border-t border-zinc-800 pt-4">
-            <Button variant="ghost" onClick={() => setIsOpen(false)} className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
+            <Button
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+            >
               Close
             </Button>
           </DialogFooter>

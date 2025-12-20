@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
   Select,
@@ -90,11 +90,7 @@ export default function CreateUserForm({ onSubmit, onCancel }) {
 
       <div className="space-y-2">
         <Label htmlFor="phone">Phone</Label>
-        <Input
-          id="phone"
-          name="phone"
-          placeholder="Enter phone number"
-        />
+        <Input id="phone" name="phone" placeholder="Enter phone number" />
       </div>
 
       <div className="space-y-2">

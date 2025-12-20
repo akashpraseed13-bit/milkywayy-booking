@@ -12,40 +12,30 @@ export default function InvoiceList({ invoices }) {
       {invoices.map((invoice) => (
         <div
           key={invoice.id}
-          className="bg-gray-900 p-6 rounded-lg border border-gray-800 flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
+          className="bg-card/70 p-6 rounded-lg border flex flex-col md:flex-row justify-between items-start md:items-center gap-4"
         >
           <div>
             <div className="text-xl font-semibold mb-2 text-white">
-              Invoice #{invoice.id}
+              Invoice #INV{(invoice.id+'').padStart(3, '0')}
             </div>
             <div className="text-gray-400 space-y-1 text-sm">
               <p>
-                <span className="font-medium text-gray-300">Date:</span>{" "}
                 {new Date(invoice.createdAt).toLocaleDateString()}
-              </p>
-              <p>
-                <span className="font-medium text-gray-300">Amount:</span> AED{" "}
-                {invoice.amount}
-              </p>
-              <p>
-                <span className="font-medium text-gray-300">Status:</span>{" "}
-                <span className="text-green-500 capitalize">
-                  {invoice.status}
-                </span>
               </p>
             </div>
           </div>
 
-          <div>
+          <div className="flex items-end flex-col gap-2">
+            <span className="font-bold">AED {invoice.amount}</span>
             {invoice.invoiceUrl ? (
               <a
                 href={invoice.invoiceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md text-sm font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-accent text-accent-foreground font-semibold rounded-md text-sm font-medium transition-colors"
               >
                 <Download size={16} />
-                Download PDF
+                Download
               </a>
             ) : (
               <span className="text-gray-500 text-sm italic">

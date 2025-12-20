@@ -1,18 +1,18 @@
 "use client";
 
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
-  DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { useAuth } from "@/lib/contexts/auth";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 
 export default function UserMenu() {
   const { authState, login, logout } = useAuth();
@@ -25,11 +25,7 @@ export default function UserMenu() {
   };
 
   if (!isAuthenticated) {
-    return (
-      <Button onClick={login}>
-        Login
-      </Button>
-    );
+    return <Button onClick={login}>Login</Button>;
   }
 
   return (
@@ -60,7 +56,10 @@ export default function UserMenu() {
             <Link href="/dashboard/wallet">Wallet</Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={handleLogout} className="text-red-600 focus:text-red-600">
+          <DropdownMenuItem
+            onClick={handleLogout}
+            className="text-red-600 focus:text-red-600"
+          >
             Log Out
           </DropdownMenuItem>
         </DropdownMenuContent>

@@ -1,7 +1,7 @@
 "use client";
 
-import { AuthProvider } from "@/lib/contexts/auth";
 import { Toaster } from "@/components/ui/sonner";
+import { AuthProvider } from "@/lib/contexts/auth";
 
 export function Providers({ children, user }) {
   return (

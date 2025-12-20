@@ -1,40 +1,63 @@
 "use client";
 
-import CustomerHeader from "@/components/CustomerHeader";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Calendar, Folder, Receipt, Wallet } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Calendar, Wallet, Receipt } from "lucide-react";
+import CustomerHeader from "@/components/CustomerHeader";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import StarBackground from "@/components/StarBackground";
 
 export default function DashboardLayout({ children }) {
   const pathname = usePathname();
 
   const tabs = [
-    { key: "/dashboard/bookings", title: "Bookings", icon: <Calendar size={18} />, href: "/dashboard/bookings" },
-    { key: "/dashboard/wallet", title: "Wallet", icon: <Wallet size={18} />, href: "/dashboard/wallet" },
-    { key: "/dashboard/invoices", title: "Invoices", icon: <Receipt size={18} />, href: "/dashboard/invoices" },
+    {
+      key: "/dashboard/bookings",
+      title: "Bookings",
+      icon: <Calendar size={16} />,
+      href: "/dashboard/bookings",
+    },
+    {
+      key: "/dashboard/files",
+      title: "Files",
+      icon: <Folder size={16} />,
+      href: "/dashboard/files",
+    },
+    {
+      key: "/dashboard/wallet",
+      title: "Wallet",
+      icon: <Wallet size={16} />,
+      href: "/dashboard/wallet",
+    },
+    {
+      key: "/dashboard/invoices",
+      title: "Invoices",
+      icon: <Receipt size={16} />,
+      href: "/dashboard/invoices",
+    },
   ];
 
   // Find the active tab based on the current path
-  const currentTab = tabs.find((tab) => pathname.startsWith(tab.key))?.key || tabs[0].key;
+  const currentTab =
+    tabs.find((tab) => pathname.startsWith(tab.key))?.key || tabs[0].key;
 
   return (
-    <div className="min-h-screen bg-black text-white">
+    <div className="min-h-screen bg-background text-white">
+      <StarBackground />
       <CustomerHeader />
-      <main className="container mx-auto px-4 pb-8 pt-30 max-w-7xl">
-        <h1 className="text-3xl font-bold mb-8 text-white">My Dashboard</h1>
+      <main className="container mx-auto px-4 pb-8 pt-30 max-w-7xl relative">
+        <h1 className="text-4xl font-bold mb-8 text-foreground font-heading">
+          My Dashboard
+        </h1>
 
-        <Tabs
-          value={currentTab}
-          className="mb-8 w-full"
-        >
-          <TabsList className="bg-zinc-900/50 w-full p-1 rounded-lg gap-1 border border-white/10 h-auto justify-start">
+        <Tabs value={currentTab} className="mb-8 w-full">
+          <TabsList className="bg-secondary w-full p-1 rounded-lg gap-1 h-auto justify-start flex text-muted-foreground text-sm">
             {tabs.map((item) => (
               <TabsTrigger
                 key={item.key}
                 value={item.key}
                 asChild
-                className="h-10 px-4 data-[state=active]:bg-zinc-800 data-[state=active]:text-white text-zinc-400 hover:bg-white/5 transition-colors flex items-center gap-2 justify-start"
+                className="py-1.5 px-4 data-[state=active]:bg-accent data-[state=active]:text-accent-foreground transition-colors rounded-lg flex items-center gap-2 justify-start flex-1 justify-center text-center"
               >
                 <Link href={item.href}>
                   {item.icon}

@@ -1,27 +1,27 @@
 "use client";
 
-import { useState } from "react";
-import { saveDiscounts } from "@/lib/actions/discounts";
 import {
-  Table,
-  TableHeader,
-  TableHead,
-  TableBody,
-  TableRow,
-  TableCell,
-} from "@/components/ui/table";
+  ArrowDown,
+  ArrowUp,
+  Plus,
+  Power,
+  Tag,
+  Trash2,
+  Wallet,
+} from "lucide-react";
+import { useState } from "react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Select,
   SelectContent,
@@ -31,15 +31,15 @@ import {
 } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import {
-  Plus,
-  Trash2,
-  Power,
-  ArrowUp,
-  ArrowDown,
-  Wallet,
-  Tag,
-} from "lucide-react";
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { michroma } from "@/fonts";
+import { saveDiscounts } from "@/lib/actions/discounts";
 
 export default function DiscountManager({ initialDiscounts }) {
   const [discounts, setDiscounts] = useState(initialDiscounts || []);
@@ -186,19 +186,27 @@ export default function DiscountManager({ initialDiscounts }) {
                   <TableHead className="text-gray-300">TYPE</TableHead>
                   <TableHead className="text-gray-300">RULES</TableHead>
                   <TableHead className="text-gray-300">STATUS</TableHead>
-                  <TableHead className="text-center text-gray-300">ACTIONS</TableHead>
+                  <TableHead className="text-center text-gray-300">
+                    ACTIONS
+                  </TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {discounts.length === 0 ? (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center text-gray-400">
+                    <TableCell
+                      colSpan={6}
+                      className="text-center text-gray-400"
+                    >
                       No discounts configured
                     </TableCell>
                   </TableRow>
                 ) : (
                   discounts.map((item, index) => (
-                    <TableRow key={item.id} className="border-zinc-800 hover:bg-zinc-800/50">
+                    <TableRow
+                      key={item.id}
+                      className="border-zinc-800 hover:bg-zinc-800/50"
+                    >
                       <TableCell>
                         <div className="flex flex-col gap-1">
                           <Button
@@ -228,7 +236,9 @@ export default function DiscountManager({ initialDiscounts }) {
                       </TableCell>
                       <TableCell>
                         <Badge
-                          variant={item.type === "wallet" ? "secondary" : "default"}
+                          variant={
+                            item.type === "wallet" ? "secondary" : "default"
+                          }
                           className="flex items-center gap-1 w-fit"
                         >
                           {item.type === "wallet" ? (
@@ -259,7 +269,11 @@ export default function DiscountManager({ initialDiscounts }) {
                       <TableCell>
                         <Badge
                           variant={item.isActive ? "success" : "secondary"}
-                          className={item.isActive ? "bg-green-500/20 text-green-500 hover:bg-green-500/30" : "bg-zinc-500/20 text-zinc-500 hover:bg-zinc-500/30"}
+                          className={
+                            item.isActive
+                              ? "bg-green-500/20 text-green-500 hover:bg-green-500/30"
+                              : "bg-zinc-500/20 text-zinc-500 hover:bg-zinc-500/30"
+                          }
                         >
                           {item.isActive ? "Active" : "Inactive"}
                         </Badge>
@@ -269,7 +283,11 @@ export default function DiscountManager({ initialDiscounts }) {
                           <Button
                             size="icon"
                             variant="ghost"
-                            className={item.isActive ? "text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10" : "text-green-500 hover:text-green-400 hover:bg-green-500/10"}
+                            className={
+                              item.isActive
+                                ? "text-yellow-500 hover:text-yellow-400 hover:bg-yellow-500/10"
+                                : "text-green-500 hover:text-green-400 hover:bg-green-500/10"
+                            }
                             onClick={() => handleToggle(item.id)}
                           >
                             <Power size={18} />
@@ -304,7 +322,9 @@ export default function DiscountManager({ initialDiscounts }) {
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
         <DialogContent className="sm:max-w-[500px] bg-[#181818] border-zinc-800 text-white">
           <DialogHeader>
-            <DialogTitle>{editingId ? "Edit Discount" : "Add New Discount"}</DialogTitle>
+            <DialogTitle>
+              {editingId ? "Edit Discount" : "Add New Discount"}
+            </DialogTitle>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">
@@ -332,8 +352,18 @@ export default function DiscountManager({ initialDiscounts }) {
                   <SelectValue placeholder="Select type" />
                 </SelectTrigger>
                 <SelectContent className="bg-[#181818] border-zinc-800 text-white">
-                  <SelectItem value="direct" className="focus:bg-zinc-800 focus:text-white">Direct Discount</SelectItem>
-                  <SelectItem value="wallet" className="focus:bg-zinc-800 focus:text-white">Wallet Credit</SelectItem>
+                  <SelectItem
+                    value="direct"
+                    className="focus:bg-zinc-800 focus:text-white"
+                  >
+                    Direct Discount
+                  </SelectItem>
+                  <SelectItem
+                    value="wallet"
+                    className="focus:bg-zinc-800 focus:text-white"
+                  >
+                    Wallet Credit
+                  </SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -352,7 +382,9 @@ export default function DiscountManager({ initialDiscounts }) {
                     }
                     className="bg-[#272727] border-zinc-700 text-white focus-visible:ring-offset-0 pr-8"
                   />
-                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400">%</span>
+                  <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400">
+                    %
+                  </span>
                 </div>
               </div>
               <div className="space-y-2">
@@ -411,11 +443,20 @@ export default function DiscountManager({ initialDiscounts }) {
                   setFormData({ ...formData, isActive: v })
                 }
               />
-              <Label htmlFor="isActive" className="text-sm text-zinc-400 cursor-pointer">Active</Label>
+              <Label
+                htmlFor="isActive"
+                className="text-sm text-zinc-400 cursor-pointer"
+              >
+                Active
+              </Label>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="ghost" onClick={() => setIsOpen(false)} className="text-red-500 hover:text-red-400 hover:bg-red-500/10">
+            <Button
+              variant="ghost"
+              onClick={() => setIsOpen(false)}
+              className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+            >
               Cancel
             </Button>
             <Button

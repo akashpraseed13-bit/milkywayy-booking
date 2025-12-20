@@ -1,4 +1,4 @@
-import { InstagramEmbed } from 'react-social-media-embed';
+import { InstagramEmbed } from "react-social-media-embed";
 
 const Photography = ({ items }) => {
   return (
@@ -9,8 +9,7 @@ const Photography = ({ items }) => {
           className="group relative aspect-[4/3] bg-card rounded-xl overflow-hidden cursor-pointer fade-in"
           style={{ animationDelay: `${index * 0.05}s` }}
         >
-          <div className="absolute inset-0 bg-gradient-to-br from-secondary to-muted">
-          </div>
+          <div className="absolute inset-0 bg-gradient-to-br from-secondary to-muted"></div>
           <div className="absolute inset-0 bg-background/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-4">
             <div>
               <p className="font-medium text-sm">{item.title}</p>

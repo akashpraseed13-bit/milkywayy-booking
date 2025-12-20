@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { CheckCircle } from "lucide-react";
+import Link from "next/link";
 import { verifyStripeSession } from "@/lib/actions/bookings";
 
 export default async function BookingSuccessPage({ searchParams }) {

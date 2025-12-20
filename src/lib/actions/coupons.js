@@ -1,8 +1,8 @@
 "use server";
 
-import Coupon from "@/lib/db/models/coupon";
 import { revalidatePath } from "next/cache";
 import { actionWrapper } from "@/lib/actions/utils";
+import Coupon from "@/lib/db/models/coupon";
 
 const getCouponsHandler = async () => {
   const coupons = await Coupon.findAll({

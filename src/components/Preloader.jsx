@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+
 // import logo from "@/assets/logo.png";
 
 const Preloader = () => {
@@ -19,11 +20,18 @@ const Preloader = () => {
       <div className="relative flex flex-col items-center gap-6">
         <div className="relative">
           <div className="absolute inset-0 animate-ping opacity-20">
-    {/* <img src={logo} alt="Milkywayy Logo" className="h-24 w-auto" /> */}
+            {/* <img src={logo} alt="Milkywayy Logo" className="h-24 w-auto" /> */}
           </div>
-    {/* <img src={logo} alt="Milkywayy Logo" className="h-24 w-auto animate-pulse" /> */}
+          {/* <img src={logo} alt="Milkywayy Logo" className="h-24 w-auto animate-pulse" /> */}
         </div>
-        <p className="font-heading text-xl md:text-2xl font-bold text-foreground animate-fade-in" style={{ animationDelay: '0.3s', opacity: 0, animationFillMode: 'forwards' }}>
+        <p
+          className="font-heading text-xl md:text-2xl font-bold text-foreground animate-fade-in"
+          style={{
+            animationDelay: "0.3s",
+            opacity: 0,
+            animationFillMode: "forwards",
+          }}
+        >
           THE LAUNCHPAD FOR YOUR LISTING.
         </p>
       </div>
@@ -32,4 +40,3 @@ const Preloader = () => {
 };
 
 export default Preloader;
-

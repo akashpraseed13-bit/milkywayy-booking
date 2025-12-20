@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { XCircle } from "lucide-react";
-import { useEffect } from "react";
+import Link from "next/link";
 import { useSearchParams } from "next/navigation";
+import { useEffect } from "react";
 import { cancelBookingBySessionId } from "@/lib/actions/bookings";
 
 export default function BookingCancelPage() {
