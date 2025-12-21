@@ -21,28 +21,26 @@ export default function MediaRenderer({ type, url, title, className = "" }) {
 
     case OUR_WORK_TYPES.VIDEO:
       return (
-        <div className={`relative w-full h-full bg-black ${className}`}>
+        <div className={`relative bg-black ${className} w-full aspect-[4/3]`}>
           <YouTubeEmbed
             url={url}
-            width="100%"
             height="100%"
-            placeholder={
-              <div className="w-full h-full bg-muted animate-pulse" />
-            }
+            width="100%"
+            placeholder={"Hey There"}
+            youTubeProps={{className: "w-full aspect-4/3"}}
           />
         </div>
       );
 
     case OUR_WORK_TYPES.SHORT_VIDEO:
       return (
-        <div
-          className={`relative w-full h-full bg-black flex justify-center ${className}`}
-        >
+        <div className="-mb-3 w-fit mx-auto">
           <InstagramEmbed
             url={url}
-            width={328}
+            width={'fit-content'}
+            height='fit-content'
             placeholder={
-              <div className="w-[328px] h-full bg-muted animate-pulse" />
+              <div className="bg-muted animate-pulse" />
             }
           />
         </div>
@@ -50,7 +48,7 @@ export default function MediaRenderer({ type, url, title, className = "" }) {
 
     case OUR_WORK_TYPES.THREE_SIXTY:
       return (
-        <div className={`relative w-full h-full bg-black ${className}`}>
+        <div className={`relative w-full h-full my-auto bg-black ${className}`}>
           <iframe
             src={url}
             title={title}

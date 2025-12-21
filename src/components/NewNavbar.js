@@ -114,7 +114,7 @@ const NewNavbar = () => {
 
           {/* Mobile Menu */}
           {isMobileMenuOpen && (
-            <div className="lg:hidden mt-4 pb-4 space-y-4 border-t border-border pt-4 bg-background/90 backdrop-blur-lg shadow-lg">
+            <div className="lg:hidden mt-4 pb-4 px-4 space-y-4 border-t border-border pt-4 bg-background/90 backdrop-blur-lg shadow-lg">
               {navItems.map((item) =>
                 item.href
                   ? <Link

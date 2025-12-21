@@ -82,12 +82,6 @@ export function PaymentStep({
                     ))}
                   </div>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Contact</span>
-                  <span>
-                    {property.contactName} ({property.contactPhone})
-                  </span>
-                </div>
               </CardContent>
             </Card>
           ))}

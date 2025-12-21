@@ -31,7 +31,7 @@ export default function PortfolioPage() {
   }, []);
 
   const categories = [
-    { label: "All", value: "ALL" },
+    // { label: "All", value: "ALL" },
     { label: "Photography", value: OUR_WORK_TYPES.IMAGE },
     { label: "360°", value: OUR_WORK_TYPES.THREE_SIXTY },
     { label: "Short-form", value: OUR_WORK_TYPES.SHORT_VIDEO },
@@ -39,14 +39,14 @@ export default function PortfolioPage() {
   ];
 
   const renderGrid = (filteredItems) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 py-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 justify-between gap-y-6 py-8 items-center">
       {filteredItems.map((item, index) => (
         <div
           key={item.id}
-          className="group flex flex-col gap-4 fade-in"
+          className="group flex flex-col gap-4 fade-in mx-auto"
           style={{ animationDelay: `${index * 0.05}s` }}
         >
-          <div className="relative aspect-video bg-card rounded-2xl overflow-hidden shadow-xl border border-white/10">
+          <div className={`relative w-fit ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} bg-card rounded-2xl overflow-hidden shadow-xl border border-white/10`}>
             <MediaRenderer
               type={item.type}
               url={item.mediaContent}
@@ -73,10 +73,10 @@ export default function PortfolioPage() {
           <NewNavbar />
         </div>
 
-        <main className="pt-40 pb-24 container mx-auto px-6">
+        <main className="pt-40 pb-24 container mx-auto px-6 md:px-4 lg:px-0">
           <div className="max-w-3xl mb-12">
-            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/50">
-              Our Portfolio
+            <h1 className="text-4xl md:text-5xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/50 font-heading">
+              Our Works
             </h1>
             <p className="text-xl text-muted-foreground">
               A collection of our premium real estate media across the UAE.
@@ -84,7 +84,7 @@ export default function PortfolioPage() {
           </div>
 
           {loading
-            ? <div className="grid grid-cols-1 md:grid-cols-3 gap-10 py-8">
+            ? <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 py-8">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
                   <div key={i} className="flex flex-col gap-4">
                     <div className="aspect-video bg-white/5 animate-pulse rounded-2xl" />
@@ -93,14 +93,14 @@ export default function PortfolioPage() {
                   </div>
                 ))}
               </div>
-            : <Tabs defaultValue="ALL" className="w-full">
+            : <Tabs defaultValue={categories[0].value} className="w-full">
                 <div className="overflow-x-auto pb-4 scrollbar-hide">
-                  <TabsList className="bg-white/5 border border-white/10 h-auto p-1.5 gap-1.5 rounded-full">
+                  <TabsList className="bg-white/5 border border-white/10 h-auto md:p-1.5 gap-1 md:gap-1.5 rounded-full">
                     {categories.map((cat) => (
                       <TabsTrigger
                         key={cat.value}
                         value={cat.value}
-                        className="rounded-full px-8 py-2.5 data-[state=active]:bg-white data-[state=active]:text-black transition-all font-medium"
+                        className="rounded-full px-2 md:px-8 py-2.5 data-[state=active]:bg-white data-[state=active]:text-black transition-all font-medium"
                       >
                         {cat.label}
                       </TabsTrigger>
@@ -108,9 +108,7 @@ export default function PortfolioPage() {
                   </TabsList>
                 </div>
 
-                <TabsContent value="ALL">{renderGrid(items)}</TabsContent>
-
-                {categories.slice(1).map((cat) => (
+                {categories.map((cat) => (
                   <TabsContent key={cat.value} value={cat.value}>
                     {renderGrid(items.filter((i) => i.type === cat.value))}
                   </TabsContent>

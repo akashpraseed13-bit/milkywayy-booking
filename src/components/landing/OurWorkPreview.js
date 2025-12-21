@@ -41,7 +41,7 @@ const OurWorkPreview = () => {
 
   return (
     <section id="our-work" className="py-24 bg-secondary/20">
-      <div className="container mx-auto px-6">
+      <div className="container mx-auto px-6 lg:px-2">
         <div className="text-center mb-12 fade-in">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
             Our Work
@@ -70,7 +70,7 @@ const OurWorkPreview = () => {
         </div>
 
         {loading
-          ? <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+          ? <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-12">
               {[1, 2, 3].map((i) => (
                 <div key={i} className="flex flex-col gap-4">
                   <div className="aspect-[4/3] bg-muted animate-pulse rounded-xl" />
@@ -80,14 +80,14 @@ const OurWorkPreview = () => {
               ))}
             </div>
           : filteredItems.length > 0
-            ? <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+            ? <div className="grid grid-cols-1 lg:grid-cols-3 gap-y-8 justify-between mb-12">
                 {filteredItems.map((item, index) => (
                   <div
                     key={item.id}
-                    className="group flex flex-col gap-4 fade-in"
+                    className="group flex flex-col gap-4 fade-in mx-auto"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <div className="relative aspect-[4/3] bg-card rounded-xl overflow-hidden shadow-md">
+                    <div className={`relative ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} bg-card rounded-xl overflow-hidden shadow-md`}>
                       <MediaRenderer
                         type={item.type}
                         url={item.mediaContent}
