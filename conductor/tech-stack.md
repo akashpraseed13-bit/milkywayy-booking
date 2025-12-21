@@ -26,3 +26,4 @@
 ## Development Tools
 - **Linting & Formatting:** Biome
 - **Database CLI:** Sequelize-cli
+- **Testing:** Jest, React Testing Library
