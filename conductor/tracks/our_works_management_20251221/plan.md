@@ -10,10 +10,10 @@
 
 ## Phase 2: Admin Interface Implementation
 - [x] Task: Create `src/app/admin/portfolio/page.jsx` with a list view of all entries. ca42292
-- [ ] Task: Implement "Create New Entry" modal/form with dynamic inputs based on media type.
-- [ ] Task: Integrate S3 upload for the `Image` type within the Admin form.
-- [ ] Task: Implement Visibility toggle and Delete action in the Admin list.
-- [ ] Task: Implement Drag-and-Drop reordering in the Admin table/list.
+- [x] Task: Implement "Create New Entry" modal/form with dynamic inputs based on media type. 76fea35
+- [x] Task: Integrate S3 upload for the `Image` type within the Admin form. 76fea35
+- [x] Task: Implement Visibility toggle and Delete action in the Admin list. 76fea35
+- [~] Task: Implement Drag-and-Drop reordering in the Admin table/list.
 - [ ] Task: Conductor - User Manual Verification 'Admin Interface Implementation' (Protocol in workflow.md)
 
 ## Phase 3: Public Portfolio & Landing Page Integration
