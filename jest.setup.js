@@ -1,4 +1,8 @@
 import '@testing-library/jest-dom'
+import { TextEncoder, TextDecoder } from 'util'
+
+global.TextEncoder = TextEncoder
+global.TextDecoder = TextDecoder
 
 // Mock ResizeObserver
 global.ResizeObserver = class ResizeObserver {
@@ -29,3 +33,9 @@ global.IntersectionObserver = class IntersectionObserver {
   unobserve() {}
   disconnect() {}
 }
+
+// Mock server actions
+jest.mock('./src/lib/actions/auth', () => ({
+  logout: jest.fn(),
+  login: jest.fn(), // Assuming login is also there, though context only uses logout
+}))
