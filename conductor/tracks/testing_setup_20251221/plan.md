@@ -16,7 +16,8 @@
 
 ## Phase 3: Auth & API Testing
 - [x] Task: Test Signin Page [493f076]
-- [ ] Task: Test Admin API Route
+- [x] Task: Test Admin API Route [9ed8aeb]
+- [ ] Task: Conductor - User Manual Verification 'Auth & API Testing' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'Auth & API Testing' (Protocol in workflow.md)
 
 ## Phase 4: Customer Dashboard Testing
