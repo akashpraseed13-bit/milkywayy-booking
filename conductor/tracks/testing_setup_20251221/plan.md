@@ -21,7 +21,7 @@
 - [ ] Task: Conductor - User Manual Verification 'Auth & API Testing' (Protocol in workflow.md)
 
 ## Phase 4: Customer Dashboard Testing
-- [ ] Task: Test Bookings Page
+- [x] Task: Test Bookings Page [71c4954]
 - [ ] Task: Test Invoices Page
 - [ ] Task: Test Wallet Page
 - [ ] Task: Conductor - User Manual Verification 'Customer Dashboard Testing' (Protocol in workflow.md)
