@@ -10,7 +10,8 @@
 ## Phase 2: Test Utilities & Mocking
 - [x] Task: Setup Standard Mocks [43040cf]
 - [x] Task: Create Custom Render [a15db16]
-- [ ] Task: Mock Next.js Navigation
+- [x] Task: Mock Next.js Navigation [ae40c81]
+- [ ] Task: Conductor - User Manual Verification 'Test Utilities & Mocking' (Protocol in workflow.md)
 - [ ] Task: Conductor - User Manual Verification 'Test Utilities & Mocking' (Protocol in workflow.md)
 
 ## Phase 3: Auth & API Testing
