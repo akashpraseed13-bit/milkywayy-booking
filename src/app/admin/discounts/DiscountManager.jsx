@@ -215,6 +215,7 @@ export default function DiscountManager({ initialDiscounts }) {
                             onClick={() => moveItem(index, "up")}
                             disabled={index === 0}
                             className="text-zinc-300 h-6 w-6"
+                            title="Move up"
                           >
                             <ArrowUp size={14} />
                           </Button>
@@ -224,6 +225,7 @@ export default function DiscountManager({ initialDiscounts }) {
                             onClick={() => moveItem(index, "down")}
                             disabled={index === discounts.length - 1}
                             className="text-zinc-300 h-6 w-6"
+                            title="Move down"
                           >
                             <ArrowDown size={14} />
                           </Button>
@@ -289,6 +291,7 @@ export default function DiscountManager({ initialDiscounts }) {
                                 : "text-green-500 hover:text-green-400 hover:bg-green-500/10"
                             }
                             onClick={() => handleToggle(item.id)}
+                            title="Toggle status"
                           >
                             <Power size={18} />
                           </Button>
@@ -305,6 +308,7 @@ export default function DiscountManager({ initialDiscounts }) {
                             variant="ghost"
                             className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
                             onClick={() => handleDelete(item.id)}
+                            title="Delete discount"
                           >
                             <Trash2 size={18} />
                           </Button>

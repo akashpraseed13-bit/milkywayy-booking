@@ -190,6 +190,7 @@ export default function CouponManager({ initialCoupons }) {
                             variant="ghost"
                             className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
                             onClick={() => handleDelete(item.id)}
+                            title="Delete coupon"
                           >
                             <Trash2 size={18} />
                           </Button>

@@ -65,3 +65,18 @@ jest.mock('./src/lib/actions/bookings', () => ({
   verifyStripeSession: jest.fn(),
   completeBooking: jest.fn(),
 }))
+
+// Mock discounts actions
+jest.mock('./src/lib/actions/discounts', () => ({
+  getDiscounts: jest.fn(),
+  saveDiscounts: jest.fn(),
+}))
+
+// Mock coupons actions
+jest.mock('./src/lib/actions/coupons', () => ({
+  getCoupons: jest.fn(),
+  createCoupon: jest.fn(),
+  toggleCouponStatus: jest.fn(),
+  deleteCoupon: jest.fn(),
+  validateCoupon: jest.fn(),
+}))
