@@ -29,6 +29,6 @@
 
 ## Phase 5: Admin Suite Testing
 - [x] Task: Test Users Management [20394b1]
-- [ ] Task: Test Admin Bookings
+- [x] Task: Test Admin Bookings [a15dbd6]
 - [ ] Task: Test Discounts & Coupons
 - [ ] Task: Conductor - User Manual Verification 'Admin Suite Testing' (Protocol in workflow.md)
