@@ -15,13 +15,14 @@ export async function POST(request) {
     const formData = await request.formData();
     const file = formData.get("file");
     const bookingId = formData.get("bookingId");
+    const folder = formData.get("folder") || (bookingId ? "bookings" : "misc");
 
     if (!file) {
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
     const buffer = Buffer.from(await file.arrayBuffer());
-    const key = `bookings/${bookingId || "misc"}/${Date.now()}_${file.name}`;
+    const key = `${folder}/${bookingId || "general"}/${Date.now()}_${file.name}`;
     const bucketName = process.env.AWS_BUCKET_NAME || "milkywayy-bookings";
 
     const command = new PutObjectCommand({
