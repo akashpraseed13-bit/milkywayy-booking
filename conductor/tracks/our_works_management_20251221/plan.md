@@ -21,4 +21,5 @@
 - [x] Task: Create `src/app/portfolio/page.js` with category tabs (All, Image, 360 View, Video, Short Video). 7f54594
 - [x] Task: Implement specialized media rendering components (YouTube Embed, Panoee Iframe, Instagram Reel Embed). 4cef2a1
 - [x] Task: Ensure responsive design and lazy loading for heavy media assets. 49268fc
+- [x] Task: Fix Next.js Image optimization for S3 hostnames. cb471aa
 - [ ] Task: Conductor - User Manual Verification 'Public Portfolio & Landing Page Integration' (Protocol in workflow.md)
