@@ -16,6 +16,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -329,6 +330,9 @@ export default function DiscountManager({ initialDiscounts }) {
             <DialogTitle>
               {editingId ? "Edit Discount" : "Add New Discount"}
             </DialogTitle>
+            <DialogDescription className="hidden">
+              Details for configuring a discount
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">

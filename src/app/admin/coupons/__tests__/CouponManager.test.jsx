@@ -1,6 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '../../../../test-utils';
 import CouponManager from '../CouponManager';
 import { createCoupon, deleteCoupon, toggleCouponStatus } from '../../../../lib/actions/coupons';
+import { useRouter } from 'next/navigation';
 
 const mockCoupons = [
   {
@@ -13,26 +14,19 @@ const mockCoupons = [
   },
 ];
 
+jest.mock('next/navigation', () => ({
+  useRouter: jest.fn(),
+}));
+
 describe('CouponManager', () => {
-  let originalLocation;
-
-  beforeAll(() => {
-    originalLocation = window.location;
-  });
-
-  afterAll(() => {
-    window.location = originalLocation;
-  });
+  const mockRefresh = jest.fn();
 
   beforeEach(() => {
     jest.clearAllMocks();
+    useRouter.mockReturnValue({ refresh: mockRefresh });
     createCoupon.mockResolvedValue({ success: true });
     deleteCoupon.mockResolvedValue({ success: true });
     toggleCouponStatus.mockResolvedValue({ success: true });
-    
-    // Mock window.location.reload
-    delete window.location;
-    window.location = { reload: jest.fn() };
     
     window.confirm = jest.fn(() => true);
     window.alert = jest.fn();

@@ -1,13 +1,15 @@
 "use client";
 
 import { Percent, Plus, Power, Tag, Trash2 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -30,9 +32,14 @@ import {
 } from "@/lib/actions/coupons";
 
 export default function CouponManager({ initialCoupons }) {
+  const router = useRouter();
   const [coupons, setCoupons] = useState(initialCoupons);
   const [isOpen, setIsOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setCoupons(initialCoupons);
+  }, [initialCoupons]);
 
   const [formData, setFormData] = useState({
     code: "",
@@ -48,7 +55,7 @@ export default function CouponManager({ initialCoupons }) {
     try {
       const result = await createCoupon(formData);
       if (result.success) {
-        window.location.reload();
+        router.refresh();
         setIsOpen(false);
       } else {
         alert(result.message);
@@ -65,7 +72,7 @@ export default function CouponManager({ initialCoupons }) {
     try {
       const res = await toggleCouponStatus(id, !currentStatus);
       if (res.success) {
-        window.location.reload();
+        router.refresh();
       } else {
         alert(res.message);
       }
@@ -79,7 +86,7 @@ export default function CouponManager({ initialCoupons }) {
     try {
       const res = await deleteCoupon(id);
       if (res.success) {
-        window.location.reload();
+        router.refresh();
       } else {
         alert(res.message);
       }
@@ -209,6 +216,9 @@ export default function CouponManager({ initialCoupons }) {
         <DialogContent className="sm:max-w-[500px] bg-[#181818] border-zinc-800 text-white">
           <DialogHeader>
             <DialogTitle>Create New Coupon</DialogTitle>
+            <DialogDescription className="hidden">
+              Fill in the details to create a new coupon
+            </DialogDescription>
           </DialogHeader>
           <div className="py-4 space-y-4">
             <div className="space-y-2">

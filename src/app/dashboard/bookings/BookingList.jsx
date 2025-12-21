@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -149,6 +150,9 @@ export default function BookingList({ bookings }) {
         <DialogContent className="sm:max-w-2xl bg-[#181818] border-zinc-800 text-white max-h-[90vh] overflow-y-auto">
           <DialogHeader className="border-b border-zinc-800 pb-4">
             <DialogTitle>Booking Details #{selectedBooking?.id}</DialogTitle>
+            <DialogDescription className="hidden">
+              Details for booking #{selectedBooking?.id}
+            </DialogDescription>
           </DialogHeader>
 
           {selectedBooking && (

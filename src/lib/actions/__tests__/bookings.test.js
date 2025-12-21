@@ -6,7 +6,6 @@ jest.unmock('../bookings');
 jest.unmock('@/lib/actions/utils'); // unmock utils too just in case
 
 import Transaction from '@/lib/db/models/transaction';
-import Transaction from '@/lib/db/models/transaction';
 import { auth } from '@/lib/helpers/auth';
 import { getPricingConfig } from '@/lib/helpers/pricing';
 import { getDiscounts } from '@/lib/actions/discounts';
@@ -130,11 +129,15 @@ describe('Booking Actions', () => {
 
     it('should return error if not authenticated', async () => {
       auth.mockResolvedValue(null);
+      
+      const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
       const result = await createBookings(mockProperties);
 
       expect(result.success).toBe(false);
       expect(result.message).toMatch(/Unauthorized/);
+      
+      consoleSpy.mockRestore();
     });
   });
 
