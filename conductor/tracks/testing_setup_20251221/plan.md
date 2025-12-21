@@ -8,7 +8,7 @@
 - [x] Task: Conductor - User Manual Verification 'Setup & Configuration' (Protocol in workflow.md) [checkpoint: 230d8be]
 
 ## Phase 2: Test Utilities & Mocking
-- [ ] Task: Setup Standard Mocks
+- [x] Task: Setup Standard Mocks [43040cf]
 - [ ] Task: Create Custom Render
 - [ ] Task: Mock Next.js Navigation
 - [ ] Task: Conductor - User Manual Verification 'Test Utilities & Mocking' (Protocol in workflow.md)
