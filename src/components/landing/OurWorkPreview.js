@@ -1,43 +1,30 @@
 "use client";
+
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import LongForm from "./our-work/LongForm";
-import Photography from "./our-work/Photography";
-import ShortForm from "./our-work/ShortForm";
-import ThreeSixty from "./our-work/ThreeSixty";
+import MediaRenderer from "../portfolio/MediaRenderer";
 
 const OurWorkPreview = () => {
-  const [activeCategory, setActiveCategory] = useState("Photography");
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
 
-  const allWorkItems = [
-    { type: "photo", title: "Marina Penthouse", category: "Photography" },
-    { type: "photo", title: "Downtown Apartment", category: "Photography" },
-    { type: "photo", title: "Creek Harbour View", category: "Photography" },
-    { type: "360", title: "JBR Luxury Suite", category: "360°" },
-    { type: "360", title: "Palm Beachfront Villa", category: "360°" },
-    { type: "360", title: "Marina Walk Apartment", category: "360°" },
-    { type: "short-form", title: "Palm Villa Reel", category: "Short-form" },
-    { type: "short-form", title: "Marina Lifestyle", category: "Short-form" },
-    { type: "short-form", title: "Downtown Living", category: "Short-form" },
-    {
-      type: "long-form",
-      title: "Palm Villa Walkthrough",
-      category: "Long-form",
-    },
-    {
-      type: "long-form",
-      title: "Emirates Hills Estate",
-      category: "Long-form",
-    },
-    {
-      type: "long-form",
-      title: "Downtown Sky Collection",
-      category: "Long-form",
-    },
-  ];
-
-  const categories = ["Photography", "360°", "Short-form", "Long-form"];
+  useEffect(() => {
+    async function fetchTopWorks() {
+      try {
+        const res = await fetch("/api/our-works?limit=3");
+        if (res.ok) {
+          const data = await res.json();
+          setItems(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch works:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchTopWorks();
+  }, []);
 
   return (
     <section id="our-work" className="py-24 bg-secondary/20">
@@ -51,54 +38,51 @@ const OurWorkPreview = () => {
           </p>
         </div>
 
-        {/* Category pills */}
-        <div className="flex flex-wrap justify-center gap-2 mb-8 fade-in">
-          {categories.map((category) => (
-            <button
-              key={category}
-              onClick={() => setActiveCategory(category)}
-              className={`px-4 py-2 rounded-full text-sm transition-colors ${
-                activeCategory === category
-                  ? "bg-accent text-accent-foreground"
-                  : "bg-secondary hover:bg-secondary/80 text-foreground"
-              }`}
-            >
-              {category}
-            </button>
-          ))}
-        </div>
+        {loading
+          ? <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+              {[1, 2, 3].map((i) => (
+                <div
+                  key={i}
+                  className="aspect-[4/3] bg-muted animate-pulse rounded-xl"
+                />
+              ))}
+            </div>
+          : items.length > 0
+            ? <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+                {items.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className="group relative aspect-[4/3] bg-card rounded-xl overflow-hidden cursor-pointer fade-in shadow-lg"
+                    style={{ animationDelay: `${index * 0.1}s` }}
+                  >
+                    <MediaRenderer
+                      type={item.type}
+                      url={item.mediaContent}
+                      title={item.title}
+                    />
+                    <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                      <div>
+                        <p className="font-bold text-lg">{item.title}</p>
+                        <p className="text-sm text-muted-foreground">
+                          {item.subtitle}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            : <div className="text-center py-12 text-muted-foreground">
+                No works to display yet.
+              </div>}
 
-        {/* Work Components */}
-        <div className={activeCategory === "Photography" ? "block" : "hidden"}>
-          <Photography
-            items={allWorkItems.filter((i) => i.category === "Photography")}
-          />
-        </div>
-        <div className={activeCategory === "360°" ? "block" : "hidden"}>
-          <ThreeSixty
-            items={allWorkItems.filter((i) => i.category === "360°")}
-          />
-        </div>
-        <div className={activeCategory === "Short-form" ? "block" : "hidden"}>
-          <ShortForm
-            items={allWorkItems.filter((i) => i.category === "Short-form")}
-          />
-        </div>
-        <div className={activeCategory === "Long-form" ? "block" : "hidden"}>
-          <LongForm
-            items={allWorkItems.filter((i) => i.category === "Long-form")}
-          />
-        </div>
-
-        {/* Load More button */}
-        <div className="text-center">
+        <div className="text-center mt-8">
           <Link href="/portfolio">
             <Button
               size="lg"
               variant="outline"
-              className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+              className="border-accent text-accent hover:bg-accent hover:text-accent-foreground px-8"
             >
-              Load More
+              See All Work
             </Button>
           </Link>
         </div>
