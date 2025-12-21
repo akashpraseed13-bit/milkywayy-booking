@@ -1,0 +1,31 @@
+# Plan: Testing Infrastructure Setup (Jest + React Testing Library)
+
+## Phase 1: Setup & Configuration
+- [x] Task: Install Dependencies [4d3b689]
+- [ ] Task: Configure Jest
+- [ ] Task: Update Project Scripts
+- [ ] Task: Create Smoke Test
+- [ ] Task: Conductor - User Manual Verification 'Setup & Configuration' (Protocol in workflow.md)
+
+## Phase 2: Test Utilities & Mocking
+- [ ] Task: Setup Standard Mocks
+- [ ] Task: Create Custom Render
+- [ ] Task: Mock Next.js Navigation
+- [ ] Task: Conductor - User Manual Verification 'Test Utilities & Mocking' (Protocol in workflow.md)
+
+## Phase 3: Auth & API Testing
+- [ ] Task: Test Signin Page
+- [ ] Task: Test Admin API Route
+- [ ] Task: Conductor - User Manual Verification 'Auth & API Testing' (Protocol in workflow.md)
+
+## Phase 4: Customer Dashboard Testing
+- [ ] Task: Test Bookings Page
+- [ ] Task: Test Invoices Page
+- [ ] Task: Test Wallet Page
+- [ ] Task: Conductor - User Manual Verification 'Customer Dashboard Testing' (Protocol in workflow.md)
+
+## Phase 5: Admin Suite Testing
+- [ ] Task: Test Users Management
+- [ ] Task: Test Admin Bookings
+- [ ] Task: Test Discounts & Coupons
+- [ ] Task: Conductor - User Manual Verification 'Admin Suite Testing' (Protocol in workflow.md)
