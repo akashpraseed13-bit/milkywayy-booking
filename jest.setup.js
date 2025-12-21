@@ -37,26 +37,22 @@ global.IntersectionObserver = class IntersectionObserver {
 // Mock server actions
 jest.mock('./src/lib/actions/auth', () => ({
   logout: jest.fn(),
-  login: jest.fn(), // Assuming login is also there, though context only uses logout
+  login: jest.fn(),
 }))
 
-// Mock next/navigation
+// Mock Next.js Navigation
+const mockRouter = {
+  push: jest.fn(),
+  replace: jest.fn(),
+  prefetch: jest.fn(),
+  back: jest.fn(),
+  refresh: jest.fn(),
+};
+
 jest.mock('next/navigation', () => ({
-  useRouter() {
-    return {
-      push: jest.fn(),
-      replace: jest.fn(),
-      prefetch: jest.fn(),
-      back: jest.fn(),
-      refresh: jest.fn(),
-    }
-  },
-  usePathname() {
-    return ''
-  },
-  useSearchParams() {
-    return new URLSearchParams()
-  },
+  useRouter: () => mockRouter,
+  usePathname: () => '',
+  useSearchParams: () => new URLSearchParams(),
 }))
 
 // Mock bookings actions
