@@ -8,13 +8,13 @@
 - [x] Task: Implement `PATCH /api/admin/our-works/reorder` (Update order of multiple items). 68fe814
 - [x] Task: Conductor - User Manual Verification 'Database & API Foundation' (Protocol in workflow.md) 729e7f3
 
-## Phase 2: Admin Interface Implementation
+## Phase 2: Admin Interface Implementation [checkpoint: 73f1292]
 - [x] Task: Create `src/app/admin/portfolio/page.jsx` with a list view of all entries. ca42292
 - [x] Task: Implement "Create New Entry" modal/form with dynamic inputs based on media type. 76fea35
 - [x] Task: Integrate S3 upload for the `Image` type within the Admin form. 76fea35
 - [x] Task: Implement Visibility toggle and Delete action in the Admin list. 76fea35
 - [x] Task: Implement Drag-and-Drop reordering in the Admin table/list. b053f3b
-- [ ] Task: Conductor - User Manual Verification 'Admin Interface Implementation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Admin Interface Implementation' (Protocol in workflow.md) 73f1292
 
 ## Phase 3: Public Portfolio & Landing Page Integration
 - [ ] Task: Update the existing Landing Page "Our Work" section to fetch dynamic data (top 3 visible items).
