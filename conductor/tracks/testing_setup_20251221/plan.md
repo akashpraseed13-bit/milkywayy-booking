@@ -24,7 +24,7 @@
 - [x] Task: Test Bookings Page [71c4954]
 - [x] Task: Test Invoices Page [c343a74]
 - [x] Task: Test Wallet Page [e458566]
-- [ ] Task: Conductor - User Manual Verification 'Customer Dashboard Testing' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Customer Dashboard Testing' (Protocol in workflow.md) [checkpoint: e0c4cf8]
 - [ ] Task: Conductor - User Manual Verification 'Customer Dashboard Testing' (Protocol in workflow.md)
 
 ## Phase 5: Admin Suite Testing
