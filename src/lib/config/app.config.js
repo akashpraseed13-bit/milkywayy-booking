@@ -5,4 +5,11 @@ const USER_ROLES = {
   CUSTOMER: "CUSTOMER",
 };
 
-export { USER_ROLES };
+const OUR_WORK_TYPES = {
+  IMAGE: "IMAGE",
+  THREE_SIXTY: "360_VIEW",
+  VIDEO: "VIDEO",
+  SHORT_VIDEO: "SHORT_VIDEO",
+};
+
+export { USER_ROLES, OUR_WORK_TYPES };
