@@ -39,3 +39,21 @@ jest.mock('./src/lib/actions/auth', () => ({
   logout: jest.fn(),
   login: jest.fn(), // Assuming login is also there, though context only uses logout
 }))
+
+// Mock next/navigation
+jest.mock('next/navigation', () => ({
+  useRouter() {
+    return {
+      push: jest.fn(),
+      replace: jest.fn(),
+      prefetch: jest.fn(),
+      back: jest.fn(),
+    }
+  },
+  usePathname() {
+    return ''
+  },
+  useSearchParams() {
+    return new URLSearchParams()
+  },
+}))
