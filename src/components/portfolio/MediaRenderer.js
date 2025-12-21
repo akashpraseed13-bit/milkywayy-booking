@@ -22,7 +22,14 @@ export default function MediaRenderer({ type, url, title, className = "" }) {
     case OUR_WORK_TYPES.VIDEO:
       return (
         <div className={`relative w-full h-full bg-black ${className}`}>
-          <YouTubeEmbed url={url} width="100%" height="100%" />
+          <YouTubeEmbed
+            url={url}
+            width="100%"
+            height="100%"
+            placeholder={
+              <div className="w-full h-full bg-muted animate-pulse" />
+            }
+          />
         </div>
       );
 
@@ -31,7 +38,13 @@ export default function MediaRenderer({ type, url, title, className = "" }) {
         <div
           className={`relative w-full h-full bg-black flex justify-center ${className}`}
         >
-          <InstagramEmbed url={url} width={328} />
+          <InstagramEmbed
+            url={url}
+            width={328}
+            placeholder={
+              <div className="w-[328px] h-full bg-muted animate-pulse" />
+            }
+          />
         </div>
       );
 
