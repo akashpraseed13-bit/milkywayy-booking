@@ -33,28 +33,30 @@ export default function PortfolioPage() {
   const categories = [
     { label: "All", value: "ALL" },
     { label: "Photography", value: OUR_WORK_TYPES.IMAGE },
-    { label: "360° Views", value: OUR_WORK_TYPES.THREE_SIXTY },
-    { label: "Videos", value: OUR_WORK_TYPES.VIDEO },
-    { label: "Shorts", value: OUR_WORK_TYPES.SHORT_VIDEO },
+    { label: "360°", value: OUR_WORK_TYPES.THREE_SIXTY },
+    { label: "Short-form", value: OUR_WORK_TYPES.SHORT_VIDEO },
+    { label: "Long-form", value: OUR_WORK_TYPES.VIDEO },
   ];
 
   const renderGrid = (filteredItems) => (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-8">
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10 py-8">
       {filteredItems.map((item, index) => (
         <div
           key={item.id}
-          className="group relative aspect-video bg-card rounded-2xl overflow-hidden shadow-xl border border-white/10 fade-in"
+          className="group flex flex-col gap-4 fade-in"
           style={{ animationDelay: `${index * 0.05}s` }}
         >
-          <MediaRenderer
-            type={item.type}
-            url={item.mediaContent}
-            title={item.title}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6">
+          <div className="relative aspect-video bg-card rounded-2xl overflow-hidden shadow-xl border border-white/10">
+            <MediaRenderer
+              type={item.type}
+              url={item.mediaContent}
+              title={item.title}
+            />
+          </div>
+          <div className="px-2">
             <h3 className="font-bold text-xl text-white">{item.title}</h3>
             {item.subtitle && (
-              <p className="text-white/70 text-sm mt-1">{item.subtitle}</p>
+              <p className="text-white/60 text-sm mt-1">{item.subtitle}</p>
             )}
           </div>
         </div>
@@ -82,22 +84,23 @@ export default function PortfolioPage() {
           </div>
 
           {loading
-            ? <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-8">
+            ? <div className="grid grid-cols-1 md:grid-cols-3 gap-10 py-8">
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div
-                    key={i}
-                    className="aspect-video bg-white/5 animate-pulse rounded-2xl"
-                  />
+                  <div key={i} className="flex flex-col gap-4">
+                    <div className="aspect-video bg-white/5 animate-pulse rounded-2xl" />
+                    <div className="h-5 w-2/3 bg-white/5 animate-pulse rounded" />
+                    <div className="h-4 w-1/2 bg-white/5 animate-pulse rounded" />
+                  </div>
                 ))}
               </div>
             : <Tabs defaultValue="ALL" className="w-full">
                 <div className="overflow-x-auto pb-4 scrollbar-hide">
-                  <TabsList className="bg-white/5 border border-white/10 h-auto p-1 gap-1">
+                  <TabsList className="bg-white/5 border border-white/10 h-auto p-1.5 gap-1.5 rounded-full">
                     {categories.map((cat) => (
                       <TabsTrigger
                         key={cat.value}
                         value={cat.value}
-                        className="rounded-full px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-black transition-all"
+                        className="rounded-full px-8 py-2.5 data-[state=active]:bg-white data-[state=active]:text-black transition-all font-medium"
                       >
                         {cat.label}
                       </TabsTrigger>

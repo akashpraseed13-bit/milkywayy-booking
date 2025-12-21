@@ -3,16 +3,25 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { OUR_WORK_TYPES } from "@/lib/config/app.config";
 import MediaRenderer from "../portfolio/MediaRenderer";
 
 const OurWorkPreview = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [activeCategory, setActiveCategory] = useState(OUR_WORK_TYPES.IMAGE);
+
+  const categories = [
+    { label: "Photography", value: OUR_WORK_TYPES.IMAGE },
+    { label: "360°", value: OUR_WORK_TYPES.THREE_SIXTY },
+    { label: "Short-form", value: OUR_WORK_TYPES.SHORT_VIDEO },
+    { label: "Long-form", value: OUR_WORK_TYPES.VIDEO },
+  ];
 
   useEffect(() => {
-    async function fetchTopWorks() {
+    async function fetchWorks() {
       try {
-        const res = await fetch("/api/our-works?limit=3");
+        const res = await fetch("/api/our-works");
         if (res.ok) {
           const data = await res.json();
           setItems(data);
@@ -23,8 +32,12 @@ const OurWorkPreview = () => {
         setLoading(false);
       }
     }
-    fetchTopWorks();
+    fetchWorks();
   }, []);
+
+  const filteredItems = items
+    .filter((item) => item.type === activeCategory)
+    .slice(0, 3);
 
   return (
     <section id="our-work" className="py-24 bg-secondary/20">
@@ -38,44 +51,67 @@ const OurWorkPreview = () => {
           </p>
         </div>
 
+        {/* Category pills */}
+        <div className="flex flex-wrap justify-center gap-2 mb-12 fade-in">
+          {categories.map((category) => (
+            <button
+              key={category.value}
+              type="button"
+              onClick={() => setActiveCategory(category.value)}
+              className={`px-6 py-2.5 rounded-full text-sm font-medium transition-all ${
+                activeCategory === category.value
+                  ? "bg-accent text-accent-foreground shadow-lg scale-105"
+                  : "bg-secondary hover:bg-secondary/80 text-foreground"
+              }`}
+            >
+              {category.label}
+            </button>
+          ))}
+        </div>
+
         {loading
-          ? <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+          ? <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
               {[1, 2, 3].map((i) => (
-                <div
-                  key={i}
-                  className="aspect-[4/3] bg-muted animate-pulse rounded-xl"
-                />
+                <div key={i} className="flex flex-col gap-4">
+                  <div className="aspect-[4/3] bg-muted animate-pulse rounded-xl" />
+                  <div className="h-4 w-3/4 bg-muted animate-pulse rounded" />
+                  <div className="h-3 w-1/2 bg-muted animate-pulse rounded" />
+                </div>
               ))}
             </div>
-          : items.length > 0
-            ? <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-                {items.map((item, index) => (
+          : filteredItems.length > 0
+            ? <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
+                {filteredItems.map((item, index) => (
                   <div
                     key={item.id}
-                    className="group relative aspect-[4/3] bg-card rounded-xl overflow-hidden cursor-pointer fade-in shadow-lg"
+                    className="group flex flex-col gap-4 fade-in"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <MediaRenderer
-                      type={item.type}
-                      url={item.mediaContent}
-                      title={item.title}
-                    />
-                    <div className="absolute inset-0 bg-background/80 opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
-                      <div>
-                        <p className="font-bold text-lg">{item.title}</p>
+                    <div className="relative aspect-[4/3] bg-card rounded-xl overflow-hidden shadow-md">
+                      <MediaRenderer
+                        type={item.type}
+                        url={item.mediaContent}
+                        title={item.title}
+                      />
+                    </div>
+                    <div>
+                      <p className="font-bold text-lg text-foreground">
+                        {item.title}
+                      </p>
+                      {item.subtitle && (
                         <p className="text-sm text-muted-foreground">
                           {item.subtitle}
                         </p>
-                      </div>
+                      )}
                     </div>
                   </div>
                 ))}
               </div>
             : <div className="text-center py-12 text-muted-foreground">
-                No works to display yet.
+                No works to display in this category.
               </div>}
 
-        <div className="text-center mt-8">
+        <div className="text-center">
           <Link href="/portfolio">
             <Button
               size="lg"
