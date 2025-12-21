@@ -82,6 +82,18 @@ export default function AdminDashboard() {
             </CardContent>
           </Card>
         </Link>
+
+        <Link href="/admin/portfolio">
+          <Card className="hover:scale-105 transition-transform cursor-pointer h-full">
+            <CardHeader>
+              <CardTitle>Portfolio</CardTitle>
+            </CardHeader>
+            <Separator />
+            <CardContent className="pt-4">
+              <p>Manage 'Our Works' portfolio items.</p>
+            </CardContent>
+          </Card>
+        </Link>
       </div>
     </div>
   );
