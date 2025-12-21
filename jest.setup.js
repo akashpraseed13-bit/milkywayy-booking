@@ -48,6 +48,7 @@ jest.mock('next/navigation', () => ({
       replace: jest.fn(),
       prefetch: jest.fn(),
       back: jest.fn(),
+      refresh: jest.fn(),
     }
   },
   usePathname() {
@@ -56,4 +57,15 @@ jest.mock('next/navigation', () => ({
   useSearchParams() {
     return new URLSearchParams()
   },
+}))
+
+// Mock bookings actions
+jest.mock('./src/lib/actions/bookings', () => ({
+  cancelBooking: jest.fn(),
+  getBookings: jest.fn(),
+  getDrafts: jest.fn(),
+  saveDrafts: jest.fn(),
+  createTransactionAndPaymentIntent: jest.fn(),
+  verifyStripeSession: jest.fn(),
+  completeBooking: jest.fn(),
 }))
