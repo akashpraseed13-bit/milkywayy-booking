@@ -22,7 +22,7 @@
 
 ## Phase 4: Customer Dashboard Testing
 - [x] Task: Test Bookings Page [71c4954]
-- [ ] Task: Test Invoices Page
+- [x] Task: Test Invoices Page [c343a74]
 - [ ] Task: Test Wallet Page
 - [ ] Task: Conductor - User Manual Verification 'Customer Dashboard Testing' (Protocol in workflow.md)
 
