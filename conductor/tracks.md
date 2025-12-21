@@ -4,7 +4,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [~] Track: Setup testing infrastructure (Jest + React Testing Library)
+## [x] Track: Setup testing infrastructure (Jest + React Testing Library)
 *Link: [./conductor/tracks/testing_setup_20251221/](./conductor/tracks/testing_setup_20251221/)*
 
 ---
