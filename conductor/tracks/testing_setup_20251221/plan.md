@@ -3,7 +3,7 @@
 ## Phase 1: Setup & Configuration
 - [x] Task: Install Dependencies [4d3b689]
 - [x] Task: Configure Jest [31fc71a]
-- [ ] Task: Update Project Scripts
+- [x] Task: Update Project Scripts [4634c1e]
 - [ ] Task: Create Smoke Test
 - [ ] Task: Conductor - User Manual Verification 'Setup & Configuration' (Protocol in workflow.md)
 
