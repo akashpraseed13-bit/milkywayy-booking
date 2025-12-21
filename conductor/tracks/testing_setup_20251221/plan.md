@@ -31,5 +31,4 @@
 - [x] Task: Test Users Management [20394b1]
 - [x] Task: Test Admin Bookings [a15dbd6]
 - [x] Task: Test Discounts & Coupons [1afe07f]
-- [ ] Task: Conductor - User Manual Verification 'Admin Suite Testing' (Protocol in workflow.md)
-- [ ] Task: Conductor - User Manual Verification 'Admin Suite Testing' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Admin Suite Testing' (Protocol in workflow.md) [checkpoint: 70b2861]
