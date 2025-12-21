@@ -1,0 +1,130 @@
+"use client";
+
+import { useEffect, useState } from "react";
+import Footer from "@/components/Footer";
+import AnnouncementBar from "@/components/landing/AnnouncementBar";
+import NewNavbar from "@/components/NewNavbar";
+import MediaRenderer from "@/components/portfolio/MediaRenderer";
+import StarBackground from "@/components/StarBackground";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { OUR_WORK_TYPES } from "@/lib/config/app.config";
+
+export default function PortfolioPage() {
+  const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchWorks() {
+      try {
+        const res = await fetch("/api/our-works");
+        if (res.ok) {
+          const data = await res.json();
+          setItems(data);
+        }
+      } catch (error) {
+        console.error("Failed to fetch works:", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchWorks();
+  }, []);
+
+  const categories = [
+    { label: "All", value: "ALL" },
+    { label: "Photography", value: OUR_WORK_TYPES.IMAGE },
+    { label: "360° Views", value: OUR_WORK_TYPES.THREE_SIXTY },
+    { label: "Videos", value: OUR_WORK_TYPES.VIDEO },
+    { label: "Shorts", value: OUR_WORK_TYPES.SHORT_VIDEO },
+  ];
+
+  const renderGrid = (filteredItems) => (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 py-8">
+      {filteredItems.map((item, index) => (
+        <div
+          key={item.id}
+          className="group relative aspect-video bg-card rounded-2xl overflow-hidden shadow-xl border border-white/10 fade-in"
+          style={{ animationDelay: `${index * 0.05}s` }}
+        >
+          <MediaRenderer
+            type={item.type}
+            url={item.mediaContent}
+            title={item.title}
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-6">
+            <h3 className="font-bold text-xl text-white">{item.title}</h3>
+            {item.subtitle && (
+              <p className="text-white/70 text-sm mt-1">{item.subtitle}</p>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+
+  return (
+    <div className="relative min-h-screen text-white bg-background">
+      <StarBackground />
+      <div className="relative z-10">
+        <div className="fixed top-0 left-0 right-0 z-50">
+          <AnnouncementBar />
+          <NewNavbar />
+        </div>
+
+        <main className="pt-40 pb-24 container mx-auto px-6">
+          <div className="max-w-3xl mb-12">
+            <h1 className="text-4xl md:text-6xl font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-white to-white/50">
+              Our Portfolio
+            </h1>
+            <p className="text-xl text-muted-foreground">
+              A collection of our premium real estate media across the UAE.
+            </p>
+          </div>
+
+          {loading
+            ? <div className="grid grid-cols-1 md:grid-cols-3 gap-8 py-8">
+                {[1, 2, 3, 4, 5, 6].map((i) => (
+                  <div
+                    key={i}
+                    className="aspect-video bg-white/5 animate-pulse rounded-2xl"
+                  />
+                ))}
+              </div>
+            : <Tabs defaultValue="ALL" className="w-full">
+                <div className="overflow-x-auto pb-4 scrollbar-hide">
+                  <TabsList className="bg-white/5 border border-white/10 h-auto p-1 gap-1">
+                    {categories.map((cat) => (
+                      <TabsTrigger
+                        key={cat.value}
+                        value={cat.value}
+                        className="rounded-full px-6 py-2.5 data-[state=active]:bg-white data-[state=active]:text-black transition-all"
+                      >
+                        {cat.label}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                </div>
+
+                <TabsContent value="ALL">{renderGrid(items)}</TabsContent>
+
+                {categories.slice(1).map((cat) => (
+                  <TabsContent key={cat.value} value={cat.value}>
+                    {renderGrid(items.filter((i) => i.type === cat.value))}
+                  </TabsContent>
+                ))}
+
+                {!loading && items.length === 0 && (
+                  <div className="text-center py-24 text-muted-foreground bg-white/5 rounded-3xl border border-white/5">
+                    <p className="text-lg">
+                      No entries found in this category.
+                    </p>
+                  </div>
+                )}
+              </Tabs>}
+        </main>
+
+        <Footer />
+      </div>
+    </div>
+  );
+}
