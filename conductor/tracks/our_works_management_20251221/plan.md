@@ -2,7 +2,7 @@
 
 ## Phase 1: Database & API Foundation
 - [x] Task: Create Sequelize migration and model for `OurWork` (fields: id, title, subtitle, type, media_content, order, is_visible). 424f8f4
-- [ ] Task: Implement `GET /api/our-works` public endpoint (fetch top 3 for landing page or full filtered list for portfolio).
+- [x] Task: Implement `GET /api/our-works` public endpoint (fetch top 3 for landing page or full filtered list for portfolio). c44415e
 - [ ] Task: Implement `POST /api/admin/our-works` endpoint (Create entry with validation).
 - [ ] Task: Implement `PUT /api/admin/our-works/[id]` and `DELETE /api/admin/our-works/[id]` (Update/Delete entries).
 - [ ] Task: Implement `PATCH /api/admin/our-works/reorder` (Update order of multiple items).
