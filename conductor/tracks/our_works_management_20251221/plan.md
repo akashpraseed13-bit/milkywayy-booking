@@ -1,12 +1,12 @@
 # Plan: Our Works Management & Portfolio Page
 
-## Phase 1: Database & API Foundation
+## Phase 1: Database & API Foundation [checkpoint: 729e7f3]
 - [x] Task: Create Sequelize migration and model for `OurWork` (fields: id, title, subtitle, type, media_content, order, is_visible). 424f8f4
 - [x] Task: Implement `GET /api/our-works` public endpoint (fetch top 3 for landing page or full filtered list for portfolio). c44415e
 - [x] Task: Implement `POST /api/admin/our-works` endpoint (Create entry with validation). db1ef94
 - [x] Task: Implement `PUT /api/admin/our-works/[id]` and `DELETE /api/admin/our-works/[id]` (Update/Delete entries). f8d16ed
 - [x] Task: Implement `PATCH /api/admin/our-works/reorder` (Update order of multiple items). 68fe814
-- [ ] Task: Conductor - User Manual Verification 'Database & API Foundation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Database & API Foundation' (Protocol in workflow.md) 729e7f3
 
 ## Phase 2: Admin Interface Implementation
 - [ ] Task: Create `src/app/admin/portfolio/page.jsx` with a list view of all entries.
