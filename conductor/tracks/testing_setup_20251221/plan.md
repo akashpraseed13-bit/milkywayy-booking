@@ -28,7 +28,7 @@
 - [ ] Task: Conductor - User Manual Verification 'Customer Dashboard Testing' (Protocol in workflow.md)
 
 ## Phase 5: Admin Suite Testing
-- [ ] Task: Test Users Management
+- [x] Task: Test Users Management [20394b1]
 - [ ] Task: Test Admin Bookings
 - [ ] Task: Test Discounts & Coupons
 - [ ] Task: Conductor - User Manual Verification 'Admin Suite Testing' (Protocol in workflow.md)
