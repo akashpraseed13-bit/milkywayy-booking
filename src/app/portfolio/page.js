@@ -46,7 +46,7 @@ export default function PortfolioPage() {
           className="group flex flex-col gap-4 fade-in mx-auto"
           style={{ animationDelay: `${index * 0.05}s` }}
         >
-          <div className={`relative w-fit ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} bg-card rounded-2xl overflow-hidden shadow-xl border border-white/10`}>
+          <div className={`relative min-w-[60vw] md:min-w-[40vw] lg:min-w-[25vw] ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} bg-card rounded-2xl overflow-hidden shadow-xl border border-white/10`}>
             <MediaRenderer
               type={item.type}
               url={item.mediaContent}

@@ -87,7 +87,7 @@ const OurWorkPreview = () => {
                     className="group flex flex-col gap-4 fade-in mx-auto"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <div className={`relative ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} bg-card rounded-xl overflow-hidden shadow-md`}>
+                    <div className={`relative ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} min-w-[40vw] lg:min-w-[25vw] bg-card rounded-xl overflow-hidden shadow-md`}>
                       <MediaRenderer
                         type={item.type}
                         url={item.mediaContent}
