@@ -17,12 +17,12 @@ Update the frontend components to display and handle hourly slots instead of gen
 - [x] Task: Implement visual validation/disabling logic in the UI for slots that don't fit the required duration or overlap. 4fed7d2
 - [x] Task: Conductor - User Manual Verification 'Phase 2: UI/UX Transition - Hourly Picker' (Protocol in workflow.md) 4fed7d2
 
-## Phase 3: Backend Integration & Validation
+## Phase 3: Backend Integration & Validation [checkpoint: f6c12a2]
 Ensure the backend correctly processes, validates, and stores the new hourly booking data.
 
 - [x] Task: Update the booking API/Schema to support start-time and duration fields (if not already present). d60906f
 - [x] Task: Implement server-side validation to ensure requested time blocks are actually available (preventing race conditions). 45a2d7f
-- [~] Task: Conductor - User Manual Verification 'Phase 3: Backend Integration & Validation' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 3: Backend Integration & Validation' (Protocol in workflow.md) f6c12a2
 
 ## Phase 4: Final Refinement & Mobile Optimization
 Polish the experience and ensure it works perfectly across all devices.
