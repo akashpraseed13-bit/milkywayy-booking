@@ -9,7 +9,7 @@ Establish the foundational logic for duration calculation and availability check
 - [x] Task: Create a utility function to determine available time slots based on existing bookings and duration requirements. 342d473
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Logic & Core Utility Setup' (Protocol in workflow.md) 3a6058c
 
-## Phase 2: UI/UX Transition - Hourly Picker
+## Phase 2: UI/UX Transition - Hourly Picker [checkpoint: 5d1c107]
 Update the frontend components to display and handle hourly slots instead of general time periods.
 
 - [x] Task: Modify the booking state management to store specific start times and calculated durations. b3f2bf6
