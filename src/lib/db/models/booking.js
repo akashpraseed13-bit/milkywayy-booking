@@ -48,6 +48,11 @@ const Booking = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: true,
     },
+    startTime: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      field: "start_time",
+    },
     duration: {
       type: DataTypes.INTEGER,
       allowNull: false,
