@@ -32,8 +32,8 @@
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Landing Page Carousel Implementation' (Protocol in workflow.md)
 
 ## Phase 4: Final Polishing & Verification
-- [ ] Task: Test Backward Compatibility
-    - [ ] Sub-task: Verify that existing single-image entries (stored as strings) still work correctly.
-- [ ] Task: Final UI/UX Polish
-    - [ ] Sub-task: Ensure smooth transitions and hover effects on landing page.
-- [ ] Task: Conductor - User Manual Verification 'Phase 4: Final Polishing & Verification' (Protocol in workflow.md)
+- [x] Task: Test Backward Compatibility e46b4fd
+    - [x] Sub-task: Verify that existing single-image entries (stored as strings) still work correctly.
+- [x] Task: Final UI/UX Polish e46b4fd
+    - [x] Sub-task: Ensure smooth transitions and hover effects on landing page.
+- [x] Task: Conductor - User Manual Verification 'Phase 4: Final Polishing & Verification' (Protocol in workflow.md) e46b4fd
