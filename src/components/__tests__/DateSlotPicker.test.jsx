@@ -29,7 +29,10 @@ describe('DateSlotPicker', () => {
     const input = screen.getByPlaceholderText(/Select Date & Time/i);
     fireEvent.click(input);
 
-    expect(screen.getByText(/Select Date & Time/i)).toBeInTheDocument();
+    await waitFor(() => {
+        expect(screen.getByText(/Select Date & Time/i)).toBeInTheDocument();
+    });
+    
     expect(screen.getByText(/Available Slots/i)).toBeInTheDocument();
   });
 
@@ -45,8 +48,9 @@ describe('DateSlotPicker', () => {
 
     fireEvent.click(screen.getByPlaceholderText(/Select Date & Time/i));
 
-    // Check for some hourly slots
-    expect(screen.getByText('10:00 AM')).toBeInTheDocument();
+    await waitFor(() => {
+        expect(screen.getByText('10:00 AM')).toBeInTheDocument();
+    });
     expect(screen.getByText('05:30 PM')).toBeInTheDocument();
   });
 
@@ -64,6 +68,10 @@ describe('DateSlotPicker', () => {
     );
 
     fireEvent.click(screen.getByPlaceholderText(/Select Date & Time/i));
+
+    await waitFor(() => {
+        expect(screen.getByText('02:00 PM')).toBeInTheDocument();
+    });
 
     const slot1400 = screen.getByText('02:00 PM').closest('button');
     const slot1500 = screen.getByText('03:00 PM').closest('button');
@@ -87,6 +95,10 @@ describe('DateSlotPicker', () => {
     );
 
     fireEvent.click(screen.getByPlaceholderText(/Select Date & Time/i));
+
+    await waitFor(() => {
+        expect(screen.getByText('11:00 AM')).toBeInTheDocument();
+    });
 
     const slot1100 = screen.getByText('11:00 AM').closest('button');
     const slot1130 = screen.getByText('11:30 AM').closest('button');

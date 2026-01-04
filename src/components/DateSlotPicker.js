@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogFooter,
   DialogHeader,
   DialogTitle,
@@ -289,6 +290,9 @@ export default function DateSlotPicker({
         <DialogContent className="sm:max-w-2xl bg-background text-foreground p-0 gap-0 overflow-hidden">
           <DialogHeader className="p-6 border-b border-zinc-800">
             <DialogTitle>Select Date & Time</DialogTitle>
+            <DialogDescription className="sr-only">
+              Choose a date and a time slot for your booking.
+            </DialogDescription>
           </DialogHeader>
 
           <div className="grid grid-cols-1 md:grid-cols-2">
