@@ -28,6 +28,33 @@ const REVERSE_SLOT_MAPPING = {
   3: "evening",
 };
 
+const HOURLY_SLOTS = [
+  "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
+  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
+];
+
+const getTimeSlots = (startTime, durationHours) => {
+  if (!startTime) return [];
+  
+  // Handle legacy slots
+  if (startTime === 'morning') return ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30'];
+  if (startTime === 'afternoon') return ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
+  if (startTime === 'evening') return ['16:00', '16:30', '17:00', '17:30'];
+
+  const startIndex = HOURLY_SLOTS.indexOf(startTime);
+  if (startIndex === -1) return [];
+
+  const slots = [];
+  const numSlots = durationHours * 2;
+  for (let i = 0; i < numSlots; i++) {
+    const idx = startIndex + i;
+    if (idx < HOURLY_SLOTS.length) {
+      slots.push(HOURLY_SLOTS[idx]);
+    }
+  }
+  return slots;
+};
+
 const isSlotBlocked = (booking) => {
   // If confirmed, it's blocked
   if (booking.status === "CONFIRMED") return true;
@@ -67,20 +94,19 @@ const getUnavailableSlotsHandler = async (date) => {
       include: [{ model: Transaction, as: "transaction" }],
     });
 
-    const blockedSlots = bookings
-      .filter((b) => {
-        // If it's the current user's draft, it doesn't count as unavailable for them
-        if (
-          currentUserId &&
-          b.userId === currentUserId &&
-          b.status === "DRAFT"
-        ) {
-          return false;
-        }
-        return isSlotBlocked(b);
-      })
-      .map((b) => REVERSE_SLOT_MAPPING[b.slot])
-      .filter(Boolean);
+    const blockedSlots = [];
+    bookings.forEach((b) => {
+      // If it's the current user's draft, it doesn't count as unavailable for them
+      if (currentUserId && b.userId === currentUserId && b.status === "DRAFT") {
+        return;
+      }
+      if (isSlotBlocked(b)) {
+        const bStartTime = b.startTime || REVERSE_SLOT_MAPPING[b.slot];
+        const bDuration = b.duration || 1;
+        const bSlots = getTimeSlots(bStartTime, bDuration);
+        blockedSlots.push(...bSlots);
+      }
+    });
 
     // Return unique slots
     return [...new Set(blockedSlots)];
@@ -120,19 +146,12 @@ const getAvailabilityForRangeHandler = async (startDate, endDate) => {
         if (!availabilityMap[dateStr]) {
           availabilityMap[dateStr] = new Set();
         }
-        const slotName = REVERSE_SLOT_MAPPING[b.slot];
-        if (slotName) {
-          availabilityMap[dateStr].add(slotName);
-          // Block subsequent slots based on duration
-          const duration = b.duration || 1;
-          for (let i = 1; i < duration; i++) {
-            const nextSlot = b.slot + i;
-            const nextSlotName = REVERSE_SLOT_MAPPING[nextSlot];
-            if (nextSlotName) {
-              availabilityMap[dateStr].add(nextSlotName);
-            }
-          }
-        }
+        
+        const bStartTime = b.startTime || REVERSE_SLOT_MAPPING[b.slot];
+        const bDuration = b.duration || 1;
+        const bSlots = getTimeSlots(bStartTime, bDuration);
+        
+        bSlots.forEach(slot => availabilityMap[dateStr].add(slot));
       }
     });
 
@@ -156,14 +175,13 @@ const checkAvailability = async (properties, excludeBookingIds = []) => {
   const pricingConfig = await getPricingConfig();
 
   for (const property of properties) {
-    if (!property.preferredDate || !property.timeSlot) continue;
+    if (!property.preferredDate) continue;
+    const startTime = property.startTime || property.timeSlot;
+    if (!startTime) continue;
 
-    const startSlot = SLOT_MAPPING[property.timeSlot];
-    if (!startSlot) continue;
-
-    // Calculate duration
-    let duration = 1;
-    if (property.propertyType && property.propertySize && property.services) {
+    // Calculate duration (if not provided)
+    let duration = property.duration || 1;
+    if (!property.duration && property.propertyType && property.propertySize && property.services) {
       const typeConfig = pricingConfig[property.propertyType];
       const sizeConfig = typeConfig?.sizes.find(
         (s) => s.label === property.propertySize,
@@ -180,20 +198,11 @@ const checkAvailability = async (properties, excludeBookingIds = []) => {
       }
     }
 
-    const requiredSlots = [];
-    for (let i = 0; i < duration; i++) {
-      requiredSlots.push(startSlot + i);
-    }
+    const requestedSlots = getTimeSlots(startTime, duration);
+    if (requestedSlots.length === 0) continue;
 
     const whereClause = {
       date: property.preferredDate,
-      // Check if ANY of the required slots are taken
-      // We need to find bookings that overlap with our required slots.
-      // A booking overlaps if:
-      // booking.slot <= requiredEnd AND (booking.slot + booking.duration - 1) >= requiredStart
-      // But here we are checking specific slots.
-      // Simpler: Check if any existing booking covers any of our required slots.
-      // Existing booking covers slot S if booking.slot <= S < booking.slot + booking.duration.
     };
 
     if (excludeBookingIds.length > 0) {
@@ -201,28 +210,24 @@ const checkAvailability = async (properties, excludeBookingIds = []) => {
     }
 
     const existingBookings = await Booking.findAll({
-      where: {
-        date: property.preferredDate,
-        [Op.and]: [whereClause.id ? { id: whereClause.id } : {}],
-      },
+      where: whereClause,
       include: [{ model: Transaction, as: "transaction" }],
     });
 
-    // Filter bookings that overlap
-    const overlappingBookings = existingBookings.filter((b) => {
-      const bStart = b.slot;
-      const bEnd = b.slot + (b.duration || 1) - 1;
-      const reqStart = startSlot;
-      const reqEnd = startSlot + duration - 1;
+    const isBlocked = existingBookings.some((b) => {
+      if (!isSlotBlocked(b)) return false;
 
-      return Math.max(bStart, reqStart) <= Math.min(bEnd, reqEnd);
+      const bStartTime = b.startTime || REVERSE_SLOT_MAPPING[b.slot];
+      const bDuration = b.duration || 1;
+      const bSlots = getTimeSlots(bStartTime, bDuration);
+
+      // Check for intersection
+      return requestedSlots.some(slot => bSlots.includes(slot));
     });
-
-    const isBlocked = overlappingBookings.some(isSlotBlocked);
 
     if (isBlocked) {
       throw new Error(
-        `Slot ${property.timeSlot} on ${property.preferredDate} is no longer available.`,
+        `Selected time on ${property.preferredDate} is no longer available.`,
       );
     }
   }
@@ -358,8 +363,9 @@ const saveDraftsHandler = async (properties) => {
         email: property.contactEmail,
       },
       date: property.preferredDate || null,
+      startTime: property.startTime || (property.timeSlot === 'morning' ? '10:00' : property.timeSlot === 'afternoon' ? '13:00' : property.timeSlot === 'evening' ? '16:00' : null),
       slot: SLOT_MAPPING[property.timeSlot] || null,
-      duration: duration,
+      duration: property.duration || duration,
       total: price,
       status: "DRAFT",
     });
@@ -400,7 +406,9 @@ const createTransactionAndPaymentIntentHandler = async (
   // We need to reconstruct the properties object for checkAvailability
   const propertiesToCheck = bookings.map((b) => ({
     preferredDate: b.date,
+    startTime: b.startTime,
     timeSlot: REVERSE_SLOT_MAPPING[b.slot],
+    duration: b.duration,
   }));
   await checkAvailability(propertiesToCheck, bookingIds);
 

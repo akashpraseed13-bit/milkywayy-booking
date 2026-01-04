@@ -76,7 +76,8 @@ describe('Booking Actions', () => {
       propertySize: '1 Bed',
       services: ['Photography'],
       preferredDate: '2023-12-25',
-      timeSlot: 'morning',
+      startTime: '10:00',
+      duration: 2,
       building: 'Tower A',
       community: 'Downtown',
       unitNumber: '101',
@@ -109,7 +110,7 @@ describe('Booking Actions', () => {
   });
 
   describe('createBookings', () => {
-    it('should create bookings successfully', async () => {
+    it('should create bookings successfully with startTime and duration', async () => {
       Booking.create.mockResolvedValue({ id: 1, get: () => ({ id: 1 }) });
 
       const result = await createBookings(mockProperties);
@@ -123,8 +124,28 @@ describe('Booking Actions', () => {
       expect(Booking.create).toHaveBeenCalledWith(expect.objectContaining({
         userId: mockUserId,
         status: 'DRAFT',
+        startTime: '10:00',
+        duration: 2,
         total: 500,
       }));
+    });
+
+    it('should fail if requested slots are occupied', async () => {
+      // Mock existing booking at 11:00 (overlaps with 10:00-12:00)
+      const mockExistingBooking = {
+        userId: 'other-user',
+        status: 'CONFIRMED',
+        date: '2023-12-25',
+        startTime: '11:00',
+        duration: 1,
+      };
+      
+      Booking.findAll.mockResolvedValue([mockExistingBooking]);
+
+      const result = await createBookings(mockProperties);
+
+      expect(result.success).toBe(false);
+      expect(result.message).toMatch(/no longer available/i);
     });
 
     it('should return error if not authenticated', async () => {

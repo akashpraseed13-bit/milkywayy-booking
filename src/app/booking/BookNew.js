@@ -101,9 +101,10 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                     ? "evening"
                     : "",
             startTime: 
+              draft.startTime || (
               draft.slot === 1 ? "10:00" :
               draft.slot === 2 ? "13:00" :
-              draft.slot === 3 ? "16:00" : "",
+              draft.slot === 3 ? "16:00" : ""),
             duration: draft.duration || 0,
             building: draft.propertyDetails?.building || "",
             community: draft.propertyDetails?.community || "",
