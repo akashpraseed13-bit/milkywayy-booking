@@ -4,6 +4,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
+## [x] Track: Multi-Image Carousel for Our Works 7d1e153
+*Link: [./conductor/tracks/our_works_carousel_20260105/](./conductor/tracks/our_works_carousel_20260105/)*
 
-## [~] Track: create a new page in the admin panel which can be used to set the list of 'our works' in the landing page
-*Link: [./conductor/tracks/our_works_management_20251221/](./conductor/tracks/our_works_management_20251221/)*
+
