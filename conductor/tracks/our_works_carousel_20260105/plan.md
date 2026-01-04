@@ -21,14 +21,14 @@
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Admin UI Enhancements' (Protocol in workflow.md)
 
 ## Phase 3: Landing Page Carousel Implementation
-- [ ] Task: Create `ImageCarousel` component
-    - [ ] Sub-task: Implement a simple React-based carousel with Next/Prev buttons and slide transitions.
-    - [ ] Sub-task: Add swipe gesture support for mobile.
-- [ ] Task: Update `OurWorkPreview.js`
-    - [ ] Sub-task: Detect if `mediaContent` is a JSON array.
-    - [ ] Sub-task: Render `ImageCarousel` instead of a single image when multiple items are present.
-- [ ] Task: Update `MediaRenderer.js`
-    - [ ] Sub-task: Ensure it handles both string and array inputs gracefully.
+- [x] Task: Create `ImageCarousel` component 8d828f7
+    - [x] Sub-task: Implement a simple React-based carousel with Next/Prev buttons and slide transitions.
+    - [x] Sub-task: Add swipe gesture support for mobile.
+- [x] Task: Update `OurWorkPreview.js` 8d828f7
+    - [x] Sub-task: Detect if `mediaContent` is a JSON array.
+    - [x] Sub-task: Render `ImageCarousel` instead of a single image when multiple items are present.
+- [x] Task: Update `MediaRenderer.js` 8d828f7
+    - [x] Sub-task: Ensure it handles both string and array inputs gracefully.
 - [ ] Task: Conductor - User Manual Verification 'Phase 3: Landing Page Carousel Implementation' (Protocol in workflow.md)
 
 ## Phase 4: Final Polishing & Verification
