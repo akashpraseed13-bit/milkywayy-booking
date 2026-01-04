@@ -20,9 +20,9 @@ Update the frontend components to display and handle hourly slots instead of gen
 ## Phase 3: Backend Integration & Validation
 Ensure the backend correctly processes, validates, and stores the new hourly booking data.
 
-- [ ] Task: Update the booking API/Schema to support start-time and duration fields (if not already present).
-- [ ] Task: Implement server-side validation to ensure requested time blocks are actually available (preventing race conditions).
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Backend Integration & Validation' (Protocol in workflow.md)
+- [x] Task: Update the booking API/Schema to support start-time and duration fields (if not already present). d60906f
+- [x] Task: Implement server-side validation to ensure requested time blocks are actually available (preventing race conditions). 45a2d7f
+- [~] Task: Conductor - User Manual Verification 'Phase 3: Backend Integration & Validation' (Protocol in workflow.md)
 
 ## Phase 4: Final Refinement & Mobile Optimization
 Polish the experience and ensure it works perfectly across all devices.
