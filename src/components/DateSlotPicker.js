@@ -287,7 +287,7 @@ export default function DateSlotPicker({
       </div>
 
       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-        <DialogContent className="sm:max-w-2xl bg-background text-foreground p-0 gap-0 overflow-hidden">
+        <DialogContent className="sm:max-w-2xl bg-background text-foreground p-0 gap-0 overflow-hidden max-h-[90vh] overflow-y-auto">
           <DialogHeader className="p-6 border-b border-zinc-800">
             <DialogTitle>Select Date & Time</DialogTitle>
             <DialogDescription className="sr-only">
@@ -371,14 +371,14 @@ export default function DateSlotPicker({
             </div>
 
             {/* Slot Selection Section */}
-            <div className="border-t md:border-t-0 md:border-l border-zinc-800 p-6 flex flex-col bg-background">
+            <div className="border-t md:border-t-0 md:border-l border-zinc-800 p-6 flex flex-col bg-background max-h-[400px] md:max-h-none overflow-y-auto">
               <h3 className="text-md font-semibold text-foreground mb-4 flex items-center gap-2">
                 <Clock size={18} />
                 Available Slots
               </h3>
 
               {!date
-                ? <div className="flex-1 flex items-center justify-center text-gray-500 text-sm italic">
+                ? <div className="flex-1 flex items-center justify-center text-gray-500 text-sm italic min-h-[100px]">
                     Select a date to view slots
                   </div>
                 : <div className="space-y-3">
