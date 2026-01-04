@@ -1,6 +1,6 @@
 # Implementation Plan: Our Works Multi-Image Carousel
 
-## Phase 1: Backend & Model Adjustments
+## Phase 1: Backend & Model Adjustments [checkpoint: e1593ee]
 - [x] Task: Update `OurWork` model logic 3957083
     - [x] Sub-task: Add logic to handle JSON stringification/parsing for `mediaContent` when type is `IMAGE`.
 - [x] Task: Update Admin API Handlers 3957083
