@@ -17,4 +17,5 @@ Milkywayy Booking is a comprehensive booking and management platform designed to
 - **Interactive Booking Flow:** A user-friendly calendar interface for selecting dates and time slots, integrated with real-time availability.
 - **Customer Dashboard:** A centralized portal for users to view their booking history, download invoices, and manage their profile.
 - **Admin Management Suite:** A comprehensive control panel for managing users, configuring discounts/coupons, adjusting pricings, and overseeing system status.
+- **Portfolio Management:** Tools for administrators to showcase their work (Images, Videos, 360 Views) and a dedicated public page for customers to explore the portfolio.
 - **Payment Integration:** Secure checkout process leveraging Stripe for transaction handling.
