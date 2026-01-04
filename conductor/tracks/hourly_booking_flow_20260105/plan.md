@@ -13,8 +13,8 @@ Establish the foundational logic for duration calculation and availability check
 Update the frontend components to display and handle hourly slots instead of general time periods.
 
 - [x] Task: Modify the booking state management to store specific start times and calculated durations. b3f2bf6
-- [ ] Task: Refactor `DateSlotPicker` (or relevant component) to render 30-minute intervals from 10:00 AM to 6:00 PM.
-- [ ] Task: Implement visual validation/disabling logic in the UI for slots that don't fit the required duration or overlap.
+- [x] Task: Refactor `DateSlotPicker` (or relevant component) to render 30-minute intervals from 10:00 AM to 6:00 PM. 237dd71
+- [x] Task: Implement visual validation/disabling logic in the UI for slots that don't fit the required duration or overlap. 237dd71
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: UI/UX Transition - Hourly Picker' (Protocol in workflow.md)
 
 ## Phase 3: Backend Integration & Validation
