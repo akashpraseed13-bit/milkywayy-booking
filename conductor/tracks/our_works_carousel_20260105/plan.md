@@ -20,7 +20,7 @@
     - [x] Sub-task: Add "Remove" button to each thumbnail.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Admin UI Enhancements' (Protocol in workflow.md)
 
-## Phase 3: Landing Page Carousel Implementation
+## Phase 3: Landing Page Carousel Implementation [checkpoint: 4c3a031]
 - [x] Task: Create `ImageCarousel` component 8d828f7
     - [x] Sub-task: Implement a simple React-based carousel with Next/Prev buttons and slide transitions.
     - [x] Sub-task: Add swipe gesture support for mobile.
