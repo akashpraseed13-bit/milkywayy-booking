@@ -9,14 +9,14 @@
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Backend & Model Adjustments' (Protocol in workflow.md)
 
 ## Phase 2: Admin UI Enhancements
-- [ ] Task: Update `PortfolioForm.jsx` for Multi-Image Support
-    - [ ] Sub-task: Modify file upload logic to allow multiple files for `IMAGE` type.
-    - [ ] Sub-task: Implement thumbnail grid for uploaded images.
-- [ ] Task: Implement Image Reordering
-    - [ ] Sub-task: Integrate `@hello-pangea/dnd` for dragging thumbnails.
-    - [ ] Sub-task: Update state on drag end to reflect new order.
-- [ ] Task: Implement Individual Image Deletion
-    - [ ] Sub-task: Add "Remove" button to each thumbnail.
+- [x] Task: Update `PortfolioForm.jsx` for Multi-Image Support 18c4a50
+    - [x] Sub-task: Modify file upload logic to allow multiple files for `IMAGE` type.
+    - [x] Sub-task: Implement thumbnail grid for uploaded images.
+- [x] Task: Implement Image Reordering 18c4a50
+    - [x] Sub-task: Integrate `@hello-pangea/dnd` for dragging thumbnails.
+    - [x] Sub-task: Update state on drag end to reflect new order.
+- [x] Task: Implement Individual Image Deletion 18c4a50
+    - [x] Sub-task: Add "Remove" button to each thumbnail.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Admin UI Enhancements' (Protocol in workflow.md)
 
 ## Phase 3: Landing Page Carousel Implementation

@@ -1,7 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Upload } from "lucide-react";
+import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
+import { Loader2, Upload, X, GripVertical } from "lucide-react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
@@ -22,7 +23,10 @@ const formSchema = z.object({
   title: z.string().min(2, "Title must be at least 2 characters"),
   subtitle: z.string().optional(),
   type: z.enum(Object.values(OUR_WORK_TYPES)),
-  mediaContent: z.string().min(1, "Media content is required"),
+  mediaContent: z.union([z.string(), z.array(z.string())]).refine((val) => {
+    if (Array.isArray(val)) return val.length > 0;
+    return val.length > 0;
+  }, "Media content is required"),
   order: z.coerce.number().default(0),
   isVisible: z.boolean().default(true),
 });
@@ -50,32 +54,73 @@ export default function PortfolioForm({ onSuccess, initialData }) {
   });
 
   const watchType = watch("type");
+  const watchMediaContent = watch("mediaContent");
 
   const handleFileUpload = async (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     setIsUploading(true);
-    const formData = new FormData();
-    formData.append("file", file);
-    formData.append("folder", "portfolio");
+    const uploadedUrls = [];
 
     try {
-      const res = await fetch("/api/admin/upload", {
-        method: "POST",
-        body: formData,
-      });
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        formData.append("folder", "portfolio");
 
-      if (!res.ok) throw new Error("Upload failed");
+        const res = await fetch("/api/admin/upload", {
+          method: "POST",
+          body: formData,
+        });
 
-      const { url } = await res.json();
-      setValue("mediaContent", url);
-      toast.success("Image uploaded successfully");
-    } catch (_error) {
-      toast.error("Error uploading image");
+        if (!res.ok) throw new Error(`Upload failed for ${file.name}`);
+
+        const { url } = await res.json();
+        uploadedUrls.push(url);
+      }
+
+      if (watchType === OUR_WORK_TYPES.IMAGE) {
+        const currentContent = Array.isArray(watchMediaContent)
+          ? watchMediaContent
+          : watchMediaContent
+            ? [watchMediaContent]
+            : [];
+        setValue("mediaContent", [...currentContent, ...uploadedUrls]);
+      } else {
+        setValue("mediaContent", uploadedUrls[0]);
+      }
+
+      toast.success(
+        uploadedUrls.length > 1
+          ? `${uploadedUrls.length} images uploaded`
+          : "Image uploaded successfully",
+      );
+    } catch (error) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Error uploading image");
     } finally {
       setIsUploading(false);
+      // Reset input
+      e.target.value = "";
     }
+  };
+
+  const removeImage = (index) => {
+    if (!Array.isArray(watchMediaContent)) return;
+    const newContent = [...watchMediaContent];
+    newContent.splice(index, 1);
+    setValue("mediaContent", newContent.length === 0 ? "" : newContent);
+  };
+
+  const onDragEnd = (result) => {
+    if (!result.destination || !Array.isArray(watchMediaContent)) return;
+
+    const items = Array.from(watchMediaContent);
+    const [reorderedItem] = items.splice(result.source.index, 1);
+    items.splice(result.destination.index, 0, reorderedItem);
+
+    setValue("mediaContent", items);
   };
 
   const onSubmit = async (values) => {
@@ -129,7 +174,13 @@ export default function PortfolioForm({ onSuccess, initialData }) {
       <div className="space-y-2">
         <Label>Media Type</Label>
         <Select
-          onValueChange={(val) => setValue("type", val)}
+          onValueChange={(val) => {
+            setValue("type", val);
+            // If switching to image, ensure mediaContent is an array if it was a string
+            if (val === OUR_WORK_TYPES.IMAGE && typeof watchMediaContent === "string" && watchMediaContent) {
+              setValue("mediaContent", [watchMediaContent]);
+            }
+          }}
           defaultValue={watchType}
         >
           <SelectTrigger>
@@ -149,47 +200,89 @@ export default function PortfolioForm({ onSuccess, initialData }) {
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="mediaContent">
-          {watchType === OUR_WORK_TYPES.IMAGE ? "Image URL" : "Media URL"}
+        <Label>
+          {watchType === OUR_WORK_TYPES.IMAGE ? "Images" : "Media URL"}
         </Label>
-        <div className="flex gap-2">
-          <Input
-            id="mediaContent"
-            placeholder={
-              watchType === OUR_WORK_TYPES.IMAGE
-                ? "S3 URL or Upload"
-                : "YouTube / Instagram / Panoee Link"
-            }
-            {...register("mediaContent")}
-          />
-          {watchType === OUR_WORK_TYPES.IMAGE && (
-            <div className="relative">
-              <Input
-                type="file"
-                className="hidden"
-                id="portfolio-upload"
-                accept="image/*"
-                onChange={handleFileUpload}
-                disabled={isUploading}
-              />
-              <Button
-                type="button"
-                variant="outline"
-                size="icon"
-                asChild
-                disabled={isUploading}
-              >
-                <label htmlFor="portfolio-upload" className="cursor-pointer">
-                  {isUploading ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Upload className="h-4 w-4" />
-                  )}
-                </label>
-              </Button>
-            </div>
-          )}
-        </div>
+        
+        {watchType === OUR_WORK_TYPES.IMAGE ? (
+          <div className="space-y-4">
+            <DragDropContext onDragEnd={onDragEnd}>
+              <Droppable droppableId="images" direction="horizontal">
+                {(provided) => (
+                  <div
+                    {...provided.droppableProps}
+                    ref={provided.innerRef}
+                    className="flex flex-wrap gap-2 p-2 border rounded-md min-h-[100px] bg-muted/20"
+                  >
+                    {Array.isArray(watchMediaContent) && watchMediaContent.map((url, index) => (
+                      <Draggable key={url} draggableId={url} index={index}>
+                        {(provided) => (
+                          <div
+                            ref={provided.innerRef}
+                            {...provided.draggableProps}
+                            className="relative group w-24 h-24 border rounded-md overflow-hidden bg-background"
+                          >
+                            <img
+                              src={url}
+                              alt={`Work ${index}`}
+                              className="w-full h-full object-cover"
+                            />
+                            <div
+                              {...provided.dragHandleProps}
+                              className="absolute top-1 left-1 p-0.5 bg-black/50 rounded text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
+                            >
+                              <GripVertical className="h-3 w-3" />
+                            </div>
+                            <button
+                              type="button"
+                              onClick={() => removeImage(index)}
+                              className="absolute top-1 right-1 p-0.5 bg-destructive rounded text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </div>
+                        )}
+                      </Draggable>
+                    ))}
+                    {provided.placeholder}
+                    <div className="w-24 h-24 border-2 border-dashed rounded-md flex items-center justify-center">
+                      <Input
+                        type="file"
+                        className="hidden"
+                        id="portfolio-upload"
+                        accept="image/*"
+                        multiple
+                        onChange={handleFileUpload}
+                        disabled={isUploading}
+                      />
+                      <label
+                        htmlFor="portfolio-upload"
+                        className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/50 transition-colors"
+                      >
+                        {isUploading ? (
+                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                        ) : (
+                          <>
+                            <Upload className="h-6 w-6 text-muted-foreground" />
+                            <span className="text-[10px] text-muted-foreground mt-1">Upload</span>
+                          </>
+                        )}
+                      </label>
+                    </div>
+                  </div>
+                )}
+              </Droppable>
+            </DragDropContext>
+          </div>
+        ) : (
+          <div className="flex gap-2">
+            <Input
+              id="mediaContent"
+              placeholder="YouTube / Instagram / Panoee Link"
+              {...register("mediaContent")}
+            />
+          </div>
+        )}
         {errors.mediaContent && (
           <p className="text-sm text-destructive">
             {errors.mediaContent.message}
