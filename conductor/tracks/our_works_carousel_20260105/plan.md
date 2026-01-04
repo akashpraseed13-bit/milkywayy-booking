@@ -15,6 +15,7 @@
 - [x] Task: Implement Image Reordering 18c4a50
     - [x] Sub-task: Integrate `@hello-pangea/dnd` for dragging thumbnails.
     - [x] Sub-task: Update state on drag end to reflect new order.
+    - [x] Sub-task: Fix drag offset issue by replacing Dialog transform centering with margin auto.
 - [x] Task: Implement Individual Image Deletion 18c4a50
     - [x] Sub-task: Add "Remove" button to each thumbnail.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Admin UI Enhancements' (Protocol in workflow.md)
