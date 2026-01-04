@@ -1,0 +1,91 @@
+import { render, screen, waitFor, fireEvent } from "../../../test-utils";
+import PortfolioPage from "../page";
+import { OUR_WORK_TYPES } from "@/lib/config/app.config";
+
+// Mock fetch
+global.fetch = jest.fn();
+
+// Mock components
+jest.mock("@/components/StarBackground", () => ({
+  __esModule: true,
+  default: () => <div data-testid="star-background" />,
+}));
+jest.mock("@/components/landing/AnnouncementBar", () => ({
+  __esModule: true,
+  default: () => <div data-testid="announcement-bar" />,
+}));
+jest.mock("@/components/NewNavbar", () => ({
+  __esModule: true,
+  default: () => <div data-testid="new-navbar" />,
+}));
+jest.mock("@/components/Footer", () => ({
+  __esModule: true,
+  default: () => <div data-testid="footer" />,
+}));
+jest.mock("@/components/portfolio/MediaRenderer", () => ({
+  __esModule: true,
+  default: ({ title }) => <div data-testid="media-renderer">{title}</div>,
+}));
+
+describe("PortfolioPage", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
+
+  const mockData = [
+    { id: 1, title: "Photo 1", type: OUR_WORK_TYPES.IMAGE, mediaContent: "url1" },
+    { id: 2, title: "360 1", type: OUR_WORK_TYPES.THREE_SIXTY, mediaContent: "url2" },
+  ];
+
+  it("renders page structure and fetched items", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockData,
+    });
+
+    render(<PortfolioPage />);
+
+    expect(screen.getByTestId("star-background")).toBeInTheDocument();
+    expect(screen.getByText("Our Works")).toBeInTheDocument();
+
+    await waitFor(() => {
+      expect(screen.getAllByText("Photo 1").length).toBeGreaterThan(0);
+    });
+  });
+
+  it("filters items by tab", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => mockData,
+    });
+
+    render(<PortfolioPage />);
+
+    await waitFor(() => expect(screen.getAllByText("Photo 1").length).toBeGreaterThan(0));
+
+    const tab360 = screen.getByRole("tab", { name: "360°" });
+    fireEvent.click(tab360);
+    
+    // For Radix tabs in tests, sometimes we need to fireKeyDown Enter or Space
+    fireEvent.keyDown(tab360, { key: 'Enter', code: 'Enter' });
+
+    await waitFor(() => {
+      expect(tab360).toHaveAttribute("data-state", "active");
+      expect(screen.getAllByText("360 1").length).toBeGreaterThan(0);
+      expect(screen.queryByText("Photo 1")).not.toBeInTheDocument();
+    });
+  });
+
+  it("shows empty state message", async () => {
+    global.fetch.mockResolvedValue({
+      ok: true,
+      json: async () => [],
+    });
+
+    render(<PortfolioPage />);
+
+    await waitFor(() => {
+      expect(screen.getByText(/no entries found in this category/i)).toBeInTheDocument();
+    });
+  });
+});
