@@ -2,12 +2,12 @@
 
 This plan outlines the steps to transition the booking flow from general time slots (Morning/Afternoon/Evening) to a dynamic hourly selection system with duration-based availability.
 
-## Phase 1: Logic & Core Utility Setup
+## Phase 1: Logic & Core Utility Setup [checkpoint: 3a6058c]
 Establish the foundational logic for duration calculation and availability checking.
 
 - [x] Task: Create `calculateBookingDuration` utility with the required signature and temporary randomized logic. af0f62a
 - [x] Task: Create a utility function to determine available time slots based on existing bookings and duration requirements. 342d473
-- [ ] Task: Conductor - User Manual Verification 'Phase 1: Logic & Core Utility Setup' (Protocol in workflow.md)
+- [x] Task: Conductor - User Manual Verification 'Phase 1: Logic & Core Utility Setup' (Protocol in workflow.md) 3a6058c
 
 ## Phase 2: UI/UX Transition - Hourly Picker
 Update the frontend components to display and handle hourly slots instead of general time periods.
