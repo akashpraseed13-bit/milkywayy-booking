@@ -6,7 +6,7 @@ This plan outlines the steps to transition the booking flow from general time sl
 Establish the foundational logic for duration calculation and availability checking.
 
 - [x] Task: Create `calculateBookingDuration` utility with the required signature and temporary randomized logic. af0f62a
-- [ ] Task: Create a utility function to determine available time slots based on existing bookings and duration requirements.
+- [x] Task: Create a utility function to determine available time slots based on existing bookings and duration requirements. 342d473
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Logic & Core Utility Setup' (Protocol in workflow.md)
 
 ## Phase 2: UI/UX Transition - Hourly Picker
