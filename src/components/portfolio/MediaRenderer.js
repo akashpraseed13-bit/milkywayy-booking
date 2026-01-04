@@ -3,10 +3,14 @@
 import Image from "next/image";
 import { InstagramEmbed, YouTubeEmbed } from "react-social-media-embed";
 import { OUR_WORK_TYPES } from "@/lib/config/app.config";
+import ImageCarousel from "./ImageCarousel";
 
 export default function MediaRenderer({ type, url, title, className = "" }) {
   switch (type) {
     case OUR_WORK_TYPES.IMAGE:
+      if (Array.isArray(url)) {
+        return <ImageCarousel images={url} title={title} className={className} />;
+      }
       return (
         <div className={`relative w-full h-full overflow-hidden ${className}`}>
           <Image
