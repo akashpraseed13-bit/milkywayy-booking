@@ -353,23 +353,47 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
 
   const getOccupiedSlots = (currentIndex) => {
     const occupied = {};
-    const TIME_SLOT_VALUES = ["morning", "afternoon", "evening"];
+    const HOURLY_SLOTS = [
+      "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
+      "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
+    ];
 
     properties.forEach((p, idx) => {
       if (idx === currentIndex) return;
-      if (!p.preferredDate || !p.timeSlot) return;
+      if (!p.preferredDate) return;
 
-      const { duration } = getPropertyDurationAndEvening(p);
-      const startIndex = TIME_SLOT_VALUES.indexOf(p.timeSlot);
+      const slotValue = p.startTime || p.timeSlot;
+      if (!slotValue) return;
 
+      const duration = p.duration || 1;
+      // Handle legacy slots for local blocking
+      if (slotValue === 'morning') {
+        if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
+        occupied[p.preferredDate].push('morning');
+        return;
+      }
+      if (slotValue === 'afternoon') {
+        if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
+        occupied[p.preferredDate].push('afternoon');
+        return;
+      }
+      if (slotValue === 'evening') {
+        if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
+        occupied[p.preferredDate].push('evening');
+        return;
+      }
+
+      const startIndex = HOURLY_SLOTS.indexOf(slotValue);
       if (startIndex === -1) return;
 
       if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
 
-      for (let i = 0; i < duration; i++) {
+      // Duration is in hours, so * 2 for 30-min slots
+      const numSlots = duration * 2;
+      for (let i = 0; i < numSlots; i++) {
         const slotIndex = startIndex + i;
-        if (slotIndex < TIME_SLOT_VALUES.length) {
-          occupied[p.preferredDate].push(TIME_SLOT_VALUES[slotIndex]);
+        if (slotIndex < HOURLY_SLOTS.length) {
+          occupied[p.preferredDate].push(HOURLY_SLOTS[slotIndex]);
         }
       }
     });

@@ -17,12 +17,26 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { getAvailabilityForRange } from "@/lib/actions/bookings";
+import { getAvailableSlots } from "@/lib/helpers/bookingUtils";
 import { cn } from "@/lib/utils";
 
 const TIME_SLOTS = [
-  { value: "morning", label: "Morning" },
-  { value: "afternoon", label: "Afternoon" },
-  { value: "evening", label: "Evening" },
+  { value: "10:00", label: "10:00 AM" },
+  { value: "10:30", label: "10:30 AM" },
+  { value: "11:00", label: "11:00 AM" },
+  { value: "11:30", label: "11:30 AM" },
+  { value: "12:00", label: "12:00 PM" },
+  { value: "12:30", label: "12:30 PM" },
+  { value: "13:00", label: "01:00 PM" },
+  { value: "13:30", label: "01:30 PM" },
+  { value: "14:00", label: "02:00 PM" },
+  { value: "14:30", label: "02:30 PM" },
+  { value: "15:00", label: "03:00 PM" },
+  { value: "15:30", label: "03:30 PM" },
+  { value: "16:00", label: "04:00 PM" },
+  { value: "16:30", label: "04:30 PM" },
+  { value: "17:00", label: "05:00 PM" },
+  { value: "17:30", label: "05:30 PM" },
 ];
 
 export default function DateSlotPicker({
@@ -171,28 +185,44 @@ export default function DateSlotPicker({
     );
     if (startSlotIndex === -1) return false;
 
+    // A slot is blocked if it matches exactly, or if it falls within a blocked range.
+    // For now, blockedSlots might contain "morning", "afternoon", "evening" OR "10:00" etc.
+    
+    // Convert old blocked slots to hourly blocks for compatibility
+    const expandedBlockedSlots = new Set();
+    blockedSlots.forEach(slot => {
+      if (slot === 'morning') {
+        ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30'].forEach(s => expandedBlockedSlots.add(s));
+      } else if (slot === 'afternoon') {
+        ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'].forEach(s => expandedBlockedSlots.add(s));
+      } else if (slot === 'evening') {
+        ['16:00', '16:30', '17:00', '17:30'].forEach(s => expandedBlockedSlots.add(s));
+      } else {
+        expandedBlockedSlots.add(slot);
+      }
+    });
+
     // Check if the start slot itself is blocked
-    if (blockedSlots.includes(startSlotValue)) return false;
+    if (expandedBlockedSlots.has(startSlotValue)) return false;
+
+    // Duration is in hours. Each slot is 30 mins. So duration * 2 slots.
+    const numSlotsNeeded = duration * 2;
 
     // Check subsequent slots based on duration
-    for (let i = 1; i < duration; i++) {
+    for (let i = 0; i < numSlotsNeeded; i++) {
       const nextSlotIndex = startSlotIndex + i;
 
-      // If we exceed available slots
+      // If we exceed available slots (ends at 18:00)
       if (nextSlotIndex >= TIME_SLOTS.length) {
-        // If allowEvening is true and we are extending FROM the last slot (evening)
-        // We allow it.
-        // But wait, if duration is 2 and we start at Evening (index 2), next is index 3.
-        // If allowEvening is true, we allow this extension.
-        if (allowEvening) {
-          continue;
-        } else {
-          return false;
-        }
+        // We only allow extension if allowEvening is true? 
+        // Actually, the spec says slots are 10:00 to 18:00.
+        // If duration is 3h and they start at 16:00, they end at 19:00. 
+        // This exceeds working hours (18:00).
+        return false;
       }
 
       const nextSlotValue = TIME_SLOTS[nextSlotIndex].value;
-      if (blockedSlots.includes(nextSlotValue)) return false;
+      if (expandedBlockedSlots.has(nextSlotValue)) return false;
     }
 
     return true;
@@ -351,7 +381,7 @@ export default function DateSlotPicker({
                     <p className="text-sm text-gray-400 mb-2">
                       For {new Date(date).toLocaleDateString()}
                     </p>
-                    <div className="grid grid-cols-1 gap-3">
+                    <div className="grid grid-cols-2 gap-2">
                       {TIME_SLOTS.map((timeSlot) => {
                         const isAvailable = isSlotAvailable(
                           timeSlot.value,
@@ -368,22 +398,17 @@ export default function DateSlotPicker({
                             disabled={!isAvailable}
                             type="button"
                             className={cn(
-                              "px-4 py-3 rounded-xl border text-sm font-medium transition-all flex justify-between items-center w-full",
+                              "px-3 py-2 rounded-lg border text-xs font-medium transition-all flex justify-between items-center w-full",
                               isSelectedSlot
                                 ? "bg-accent text-accent-foreground"
                                 : "bg-secondary text-secondary-foreground border",
                              !isAvailable &&
-                                "cursor-not-allowed bg-muted text-muted-foreground",
+                                "cursor-not-allowed bg-muted text-muted-foreground opacity-50",
                             )}
                           >
                             <span>{timeSlot.label}</span>
-                            {!isAvailable && (
-                              <span className="text-[10px] bg-muted border px-2 py-0.5 rounded text-muted-foreground">
-                                Unavailable
-                              </span>
-                            )}
                             {isSelectedSlot && (
-                              <span className="w-2 h-2 rounded-full bg-accent-foreground"></span>
+                              <span className="w-1.5 h-1.5 rounded-full bg-accent-foreground"></span>
                             )}
                           </button>
                         );

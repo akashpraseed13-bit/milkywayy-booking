@@ -145,7 +145,7 @@ export function PropertyCard({
             <div className="flex items-center gap-2">
               <Clock size={16} />
               <span className="capitalize">
-                {property.timeSlot || "Select Time"}
+                {property.startTime || property.timeSlot || "Select Time"}
               </span>
             </div>
           </div>
@@ -336,23 +336,19 @@ export function PropertyCard({
             <div>
               <DateSlotPicker
                 date={property.preferredDate}
-                slot={property.timeSlot}
-                duration={duration}
+                slot={property.startTime}
+                duration={property.duration || 1}
                 allowEvening={allowEvening}
                 blockedSlotsMap={getOccupiedSlots(index)}
                 onDateChange={(d) =>
-                  setValue(`properties.${index}.preferredDate`, d, {
-                    shouldValidate: true,
-                  })
+                  updatePropertyField(index, "preferredDate", d)
                 }
                 onSlotChange={(s) =>
-                  setValue(`properties.${index}.timeSlot`, s, {
-                    shouldValidate: true,
-                  })
+                  updatePropertyField(index, "startTime", s)
                 }
                 error={
                   errors.properties?.[index]?.preferredDate?.message ||
-                  errors.properties?.[index]?.timeSlot?.message
+                  errors.properties?.[index]?.startTime?.message
                 }
               />
             </div>
