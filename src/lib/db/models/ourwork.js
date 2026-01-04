@@ -27,6 +27,22 @@ const OurWork = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: false,
       field: "media_content",
+      get() {
+        const rawValue = this.getDataValue("mediaContent");
+        if (!rawValue) return null;
+        try {
+          return JSON.parse(rawValue);
+        } catch (e) {
+          return rawValue;
+        }
+      },
+      set(value) {
+        if (value && typeof value === "object") {
+          this.setDataValue("mediaContent", JSON.stringify(value));
+        } else {
+          this.setDataValue("mediaContent", value);
+        }
+      },
     },
     order: {
       type: DataTypes.INTEGER,

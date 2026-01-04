@@ -43,6 +43,29 @@ describe("Admin OurWorks API Route - POST", () => {
     expect(response.status).toBe(201);
   });
 
+  it("creates a new work entry with multiple images on success", async () => {
+    const mockPayload = {
+      title: "New Work Gallery",
+      subtitle: "New Subtitle",
+      type: "IMAGE",
+      mediaContent: ["http://example.com/1.jpg", "http://example.com/2.jpg"],
+    };
+    OurWork.create.mockResolvedValue({ id: 2, ...mockPayload });
+
+    const request = {
+      json: async () => mockPayload,
+    };
+    const response = await POST(request);
+    const data = await response.json();
+
+    expect(data.id).toBe(2);
+    expect(data.mediaContent).toEqual(mockPayload.mediaContent);
+    expect(OurWork.create).toHaveBeenCalledWith(
+      expect.objectContaining(mockPayload),
+    );
+    expect(response.status).toBe(201);
+  });
+
   it("returns 400 if required fields are missing", async () => {
     const request = {
       json: async () => ({ title: "Incomplete" }),
