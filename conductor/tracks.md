@@ -9,7 +9,7 @@ This file tracks all major tracks for the project. Each track has its own detail
 
 ---
 
-## [~] Track: Hourly Booking Flow & Dynamic Duration
+## [x] Track: Hourly Booking Flow & Dynamic Duration
 *Link: [./conductor/tracks/hourly_booking_flow_20260105/](./conductor/tracks/hourly_booking_flow_20260105/)*
 
 
