@@ -51,6 +51,7 @@ export function PropertyCard({
   getPropertyDurationAndEvening,
   getOccupiedSlots,
   toggleService,
+  updatePropertyField,
   isOnlyProperty,
 }) {
   const price = getPropertyPrice(property);
@@ -196,9 +197,7 @@ export function PropertyCard({
                           className="p-4 text-center flex flex-col items-center justify-center gap-3 min-h-24"
                           isSelected={field.value === type}
                           onClick={() => {
-                            setValue(`properties.${index}.propertyType`, type, {
-                              shouldValidate: true,
-                            });
+                            updatePropertyField(index, "propertyType", type);
                             setValue(`properties.${index}.propertySize`, "");
                             setValue(`properties.${index}.services`, []);
                           }}
@@ -235,16 +234,14 @@ export function PropertyCard({
                             isSelected={field.value === sizeObj.label}
                             key={sizeObj.label}
                             className="px-4 py-3"
-                            onClick={() => {
-                              setValue(
-                                `properties.${index}.propertySize`,
-                                sizeObj.label,
-                                {
-                                  shouldValidate: true,
-                                },
-                              );
-                              setValue(`properties.${index}.services`, []);
-                            }}
+                          onClick={() => {
+                            updatePropertyField(
+                              index,
+                              "propertySize",
+                              sizeObj.label,
+                            );
+                            setValue(`properties.${index}.services`, []);
+                          }}
                           >
                             {sizeObj.label}
                           </OptionCard>

@@ -16,6 +16,7 @@ import { validateCoupon } from "@/lib/actions/coupons";
 import { PRICING_CONFIG as STATIC_PRICING_CONFIG } from "@/lib/config/pricing";
 import { useAuth } from "@/lib/contexts/auth";
 import { bookingSchema } from "@/lib/schema/booking.schema";
+import { calculateBookingDuration, getAvailableSlots } from "@/lib/helpers/bookingUtils";
 
 // Modular Components
 import { PropertyCard } from "./components/PropertyCard";
@@ -59,6 +60,8 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
           services: [],
           preferredDate: "",
           timeSlot: "",
+          startTime: "",
+          duration: 0,
           building: "",
           community: "",
           unitNumber: "",
@@ -97,6 +100,11 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                   : draft.slot === 3
                     ? "evening"
                     : "",
+            startTime: 
+              draft.slot === 1 ? "10:00" :
+              draft.slot === 2 ? "13:00" :
+              draft.slot === 3 ? "16:00" : "",
+            duration: draft.duration || 0,
             building: draft.propertyDetails?.building || "",
             community: draft.propertyDetails?.community || "",
             unitNumber: draft.propertyDetails?.unit || "",
@@ -144,6 +152,8 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
           services: [],
           preferredDate: "",
           timeSlot: "",
+          startTime: "",
+          duration: 0,
           building: "",
           community: "",
           unitNumber: "",
@@ -163,6 +173,8 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
       ...currentProperties[index],
       preferredDate: "",
       timeSlot: "",
+      startTime: "",
+      duration: 0,
     };
     setValue("properties", [...currentProperties, propertyToDuplicate], {
       shouldValidate: true,
@@ -185,13 +197,31 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     }
   };
 
+  const updatePropertyField = (index, field, value) => {
+    setValue(`properties.${index}.${field}`, value, { shouldValidate: true });
+    
+    // If the changed field affects duration, recalculate it
+    if (['propertyType', 'propertySize', 'services'].includes(field)) {
+      const property = getValues(`properties.${index}`);
+      // Only calculate if we have the minimum required info
+      if (property.propertyType && property.propertySize && property.services?.length > 0) {
+        const duration = calculateBookingDuration(
+          { id: property.services }, // Simulating service object
+          { type: property.propertyType, size: property.propertySize },
+          { community: property.community }
+        );
+        setValue(`properties.${index}.duration`, duration);
+      } else {
+        setValue(`properties.${index}.duration`, 0);
+      }
+    }
+  };
+
   const toggleService = async (index, serviceName, currentServices) => {
     const newServices = currentServices.includes(serviceName)
       ? currentServices.filter((s) => s !== serviceName)
       : [...currentServices, serviceName];
-    setValue(`properties.${index}.services`, newServices, {
-      shouldValidate: true,
-    });
+    updatePropertyField(index, "services", newServices);
   };
 
   const onContinue = async (data) => {
@@ -433,6 +463,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                     }
                     getOccupiedSlots={getOccupiedSlots}
                     toggleService={toggleService}
+                    updatePropertyField={updatePropertyField}
                     isOnlyProperty={properties.length === 1}
                   />
                 ))}

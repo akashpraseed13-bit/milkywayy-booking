@@ -29,18 +29,33 @@ jest.mock('sonner', () => ({
   },
 }));
 
+jest.mock('../../../lib/helpers/bookingUtils', () => ({
+  calculateBookingDuration: jest.fn(() => 5),
+  getAvailableSlots: jest.fn(() => []),
+}));
+
 jest.mock('../../../components/StarBackground', () => function StarBackground() { return <div data-testid="star-background" />; });
 
 jest.mock('../components/PropertyCard', () => ({
-  PropertyCard: ({ index, control, onRemove }) => {
+  PropertyCard: ({ index, control, onRemove, updatePropertyField, property, setValue }) => {
     const { Controller } = require('react-hook-form');
     return (
       <div data-testid={`property-card-${index}`}>
-        <Controller
-          control={control}
-          name={`properties.${index}.propertyType`}
-          render={({ field }) => <input {...field} data-testid={`type-${index}`} placeholder="Type" />}
+        <input 
+          data-testid={`type-${index}`} 
+          onChange={(e) => updatePropertyField(index, 'propertyType', e.target.value)}
         />
+        <input 
+          data-testid={`size-${index}`} 
+          onChange={(e) => updatePropertyField(index, 'propertySize', e.target.value)}
+        />
+        <button 
+          data-testid={`add-service-${index}`} 
+          onClick={() => updatePropertyField(index, 'services', ['Photography'])}
+        >
+          Add Service
+        </button>
+        <div data-testid={`duration-${index}`}>{property.duration}</div>
         <button type="button" onClick={() => onRemove(index)} data-testid={`remove-${index}`}>Remove</button>
       </div>
     );
@@ -125,9 +140,25 @@ describe('BookNew', () => {
     });
   });
 
-  /* 
-   * Note: Testing form submission requires filling out the form which is complex with the mocked PropertyCard
-   * and Zod validation. We'd need to mock PropertyCard to fill all required fields correctly.
-   * For now, we verified adding/removing/rendering.
-   */
+  it('updates duration when property details change', async () => {
+    const { calculateBookingDuration } = require('../../../lib/helpers/bookingUtils');
+    calculateBookingDuration.mockReturnValue(7);
+
+    render(
+      <Suspense fallback={<div>Loading...</div>}>
+        <BookNew pricingsPromise={mockPricingsPromise} discountsPromise={mockDiscountsPromise} />
+      </Suspense>
+    );
+
+    await waitFor(() => expect(screen.getByTestId('property-card-0')).toBeInTheDocument());
+
+    fireEvent.change(screen.getByTestId('type-0'), { target: { value: 'Villa' } });
+    fireEvent.change(screen.getByTestId('size-0'), { target: { value: '4 Bedroom' } });
+    fireEvent.click(screen.getByTestId('add-service-0'));
+    
+    await waitFor(() => {
+      expect(screen.getByTestId('duration-0')).toHaveTextContent('7');
+    });
+    expect(calculateBookingDuration).toHaveBeenCalled();
+  });
 });
