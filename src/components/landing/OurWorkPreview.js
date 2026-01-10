@@ -4,12 +4,14 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { OUR_WORK_TYPES } from "@/lib/config/app.config";
+import { isTouchDevice } from "@/lib/helpers/ui";
 import MediaRenderer from "../portfolio/MediaRenderer";
 
 const OurWorkPreview = () => {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState(OUR_WORK_TYPES.IMAGE);
+  const [isTouch, setIsTouch] = useState(false);
 
   const categories = [
     { label: "Photography", value: OUR_WORK_TYPES.IMAGE },
@@ -19,6 +21,7 @@ const OurWorkPreview = () => {
   ];
 
   useEffect(() => {
+    setIsTouch(isTouchDevice());
     async function fetchWorks() {
       try {
         const res = await fetch("/api/our-works");
@@ -88,11 +91,13 @@ const OurWorkPreview = () => {
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <div className={`relative ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} min-w-[40vw] lg:min-w-[25vw] bg-card rounded-xl overflow-hidden shadow-md`}>
-                      <MediaRenderer
-                        type={item.type}
-                        url={item.mediaContent}
-                        title={item.title}
-                      />
+                      <div className={item.type === OUR_WORK_TYPES.IMAGE && !isTouch ? "photography-grayscale h-full w-full" : "h-full w-full"}>
+                        <MediaRenderer
+                          type={item.type}
+                          url={item.mediaContent}
+                          title={item.title}
+                        />
+                      </div>
                     </div>
                     <div>
                       <p className="font-bold text-lg text-foreground">

@@ -12,10 +12,10 @@ Establish the CSS foundation and utility logic for the hover effect.
 ## Phase 2: Component Implementation (TDD)
 Apply the hover logic to the photography items using Test-Driven Development.
 
-- [ ] Task: Write tests for `OurWorkPreview` (or equivalent) to verify correct class application based on category and hover state.
-- [ ] Task: Implement category-based conditional styling in the component.
-- [ ] Task: Implement hover state management (or CSS-based hover) with the smooth transition.
-- [ ] Task: Ensure the effect is bypassed for non-photography categories.
+- [x] Task: Write tests for `OurWorkPreview` (or equivalent) to verify correct class application based on category and hover state.
+- [x] Task: Implement category-based conditional styling in the component.
+- [x] Task: Implement hover state management (or CSS-based hover) with the smooth transition.
+- [x] Task: Ensure the effect is bypassed for non-photography categories.
 - [ ] Task: Conductor - User Manual Verification 'Phase 2: Component Implementation (TDD)' (Protocol in workflow.md)
 
 ## Phase 3: Mobile Optimization & Final Polish
