@@ -92,3 +92,15 @@ body {
 button {
   @apply hover:cursor-pointer;
 }
+
+/* Grayscale effect for photography items */
+@media (hover: hover) {
+  .photography-grayscale {
+    filter: grayscale(100%);
+    transition: filter 0.5s ease-in-out;
+  }
+
+  .photography-grayscale:hover {
+    filter: grayscale(0%);
+  }
+}
