@@ -9,19 +9,19 @@ Establish the CSS foundation and utility logic for the hover effect.
 - [x] Task: Create or update a utility to detect touch-primary devices to handle mobile behavior. 1ccebe1
 - [x] Task: Conductor - User Manual Verification 'Phase 1: Style Definitions & Utility Setup' (Protocol in workflow.md) d7d8170
 
-## Phase 2: Component Implementation (TDD)
+## Phase 2: Component Implementation (TDD) [checkpoint: 7c4a28f]
 Apply the hover logic to the photography items using Test-Driven Development.
 
-- [x] Task: Write tests for `OurWorkPreview` (or equivalent) to verify correct class application based on category and hover state.
-- [x] Task: Implement category-based conditional styling in the component.
-- [x] Task: Implement hover state management (or CSS-based hover) with the smooth transition.
-- [x] Task: Ensure the effect is bypassed for non-photography categories.
-- [ ] Task: Conductor - User Manual Verification 'Phase 2: Component Implementation (TDD)' (Protocol in workflow.md)
+- [x] Task: Write tests for `OurWorkPreview` (or equivalent) to verify correct class application based on category and hover state. 819b92a
+- [x] Task: Implement category-based conditional styling in the component. 819b92a
+- [x] Task: Implement hover state management (or CSS-based hover) with the smooth transition. 819b92a
+- [x] Task: Ensure the effect is bypassed for non-photography categories. 819b92a
+- [x] Task: Conductor - User Manual Verification 'Phase 2: Component Implementation (TDD)' (Protocol in workflow.md) 7c4a28f
 
 ## Phase 3: Mobile Optimization & Final Polish
 Ensure the experience is seamless across devices and matches the specification.
 
-- [ ] Task: Implement logic to disable the grayscale effect on touch/mobile devices.
-- [ ] Task: Verify the transition duration (0.3s-0.5s) feels "smooth" and responsive.
-- [ ] Task: Perform final visual audit across all categories in "Our Work".
-- [ ] Task: Conductor - User Manual Verification 'Phase 3: Mobile Optimization & Final Polish' (Protocol in workflow.md)
+- [x] Task: Implement logic to disable the grayscale effect on touch/mobile devices. 819b92a
+- [x] Task: Verify the transition duration (0.3s-0.5s) feels "smooth" and responsive. 7c4a28f
+- [x] Task: Perform final visual audit across all categories in "Our Work". 7c4a28f
+- [~] Task: Conductor - User Manual Verification 'Phase 3: Mobile Optimization & Final Polish' (Protocol in workflow.md)
