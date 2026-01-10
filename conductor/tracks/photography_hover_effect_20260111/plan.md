@@ -5,8 +5,8 @@ Implementation of a smooth grayscale-to-color transition for photography items i
 ## Phase 1: Style Definitions & Utility Setup
 Establish the CSS foundation and utility logic for the hover effect.
 
-- [x] Task: Define CSS transition and grayscale classes in `globals.css` or relevant module.
-- [x] Task: Create or update a utility to detect touch-primary devices to handle mobile behavior.
+- [x] Task: Define CSS transition and grayscale classes in `globals.css` or relevant module. 1ccebe1
+- [x] Task: Create or update a utility to detect touch-primary devices to handle mobile behavior. 1ccebe1
 - [ ] Task: Conductor - User Manual Verification 'Phase 1: Style Definitions & Utility Setup' (Protocol in workflow.md)
 
 ## Phase 2: Component Implementation (TDD)
