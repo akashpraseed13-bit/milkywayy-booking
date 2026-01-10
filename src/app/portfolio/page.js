@@ -8,12 +8,15 @@ import MediaRenderer from "@/components/portfolio/MediaRenderer";
 import StarBackground from "@/components/StarBackground";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { OUR_WORK_TYPES } from "@/lib/config/app.config";
+import { isTouchDevice } from "@/lib/helpers/ui";
 
 export default function PortfolioPage() {
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isTouch, setIsTouch] = useState(false);
 
   useEffect(() => {
+    setIsTouch(isTouchDevice());
     async function fetchWorks() {
       try {
         const res = await fetch("/api/our-works");
@@ -46,12 +49,14 @@ export default function PortfolioPage() {
           className="group flex flex-col gap-4 fade-in mx-auto"
           style={{ animationDelay: `${index * 0.05}s` }}
         >
-          <div className={`relative min-w-[60vw] md:min-w-[40vw] lg:min-w-[25vw] ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} bg-card rounded-2xl overflow-hidden shadow-xl border border-white/10`}>
-            <MediaRenderer
-              type={item.type}
-              url={item.mediaContent}
-              title={item.title}
-            />
+          <div className={`relative min-w-[60vw] md:min-w-[35vw] lg:min-w-[25vw] ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} bg-card rounded-2xl overflow-hidden shadow-xl border border-white/10`}>
+            <div className={item.type === OUR_WORK_TYPES.IMAGE && !isTouch ? "photography-grayscale h-full w-full" : "h-full w-full"}>
+              <MediaRenderer
+                type={item.type}
+                url={item.mediaContent}
+                title={item.title}
+              />
+            </div>
           </div>
           <div className="px-2">
             <h3 className="font-bold text-xl text-white">{item.title}</h3>
