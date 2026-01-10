@@ -11,6 +11,7 @@
 ## User Experience (UX)
 - **Tone:** Futuristic, innovative, and deeply user-centric. The interface should feel advanced yet intuitive, guiding users effortlessly through tasks.
 - **Interaction:** Smooth, polished transitions and clearly defined interactive states.
+    - **Photography Hover:** Items in the "Photography" category utilize a smooth grayscale-to-color transition on desktop to emphasize visual clarity upon interaction.
 - **Accessibility:** Ensure high contrast between text and backgrounds, especially within the dark theme.
 
 ## Design Principles

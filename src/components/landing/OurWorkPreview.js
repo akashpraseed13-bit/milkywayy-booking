@@ -90,7 +90,7 @@ const OurWorkPreview = () => {
                     className="group flex flex-col gap-4 fade-in mx-auto"
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
-                    <div className={`relative ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} min-w-[40vw] lg:min-w-[25vw] bg-card rounded-xl overflow-hidden shadow-md`}>
+                    <div className={`relative ${item.type!=='SHORT_VIDEO' ? 'aspect-4/3' : ''} min-w-[80vw] lg:min-w-[25vw] bg-card rounded-xl overflow-hidden shadow-md`}>
                       <div className={item.type === OUR_WORK_TYPES.IMAGE && !isTouch ? "photography-grayscale h-full w-full" : "h-full w-full"}>
                         <MediaRenderer
                           type={item.type}
