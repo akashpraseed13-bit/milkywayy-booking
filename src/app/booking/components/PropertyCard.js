@@ -74,19 +74,21 @@ export function PropertyCard({
         onClick={onToggle}
       >
         <div className="flex flex-1 min-w-0 flex-wrap items-center gap-2 text-base md:text-xl font-semibold text-foreground">
-          {!isOpen && titleParts.length > 0
-            ? titleParts.map((part, idx) => (
-                <div
-                  key={idx}
-                  className="flex items-center gap-2 whitespace-nowrap"
-                >
-                  <span>{part}</span>
-                  {idx < titleParts.length - 1 && (
-                    <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
-                  )}
-                </div>
-              ))
-            : <span>Property {index + 1}</span>}
+          {!isOpen && titleParts.length > 0 ? (
+            titleParts.map((part, idx) => (
+              <div
+                key={idx}
+                className="flex items-center gap-2 whitespace-nowrap"
+              >
+                <span>{part}</span>
+                {idx < titleParts.length - 1 && (
+                  <span className="w-1 h-1 rounded-full bg-muted-foreground"></span>
+                )}
+              </div>
+            ))
+          ) : (
+            <span>Property {index + 1}</span>
+          )}
           {price > 0 && (
             <div className="w-full md:hidden mt-1">
               <span className="bg-zinc-800 px-3 py-1 rounded-md text-sm font-medium text-foreground">
@@ -128,9 +130,11 @@ export function PropertyCard({
             </Button>
           )}
           <div className="ml-2">
-            {isOpen
-              ? <ChevronUp size={20} className="text-muted-foreground" />
-              : <ChevronDown size={20} className="text-muted-foreground" />}
+            {isOpen ? (
+              <ChevronUp size={20} className="text-muted-foreground" />
+            ) : (
+              <ChevronDown size={20} className="text-muted-foreground" />
+            )}
           </div>
         </div>
       </CardHeader>
@@ -153,18 +157,20 @@ export function PropertyCard({
           <div>
             <div className="text-md text-foreground mb-2">Services:</div>
             <div className="flex flex-wrap gap-2">
-              {property.services?.length > 0
-                ? property.services.map((s) => (
-                    <span
-                      key={s}
-                      className="bg-zinc-800 text-muted-foreground px-3 py-1 rounded-full text-xs"
-                    >
-                      {s}
-                    </span>
-                  ))
-                : <span className="text-muted-foreground text-sm italic">
-                    No services selected
-                  </span>}
+              {property.services?.length > 0 ? (
+                property.services.map((s) => (
+                  <span
+                    key={s}
+                    className="bg-zinc-800 text-muted-foreground px-3 py-1 rounded-full text-xs"
+                  >
+                    {s}
+                  </span>
+                ))
+              ) : (
+                <span className="text-muted-foreground text-sm italic">
+                  No services selected
+                </span>
+              )}
             </div>
           </div>
 
@@ -234,14 +240,14 @@ export function PropertyCard({
                             isSelected={field.value === sizeObj.label}
                             key={sizeObj.label}
                             className="px-4 py-3"
-                          onClick={() => {
-                            updatePropertyField(
-                              index,
-                              "propertySize",
-                              sizeObj.label,
-                            );
-                            setValue(`properties.${index}.services`, []);
-                          }}
+                            onClick={() => {
+                              updatePropertyField(
+                                index,
+                                "propertySize",
+                                sizeObj.label,
+                              );
+                              setValue(`properties.${index}.services`, []);
+                            }}
                           >
                             {sizeObj.label}
                           </OptionCard>
@@ -343,9 +349,7 @@ export function PropertyCard({
                 onDateChange={(d) =>
                   updatePropertyField(index, "preferredDate", d)
                 }
-                onSlotChange={(s) =>
-                  updatePropertyField(index, "startTime", s)
-                }
+                onSlotChange={(s) => updatePropertyField(index, "startTime", s)}
                 error={
                   errors.properties?.[index]?.preferredDate?.message ||
                   errors.properties?.[index]?.startTime?.message
@@ -427,7 +431,7 @@ export function PropertyCard({
             <Separator className="bg-zinc-800 my-2" />
 
             {/* Point of Contact */}
-          {/*
+            {/*
             <div>
               <h3 className="text-md font-medium text-foreground mb-4">
                 Point of Contact
