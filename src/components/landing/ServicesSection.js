@@ -10,26 +10,28 @@ const ServicesSection = () => {
       description:
         "Professional HDR photos that make listings shine and sell faster",
       price: "From AED 350",
-      delivery: "Photos delivered within 24h",
+      delivery: "Delivered < 24h",
     },
     {
       icon: Video,
       title: "Videography",
-      description: "Cinematic property walkthroughs that captivate buyers",
+      // description: "Cinematic property walkthroughs that captivate buyers",
+      description: "Short-form cinematic property walkthroughs that captivate buyers",
       price: "From AED 400",
-      delivery: "Short-Form: 24h, Long-Form: 24-48H",
+      // delivery: "Short-Form: 24h, Long-Form: 24-48H",
+      delivery: "Delivered < 24-48H",
     },
     {
       icon: Globe,
-      title: "360° Virtual Tour",
+      title: "360° Tour",
       description: "Perfect for overseas buyers — explore properties remotely",
       price: "From AED 450",
-      delivery: "Delivered in 24-48h",
+      delivery: "Delivered < 24-48h",
     },
   ];
 
   return (
-    <section id="services" className="py-24 relative">
+    <section id="services" className="py-24 relative bg-secondary/30 border-y border-border/50">
       <div className="starfield opacity-10" />
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-16 fade-in">
@@ -54,7 +56,7 @@ const ServicesSection = () => {
               <h3 className="font-heading text-lg font-bold mb-2">
                 {service.title}
               </h3>
-              <p className="text-sm text-muted-foreground mb-4">
+              <p className="text-sm text-muted-foreground min-h-16">
                 {service.description}
               </p>
               <div className="space-y-1 mb-4">

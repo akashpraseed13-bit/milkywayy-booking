@@ -36,6 +36,12 @@ const PROPERTY_TYPE_ICONS = {
   Commercial: Building,
 };
 
+const SERVICE_SUBTITLES = {
+  // Videography: "30 - 90 secs walkthroughs",
+  Videography: "Walkthrough Reels",
+  // Videography: "Short-Form Walkthroughs (30-90s)",
+};
+
 export function PropertyCard({
   index,
   property,
@@ -305,7 +311,7 @@ export function PropertyCard({
                                 )
                               }
                             >
-                              <div className="flex flex-col items-center gap-3">
+                              <div className="flex justify-items-center flex-col items-center gap-3">
                                 <Icon
                                   size={32}
                                   className={
@@ -314,10 +320,15 @@ export function PropertyCard({
                                       : "text-muted-foreground"
                                   }
                                 />
-                                <div>
+                                <div className="">
                                   <div className="font-semibold mb-1">
                                     {serviceName}
                                   </div>
+                                  {SERVICE_SUBTITLES[serviceName] ? (
+                                    <div className="text-xs text-muted-foreground mb-1">
+                                      {SERVICE_SUBTITLES[serviceName]}
+                                    </div>
+                                  ) : null}
                                   <div className="text-sm text-muted-foreground">
                                     AED {price}
                                   </div>

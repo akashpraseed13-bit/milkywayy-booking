@@ -41,7 +41,7 @@ export default function Page() {
           <FinalCTASection />
           <ContactSection />
         </main>
-        <Footer />
+        <Footer hideLinks />
       </div>
       <VideoModal open={showVideoModal} onOpenChange={setShowVideoModal} />
     </div>

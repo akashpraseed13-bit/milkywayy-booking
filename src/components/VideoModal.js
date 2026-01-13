@@ -34,7 +34,7 @@ const VideoModal = ({ open, onOpenChange }) => {
           </div>
 
           {/* Content below video */}
-          <div className="p-6 space-y-4">
+          <div className="px-6 pt-4 pb-4 space-y-4">
             <h3 className="font-heading text-xl font-bold">
               How Milkywayy Portal Works (Founder Walkthrough)
             </h3>

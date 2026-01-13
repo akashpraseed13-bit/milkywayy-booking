@@ -76,8 +76,8 @@ const PainSolutionSection = () => {
           </div>
         </div>
 
-        <p className="text-center text-xl font-heading font-bold mt-12 fade-in">
-          Stop coordinating. Start listing.
+        <p className="text-center text-md text-muted-foreground mt-12 fade-in">
+          Flat 50% off on your first booking.
         </p>
       </div>
     </section>

@@ -1,4 +1,4 @@
-import { BadgeCheck, Clock, MapPin, Play, Receipt } from "lucide-react";
+import { BadgeCheck, Clock, MapPin, Play, Receipt, Building, Building2, Home } from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -17,13 +17,11 @@ const HeroSection = ({ onWatchVideo }) => {
         <div className="grid lg:grid-cols-2 gap-12 items-center">
           {/* Left: Content */}
           <div className="space-y-8 fade-in">
-            <h1 className="font-heading text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight">
-              Book property shoots in 60 seconds.
+            <h1 className="font-heading text-4xl sm:text-5xl lg:text-5xl font-bold leading-tight">
+                Stunning Shots<br />Seamless Booking
             </h1>
             <p className="text-lg text-muted-foreground max-w-xl">
-              Dubai's first property shoot booking portal — book photography,
-              video, and 360° tours instantly, then manage files & invoices from
-              one dashboard.
+                Book photography, video walkthroughs and 360° virtual tours instantly - then manage files and invoices from one dashboard.
             </p>
 
             {/* CTA Row */}
@@ -97,11 +95,33 @@ const HeroSection = ({ onWatchVideo }) => {
                     </div>
                   </div>
 
+                  {/* Property Type selection */}
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">Select Property Type</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {[["Apartment", Building2], ["Villa / Townhouse", Home], ["Commercial", Building]].map(
+                        ([propertyType, Icon], i) => (
+                          <div
+                            key={propertyType}
+                            className={`p-3 rounded-lg border text-center text-xs flex flex-col items-center justify-center gap-2 ${
+                              i === 0
+                                ? "border-accent bg-accent/10"
+                                : "border-border"
+                            }`}
+                          >
+                            <Icon />
+                            {propertyType}
+                          </div>
+                        ),
+                      )}
+                    </div>
+                  </div>
+
                   {/* Service selection */}
                   <div className="space-y-3">
                     <p className="text-sm font-medium">Select Service</p>
                     <div className="grid grid-cols-3 gap-2">
-                      {["Photography", "Video", "360° Tour"].map(
+                      {["Photography", "Videography", "360° Tour"].map(
                         (service, i) => (
                           <div
                             key={service}

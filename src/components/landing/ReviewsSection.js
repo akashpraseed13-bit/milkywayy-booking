@@ -66,7 +66,7 @@ const ReviewsSection = () => {
   const otherReviews = reviews.filter((r) => !r.featured);
 
   return (
-    <section id="reviews" className="py-24 relative">
+    <section id="reviews" className="py-24 relative bg-secondary/30 border-y border-border/50">
       <div className="starfield opacity-10" />
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-16 fade-in">

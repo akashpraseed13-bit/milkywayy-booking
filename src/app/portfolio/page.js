@@ -36,9 +36,9 @@ export default function PortfolioPage() {
   const categories = [
     // { label: "All", value: "ALL" },
     { label: "Photography", value: OUR_WORK_TYPES.IMAGE },
-    { label: "360°", value: OUR_WORK_TYPES.THREE_SIXTY },
-    { label: "Short-form", value: OUR_WORK_TYPES.SHORT_VIDEO },
-    { label: "Long-form", value: OUR_WORK_TYPES.VIDEO },
+    { label: "Videography", value: OUR_WORK_TYPES.SHORT_VIDEO },
+    { label: "360° Tour", value: OUR_WORK_TYPES.THREE_SIXTY },
+    // { label: "Long-form", value: OUR_WORK_TYPES.VIDEO },
   ];
 
   const renderGrid = (filteredItems) => (

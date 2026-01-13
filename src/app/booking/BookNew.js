@@ -454,7 +454,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
       <StarBackground />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl md:text-3xl font-bold text-white mb-2 !font-heading">
+            <h1 className="font-heading text-white text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-2">
             Book Your Property Shoot
           </h1>
           <p className="text-muted-foreground">

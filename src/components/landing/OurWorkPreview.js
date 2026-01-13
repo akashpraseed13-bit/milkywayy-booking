@@ -15,9 +15,9 @@ const OurWorkPreview = () => {
 
   const categories = [
     { label: "Photography", value: OUR_WORK_TYPES.IMAGE },
-    { label: "360°", value: OUR_WORK_TYPES.THREE_SIXTY },
-    { label: "Short-form", value: OUR_WORK_TYPES.SHORT_VIDEO },
-    { label: "Long-form", value: OUR_WORK_TYPES.VIDEO },
+    { label: "Videography", value: OUR_WORK_TYPES.SHORT_VIDEO },
+    { label: "360° Tour", value: OUR_WORK_TYPES.THREE_SIXTY },
+    // { label: "Long-form", value: OUR_WORK_TYPES.VIDEO },
   ];
 
   useEffect(() => {
@@ -43,7 +43,7 @@ const OurWorkPreview = () => {
     .slice(0, 3);
 
   return (
-    <section id="our-work" className="py-24 bg-secondary/20">
+    <section id="our-work" className="py-24">
       <div className="container mx-auto px-6 lg:px-2">
         <div className="text-center mb-12 fade-in">
           <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
