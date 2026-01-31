@@ -172,6 +172,7 @@ export const getAvailabilityForRange = actionWrapper(
 );
 
 const checkAvailability = async (properties, excludeBookingIds = []) => {
+  // NOTE the logic needs to be changed
   const pricingConfig = await getPricingConfig();
 
   for (const property of properties) {

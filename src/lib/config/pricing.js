@@ -24,6 +24,12 @@ export const SERVICE_ORDER = [
   SERVICES.TOUR_360,
 ];
 
+
+// ################### NOTE ############################
+// The slot and allowEvening property is to be removed, instead the calculation to be changed to use the ./timeslots.js values (but has not been changed, still this is being used)
+
+
+
 export const PRICING_CONFIG = {
   [PROPERTY_TYPES.APARTMENT]: {
     sizes: [
