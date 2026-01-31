@@ -28,11 +28,19 @@ export const PRICING_CONFIG = {
   [PROPERTY_TYPES.APARTMENT]: {
     sizes: [
       {
-        label: "Studio / 1 Bed",
+        label: "Studio",
         prices: {
           [SERVICES.PHOTOGRAPHY]: { price: 350, slots: 1, allowEvening: false },
           [SERVICES.VIDEOGRAPHY]: { price: 400, slots: 1, allowEvening: false },
           [SERVICES.TOUR_360]: 450,
+        },
+      },
+      {
+        label: "1 Bed",
+        prices: {
+          [SERVICES.PHOTOGRAPHY]: { price: 450, slots: 1, allowEvening: false },
+          [SERVICES.VIDEOGRAPHY]: { price: 500, slots: 1, allowEvening: false },
+          [SERVICES.TOUR_360]: 550,
         },
       },
       {
@@ -100,7 +108,7 @@ export const PRICING_CONFIG = {
         },
       },
       {
-        label: "6+ Bed",
+        label: "6 Bed",
         prices: {
           [SERVICES.PHOTOGRAPHY]: {
             price: 1100,
@@ -115,12 +123,36 @@ export const PRICING_CONFIG = {
           [SERVICES.TOUR_360]: 1250,
         },
       },
+      {
+        label: "7 Bed",
+        prices: {
+          [SERVICES.PHOTOGRAPHY]: {
+            price: 1200,
+            slots: 1,
+            allowEvening: false,
+          },
+          [SERVICES.VIDEOGRAPHY]: {
+            price: 1300,
+            slots: 1,
+            allowEvening: false,
+          },
+          [SERVICES.TOUR_360]: 1350,
+        },
+      },
     ],
   },
   [PROPERTY_TYPES.COMMERCIAL]: {
     sizes: [
       {
-        label: "Under 1,000 sq. ft.",
+        label: "Under 500 sq. ft.",
+        prices: {
+          [SERVICES.PHOTOGRAPHY]: { price: 500, slots: 1, allowEvening: false },
+          [SERVICES.VIDEOGRAPHY]: { price: 550, slots: 1, allowEvening: false },
+          [SERVICES.TOUR_360]: 600,
+        },
+      },
+      {
+        label: "500 - 1,000 sq. ft.",
         prices: {
           [SERVICES.PHOTOGRAPHY]: { price: 600, slots: 1, allowEvening: false },
           [SERVICES.VIDEOGRAPHY]: { price: 650, slots: 1, allowEvening: false },
