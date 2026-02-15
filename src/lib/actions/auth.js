@@ -44,6 +44,7 @@ export const adminLogin = actionWrapper(adminLoginHandler);
 
 const customerSendOtpHandler = async ({ phone }) => {
   let user = await models.User.findOne({ where: { phone } });
+  const isNewUser = !user;
 
   if (!user) {
     user = await models.User.create({
@@ -67,7 +68,18 @@ const customerSendOtpHandler = async ({ phone }) => {
   await user.save();
 
   // Note: In production, send OTP via SMS/email, but for now just return it
-  return { userId: user.id, otp };
+  return {
+  userId: user.id,
+  otp,
+  isNewUser,
+  userData: {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+  },
+};
 };
 
 export const customerSendOtp = actionWrapper(customerSendOtpHandler);
@@ -109,6 +121,63 @@ const customerVerifyOtpHandler = async ({ userId, otp }) => {
 };
 
 export const customerVerifyOtp = actionWrapper(customerVerifyOtpHandler);
+
+const updateCustomerProfileHandler = async ({ userId, fullName, email }) => {
+  const user = await models.User.findByPk(userId);
+
+  if (!user || user.role !== USER_ROLES.CUSTOMER) {
+    throw new Error("User not found");
+  }
+
+  // Update user details
+  await user.update({
+    fullName: fullName.trim(),
+    email: email?.trim() || null,
+  });
+
+  // Return updated user data
+  const userData = {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+  };
+
+  return userData;
+};
+
+export const updateCustomerProfile = actionWrapper(updateCustomerProfileHandler);
+
+const createCustomerHandler = async ({ fullName, phone, email }) => {
+  // Check if user already exists with this phone
+  const existingUser = await models.User.findOne({ where: { phone } });
+  if (existingUser) {
+    throw new Error("An account with this phone number already exists");
+  }
+
+  // Create new customer
+  const user = await models.User.create({
+    fullName,
+    phone,
+    email,
+    role: USER_ROLES.CUSTOMER,
+  });
+
+  const userData = {
+    id: user.id,
+    fullName: user.fullName,
+    email: user.email,
+    phone: user.phone,
+    role: user.role,
+  };
+
+  await setSessionUser(userData);
+
+  return userData;
+};
+
+export const createCustomer = actionWrapper(createCustomerHandler);
 
 const logoutHandler = async () => {
   await setSessionUser(null);

@@ -1,10 +1,10 @@
 "use client";
 
-import { createContext, useContext, useEffect, useState } from "react";
-import LoginModal from "@/components/LoginModal";
+import { createContext, useContext, useState } from "react";
 import { logout as logoutAction } from "@/lib/actions/auth";
+import DashboardLoginModal from "@/components/DashboardLoginModal";
 
-const AuthContext = createContext();
+const AuthContext = createContext(null);
 
 export function AuthProvider({ children, initialUser }) {
   const [authState, setAuthState] = useState({
@@ -12,6 +12,7 @@ export function AuthProvider({ children, initialUser }) {
     isLoading: false,
     isAuthenticated: !!initialUser,
   });
+
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
 
   const login = () => {
@@ -20,7 +21,6 @@ export function AuthProvider({ children, initialUser }) {
 
   const logout = async () => {
     await logoutAction();
-
     setAuthState({
       user: null,
       isLoading: false,
@@ -37,16 +37,12 @@ export function AuthProvider({ children, initialUser }) {
     setIsLoginModalOpen(false);
   };
 
-  const value = {
-    authState,
-    login,
-    logout,
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ authState, login, logout }}>
       {children}
-      <LoginModal
+
+      {/* ✅ LOGIN MODAL MOUNTED ONCE */}
+      <DashboardLoginModal
         isOpen={isLoginModalOpen}
         onClose={() => setIsLoginModalOpen(false)}
         onSuccess={handleLoginSuccess}
@@ -58,7 +54,7 @@ export function AuthProvider({ children, initialUser }) {
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {
-    throw new Error("useAuth must be used within an AuthProvider");
+    throw new Error("useAuth must be used within AuthProvider");
   }
   return context;
 }

@@ -1,10 +1,12 @@
 import { z } from "zod";
+import { VIDEOGRAPHY_SUB_SERVICES } from "@/lib/config/pricing";
 
 // Property schema for individual property entries
 const propertySchema = z.object({
   propertyType: z.string().min(1, "Property type is required"),
   propertySize: z.string().min(1, "Property size is required"),
   services: z.array(z.string()).min(1, "At least one service is required"),
+  videographySubService: z.string().optional(),
   preferredDate: z.string().min(1, "Preferred date is required"),
   timeSlot: z.string().optional(),
   startTime: z.string().min(1, "Start time is required"),
@@ -21,6 +23,22 @@ const propertySchema = z.object({
     .optional()
     .or(z.literal("")),
   */
+}).refine((data) => {
+  if (data.services?.includes("Videography") && !data.videographySubService) {
+    return false;
+  }
+
+  if (!data.videographySubService) return true;
+
+  // Accept:
+  // - Short Form
+  // - Long Form.Daylight | Long Form.Night Light | Long Form.Daylight + Night
+  const [main] = data.videographySubService.split(".");
+  const allowedMain = Object.values(VIDEOGRAPHY_SUB_SERVICES);
+  return allowedMain.includes(main);
+}, {
+  message: "Videography duration is required when videography service is selected",
+  path: ["videographySubService"],
 });
 
 // Main booking schema

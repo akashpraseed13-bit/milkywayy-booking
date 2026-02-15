@@ -129,9 +129,10 @@ export default function UserTable({ users, pagination }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>USER</TableHead>
-              <TableHead>EMAIL</TableHead>
+              <TableHead>ID</TableHead>
+              <TableHead>NAME</TableHead>
               <TableHead>PHONE</TableHead>
+              <TableHead>EMAIL</TableHead>
               <TableHead>ROLE</TableHead>
               <TableHead>ACTIONS</TableHead>
             </TableRow>
@@ -139,30 +140,33 @@ export default function UserTable({ users, pagination }) {
           <TableBody>
             {users.length === 0
               ? <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={6} className="h-24 text-center">
                     No users found
                   </TableCell>
                 </TableRow>
               : users.map((user) => (
                   <TableRow key={user.id}>
+                    <TableCell className="font-mono text-sm">
+                      #{user.id}
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
-                        <Avatar>
-                          <AvatarImage src="" alt={user.fullName} />
-                          <AvatarFallback>
-                            {user.fullName?.slice(0, 2).toUpperCase()}
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage src="" alt={user.fullName || `User ${user.id}`} />
+                          <AvatarFallback className="text-xs">
+                            {user.fullName 
+                              ? user.fullName.slice(0, 2).toUpperCase()
+                              : `U${user.id.toString().slice(-2)}`
+                            }
                           </AvatarFallback>
                         </Avatar>
-                        <div className="flex flex-col">
-                          <span className="font-medium">{user.fullName}</span>
-                          <span className="text-xs text-muted-foreground">
-                            ID: {user.id}
-                          </span>
-                        </div>
+                        <span className="font-medium">
+                          {user.fullName || `User ${user.id}`}
+                        </span>
                       </div>
                     </TableCell>
-                    <TableCell>{user.email}</TableCell>
                     <TableCell>{user.phone || "N/A"}</TableCell>
+                    <TableCell>{user.email || "N/A"}</TableCell>
                     <TableCell>
                       <Badge
                         variant={getRoleBadgeVariant(user.role)}

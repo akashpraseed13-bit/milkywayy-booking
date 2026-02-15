@@ -21,7 +21,7 @@ import DateSlotPicker from "@/components/DateSlotPicker";
 import PhoneNumberInput from "@/components/PhoneInput";
 import { OptionCard } from "./OptionCard";
 import { cn } from "@/lib/utils";
-import { PROPERTY_TYPE_ORDER, SERVICE_ORDER } from "@/lib/config/pricing";
+import { PROPERTY_TYPE_ORDER, SERVICE_ORDER, VIDEOGRAPHY_SUB_SERVICES, VIDEOGRAPHY_SUB_SERVICE_ORDER, VIDEOGRAPHY_SUB_CATEGORIES } from "@/lib/config/pricing";
 
 const SERVICE_ICONS = {
   Photography: Camera,
@@ -230,35 +230,117 @@ export function PropertyCard({
             </div>
 
             {/* Property Size Selection */}
-            {property.propertyType && pricingConfig[property.propertyType] && (
+            {property.propertyType && pricingConfig && pricingConfig[property.propertyType] && (
               <div className="animate-in fade-in slide-in-from-top-4 duration-300">
                 <label className="block text-sm font-medium text-muted-foreground mb-3">
-                  Property Size
+                  {property.propertyType === "Commercial" ? "Select Package" : "Property Size"}
                 </label>
                 <Controller
                   name={`properties.${index}.propertySize`}
                   control={control}
                   render={({ field }) => (
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {pricingConfig[property.propertyType].sizes.map(
-                        (sizeObj) => (
-                          <OptionCard
-                            isSelected={field.value === sizeObj.label}
-                            key={sizeObj.label}
-                            className="px-4 py-3"
-                            onClick={() => {
-                              updatePropertyField(
-                                index,
-                                "propertySize",
-                                sizeObj.label,
-                              );
-                              setValue(`properties.${index}.services`, []);
-                            }}
-                          >
-                            {sizeObj.label}
-                          </OptionCard>
-                        ),
-                      )}
+                    <div className={property.propertyType === "Commercial" ? "grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-4 gap-6 w-full" : "grid grid-cols-2 lg:grid-cols-4 gap-3 w-full"}>
+                      {pricingConfig[property.propertyType].sizes.map((sizeObj) => {
+                        if (property.propertyType === "Commercial") {
+                          const isSelected = field.value === sizeObj.label;
+                          
+                          const TIER_META = {
+                            Basic: {
+                              icon: Building,
+                              subtitle: "Small offices / retail units",
+                            },
+                            Essential: {
+                              icon: Building2,
+                              subtitle: "Showrooms / partitioned offices",
+                              badge: "Most Popular",
+                            },
+                            Premium: {
+                              icon: Video,
+                              subtitle: "Full floors / larger commercial spaces",
+                            },
+                            Elite: {
+                              icon: Calendar,
+                              subtitle: "HQs / Warehouses / Corporate facilities",
+                              badge: "Priority Delivery",
+                            },
+                          };
+
+                          const meta = TIER_META[sizeObj.label];
+                          const Icon = meta?.icon || Building;
+
+                          return (
+                            <div
+                              key={sizeObj.label}
+                              onClick={() => {
+                                updatePropertyField(index, "propertySize", sizeObj.label);
+                                setValue(`properties.${index}.services`, []);
+                              }}
+                              className={cn(
+                                "relative cursor-pointer rounded-xl border transition-all duration-300 p-6 text-center flex flex-col items-center justify-center gap-3",
+                                isSelected
+                                  ? "border-yellow-500 bg-zinc-900 shadow-lg scale-[1.02]"
+                                  : "border-zinc-700 bg-[#1f1f1f] hover:border-zinc-500"
+                              )}
+                            >
+                              {/* Badge */}
+                              {meta?.badge && (
+                                <div
+                                  className={cn(
+                                    "absolute -top-3 px-3 py-1 text-xs font-medium rounded-full",
+                                    meta.badge === "Most Popular"
+                                      ? "bg-yellow-500 text-black"
+                                      : "bg-red-600 text-white"
+                                  )}
+                                >
+                                  {meta.badge}
+                                </div>
+                              )}
+
+                              <div
+                                className={cn(
+                                  "p-3 rounded-full",
+                                  isSelected
+                                    ? "bg-yellow-500/20"
+                                    : "bg-zinc-800"
+                                )}
+                              >
+                                <Icon
+                                  size={28}
+                                  className={
+                                    isSelected ? "text-yellow-400" : "text-muted-foreground"
+                                  }
+                                />
+                              </div>
+
+                              <div className="font-semibold text-lg text-foreground">
+                                {sizeObj.label}
+                              </div>
+
+                              <div className="text-sm text-muted-foreground">
+                                {meta?.subtitle}
+                              </div>
+                            </div>
+                          );
+                        } else {
+                          return (
+                            <OptionCard
+                              isSelected={field.value === sizeObj.label}
+                              key={sizeObj.label}
+                              className="px-4 py-3"
+                              onClick={() => {
+                                updatePropertyField(
+                                  index,
+                                  "propertySize",
+                                  sizeObj.label,
+                                );
+                                setValue(`properties.${index}.services`, []);
+                              }}
+                            >
+                              {sizeObj.label}
+                            </OptionCard>
+                          );
+                        }
+                      })}
                     </div>
                   )}
                 />
@@ -271,7 +353,7 @@ export function PropertyCard({
             )}
 
             {/* Services Selection */}
-            {property.propertySize && property.propertyType && (
+            {property.propertySize && property.propertyType && pricingConfig && pricingConfig[property.propertyType] && (
               <div className="animate-in fade-in slide-in-from-top-4 duration-300">
                 <label className="block text-sm font-medium text-muted-foreground mb-3">
                   Services (Multiple Selection)
@@ -280,7 +362,7 @@ export function PropertyCard({
                   name={`properties.${index}.services`}
                   control={control}
                   render={({ field }) => (
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 w-full">
                       {(() => {
                         const typeConfig = pricingConfig[property.propertyType];
                         const sizeConfig = typeConfig.sizes.find(
@@ -289,13 +371,50 @@ export function PropertyCard({
                         if (!sizeConfig) return null;
 
                         return SERVICE_ORDER.map((serviceName) => {
-                          const priceConfig = sizeConfig.prices[serviceName];
+                          // Filter services based on commercial tier
+                          if (property.propertyType === "Commercial") {
+                            const availableServices = {
+                              "Basic": ["Photography", "Videography"],
+                              "Essential": ["Photography", "Videography", "360° Tour"],
+                              "Premium": ["Photography", "Videography", "360° Tour"],
+                              "Elite": ["Photography", "Videography", "360° Tour"]
+                            };
+                            
+                            if (!availableServices[property.propertySize]?.includes(serviceName)) {
+                              return null;
+                            }
+                          }
+                          
+                          let priceConfig = sizeConfig.prices[serviceName];
                           if (priceConfig === undefined) return null;
 
-                          const price =
+                          // Handle videography sub-service pricing
+                          let price;
+                          if (
+                            serviceName === "Videography" &&
+                            property.videographySubService &&
                             typeof priceConfig === "object"
+                          ) {
+                            const [mainService] = property.videographySubService.split(".");
+                            
+                            // For commercial properties, use simplified pricing (no subcategories)
+                            if (property.propertyType === "Commercial") {
+                              price = priceConfig?.[mainService]?.price || 0;
+                            } else {
+                              // For non-commercial, keep existing subcategory logic
+                              const subCategory = property.videographySubService.split(".")[1];
+                              if (subCategory) {
+                                price =
+                                  priceConfig?.[mainService]?.[subCategory]?.price || 0;
+                              } else {
+                                price = priceConfig?.[mainService]?.price || 0;
+                              }
+                            }
+                          } else {
+                            price = typeof priceConfig === "object"
                               ? priceConfig.price || 0
                               : priceConfig || 0;
+                          }
 
                           const Icon = SERVICE_ICONS[serviceName] || Camera;
                           const isSelected = field.value?.includes(serviceName);
@@ -324,14 +443,27 @@ export function PropertyCard({
                                   <div className="font-semibold mb-1">
                                     {serviceName}
                                   </div>
-                                  {SERVICE_SUBTITLES[serviceName] ? (
+                                  {property.propertyType === "Commercial" ? (
+                                    <div className="text-xs text-muted-foreground mb-1">
+                                      {serviceName === "Photography" && "Up to 10 edited photos"}
+                                      {serviceName === "Videography" && property.videographySubService?.includes("Short") && "60–90 sec"}
+                                      {serviceName === "Videography" && property.videographySubService?.includes("Long") && "8–15 mins max"}
+                                      {serviceName === "360° Tour" && "Up to 20 hotspots"}
+                                    </div>
+                                  ) : SERVICE_SUBTITLES[serviceName] ? (
                                     <div className="text-xs text-muted-foreground mb-1">
                                       {SERVICE_SUBTITLES[serviceName]}
                                     </div>
                                   ) : null}
-                                  <div className="text-sm text-muted-foreground">
-                                    AED {price}
-                                  </div>
+                                  {property.propertyType === "Commercial" ? (
+                                    <div className="text-sm text-muted-foreground">
+                                      {serviceName !== "Videography" && `AED ${price}`}
+                                    </div>
+                                  ) : serviceName !== "Videography" && (
+                                    <div className="text-sm text-muted-foreground">
+                                      AED {price}
+                                    </div>
+                                  )}
                                 </div>
                               </div>
                             </OptionCard>
@@ -344,6 +476,167 @@ export function PropertyCard({
                 {errors.properties?.[index]?.services && (
                   <p className="text-red-500 text-xs mt-1">
                     {errors.properties[index].services.message}
+                  </p>
+                )}
+              </div>
+            )}
+
+            {/* Videography Sub-Service Selection */}
+            {property.services?.includes("Videography") && (
+              <div className="animate-in fade-in slide-in-from-top-4 duration-300">
+                <label className="block text-sm font-medium text-muted-foreground mb-3">
+                  {property.propertyType === "Commercial" ? "Videography Package" : "Videography Duration"}
+                </label>
+                <Controller
+                  name={`properties.${index}.videographySubService`}
+                  control={control}
+                  render={({ field }) => (
+                    <div className="space-y-4">
+                      {/* Main Service Selection */}
+                      <div className={property.propertyType === "Commercial" && property.propertySize === "Basic" ? "grid grid-cols-1 gap-4 w-full" : "grid grid-cols-1 lg:grid-cols-2 gap-4 w-full"}>
+                        {VIDEOGRAPHY_SUB_SERVICE_ORDER.map((subService) => {
+                          // Filter videography sub-services for commercial Basic tier
+                          if (property.propertyType === "Commercial" && property.propertySize === "Basic") {
+                            if (subService !== VIDEOGRAPHY_SUB_SERVICES.SHORT_FORM) {
+                              return null;
+                            }
+                          }
+                          
+                          const typeConfig = pricingConfig[property.propertyType];
+                          const sizeConfig = typeConfig?.sizes?.find(
+                            (s) => s.label === property.propertySize,
+                          );
+                          const servicePriceConfig = sizeConfig?.prices?.["Videography"]?.[subService];
+                          
+                          // Calculate base price for display
+                          let basePrice;
+                          if (property.propertyType === "Commercial") {
+                            // For commercial, use simplified pricing
+                            basePrice = servicePriceConfig?.price || 0;
+                          } else {
+                            // For non-commercial, keep existing logic
+                            if (subService === VIDEOGRAPHY_SUB_SERVICES.SHORT_FORM) {
+                              basePrice = servicePriceConfig?.price || 0;
+                            } else {
+                              // For Long Form, show minimum of subcategories ("From")
+                              if (!servicePriceConfig || typeof servicePriceConfig !== "object") {
+                                basePrice = 0;
+                              } else {
+                                const values = Object.values(servicePriceConfig);
+                                const count = values.length;
+                                basePrice = count
+                                  ? Math.min(
+                                      ...values.map((cat) =>
+                                        typeof cat?.price === "number" ? cat.price : Infinity,
+                                      ),
+                                    )
+                                  : 0;
+                                if (basePrice === Infinity) basePrice = 0;
+                              }
+                            }
+                          }
+
+                          return (
+                            <OptionCard
+                              key={subService}
+                              isSelected={field.value?.split('.')?.[0] === subService}
+                              onClick={() => {
+                                if (property.propertyType === "Commercial") {
+                                  // For commercial, just select the sub-service directly
+                                  updatePropertyField(index, "videographySubService", subService);
+                                } else {
+                                  // For non-commercial, keep existing logic
+                                  if (subService === VIDEOGRAPHY_SUB_SERVICES.SHORT_FORM) {
+                                    updatePropertyField(index, "videographySubService", subService);
+                                  } else {
+                                    // For Long Form, select first subcategory
+                                    const categoriesObj = VIDEOGRAPHY_SUB_CATEGORIES?.[subService];
+                                    const firstCategoryLabel = categoriesObj
+                                      ? Object.values(categoriesObj)[0]
+                                      : undefined;
+                                    if (!firstCategoryLabel) {
+                                      updatePropertyField(index, "videographySubService", subService);
+                                      return;
+                                    }
+                                    updatePropertyField(
+                                      index,
+                                      "videographySubService",
+                                      `${subService}.${firstCategoryLabel}`,
+                                    );
+                                  }
+                                }
+                              }}
+                            >
+                              <div className="flex flex-col items-center gap-2">
+                                <div className="font-semibold">{subService}</div>
+                                {property.propertyType === "Commercial" ? (
+                                  <div className="text-sm text-muted-foreground">
+                                    AED {basePrice}
+                                  </div>
+                                ) : (
+                                  subService === VIDEOGRAPHY_SUB_SERVICES.SHORT_FORM && (
+                                    <div className="text-sm text-muted-foreground">
+                                      AED {basePrice}
+                                    </div>
+                                  )
+                                )}
+                              </div>
+                            </OptionCard>
+                          );
+                        })}
+                      </div>
+
+                      {/* Sub-Category Selection - Show only for Long Form and non-commercial properties */}
+                      {field.value?.split('.')?.[0] === VIDEOGRAPHY_SUB_SERVICES.LONG_FORM && property.propertyType !== "Commercial" && (
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-muted-foreground mb-3">
+                            {field.value.split('.')[0]} Options
+                          </label>
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                            {(() => {
+                              const [mainService, selectedCategoryLabel] = field.value?.split('.') || [];
+                              const categories = VIDEOGRAPHY_SUB_CATEGORIES[mainService];
+                              
+                              if (!categories) return null;
+
+                              const currentCategory =
+                                selectedCategoryLabel || Object.values(categories)[0];
+                               
+                              return Object.entries(categories).map(([categoryKey, categoryName]) => {
+                                const typeConfig = pricingConfig[property.propertyType];
+                                const sizeConfig = typeConfig?.sizes?.find(
+                                  (s) => s.label === property.propertySize,
+                                );
+                                const priceConfig = sizeConfig?.prices?.["Videography"]?.[mainService]?.[categoryName];
+                                const price = priceConfig?.price || 0;
+
+                                return (
+                                  <OptionCard
+                                    key={categoryKey}
+                                    isSelected={currentCategory === categoryName}
+                                    onClick={() => {
+                                      updatePropertyField(index, "videographySubService", `${mainService}.${categoryName}`);
+                                    }}
+                                  >
+                                    <div className="flex flex-col items-center gap-1">
+                                      <div className="font-medium text-sm">{categoryName}</div>
+                                      <div className="text-xs text-muted-foreground">
+                                        AED {price}
+                                      </div>
+                                    </div>
+                                  </OptionCard>
+                                );
+                              });
+                            })()}
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                />
+                {errors.properties?.[index]?.videographySubService && (
+                  <p className="text-red-500 text-xs mt-1">
+                    {errors.properties[index].videographySubService.message}
                   </p>
                 )}
               </div>

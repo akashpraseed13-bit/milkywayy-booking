@@ -11,6 +11,12 @@ const Booking = sequelize.define(
       primaryKey: true,
       autoIncrement: true,
     },
+    bookingCode: {
+      type: DataTypes.STRING,
+      allowNull: true,
+      unique: true,
+      field: 'booking_code'
+    },
     status: {
       type: DataTypes.STRING,
       allowNull: false,

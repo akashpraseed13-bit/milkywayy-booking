@@ -13,13 +13,20 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { cancelBooking } from "@/lib/actions/bookings";
+import { cancelBooking, rescheduleBookingByCode } from "@/lib/actions/bookings";
+import { toast } from "sonner";
+import DateSlotPicker from "@/components/DateSlotPicker";
 
 export default function BookingList({ bookings }) {
   const router = useRouter();
   const [loadingId, setLoadingId] = useState(null);
   const [selectedBooking, setSelectedBooking] = useState(null);
   const [isOpen, setIsOpen] = useState(false);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduleDate, setRescheduleDate] = useState(null);
+  const [rescheduleSlot, setRescheduleSlot] = useState(null);
+  const [rescheduleLoading, setRescheduleLoading] = useState(false);
+  const [selectedRescheduleBooking, setSelectedRescheduleBooking] = useState(null);
 
   const handleCancel = async (id) => {
     if (!confirm("Are you sure you want to cancel this booking?")) return;
@@ -36,8 +43,39 @@ export default function BookingList({ bookings }) {
     }
   };
 
-  const handleReschedule = (id) => {
-    alert("Reschedule functionality coming soon!");
+  const handleReschedule = (booking) => {
+    setSelectedRescheduleBooking(booking);
+    setRescheduleDate(booking.date);
+    setRescheduleSlot(booking.slot || "");
+    setRescheduleOpen(true);
+  };
+
+  const handleRescheduleConfirm = async () => {
+    if (!rescheduleDate || !rescheduleSlot) {
+      toast.error("Please select both date and time");
+      return;
+    }
+
+    setRescheduleLoading(true);
+    try {
+      const bookingCode = selectedRescheduleBooking.bookingCode || `MWY-${String(selectedRescheduleBooking.id).padStart(6, '0')}`;
+      const res = await rescheduleBookingByCode(bookingCode, {
+        date: rescheduleDate,
+        slot: rescheduleSlot,
+      });
+
+      if (res.success) {
+        toast.success("Booking rescheduled successfully!");
+        setRescheduleOpen(false);
+        router.refresh();
+      } else {
+        toast.error(res.message || "Failed to reschedule booking");
+      }
+    } catch (error) {
+      toast.error("Failed to reschedule booking");
+    } finally {
+      setRescheduleLoading(false);
+    }
   };
 
   const handleBookingClick = (booking) => {
@@ -48,21 +86,19 @@ export default function BookingList({ bookings }) {
   const getStatusChip = (booking) => {
     if (booking.cancelledAt) {
       return (
-        <span className="text-red-500 text-sm font-medium">Cancelled</span>
+        <span className="text-white text-sm font-medium  px-2 py-1 rounded">Cancelled</span>
       );
     } else if (booking.completedAt) {
       return (
-        <span className="text-green-500 text-sm font-medium">Completed</span>
+        <span className="text-white text-sm font-medium  px-2 py-1 rounded">Completed</span>
+      );
+    } else if (booking.status === "CONFIRMED") {
+      return (
+        <span className="text-white text-sm font-medium px-2 py-1 rounded">Confirmed</span>
       );
     } else {
       return (
-        <span className="text-zinc-400 text-sm">
-          {booking.slot === 1
-            ? "10:00 AM"
-            : booking.slot === 2
-              ? "02:00 PM"
-              : "06:00 PM"}
-        </span>
+        <span className="text-white text-sm font-medium  px-2 py-1 rounded">Draft</span>
       );
     }
   };
@@ -98,6 +134,9 @@ export default function BookingList({ bookings }) {
         >
           <div className="flex justify-between items-start mb-4">
             <div className="space-y-1">
+              <div className="text-xs font-mono text-[#f59e0b] bg-[#f59e0b]/10 px-2 py-1 rounded inline-block">
+                {booking.bookingCode || `MWY-${String(booking.id).padStart(6, '0')}`}
+              </div>
               <h3 className="text-lg font-bold text-zinc-100 leading-tight">
                 {[
                   booking.propertyDetails?.unit,
@@ -125,7 +164,7 @@ export default function BookingList({ bookings }) {
               <button
                 onClick={(e) => {
                   e.stopPropagation();
-                  handleReschedule(booking.id);
+                  handleReschedule(booking);
                 }}
                 className="px-4 py-1.5 border border-zinc-700 hover:border-zinc-600 hover:bg-zinc-800 text-zinc-300 rounded-lg text-sm font-medium transition-all"
               >
@@ -267,6 +306,80 @@ export default function BookingList({ bookings }) {
               className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
             >
               Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Reschedule Dialog */}
+      <Dialog open={rescheduleOpen} onOpenChange={setRescheduleOpen}>
+        <DialogContent className="sm:max-w-2xl bg-[#181818] border-zinc-800 text-white max-h-[90vh] overflow-y-auto">
+          <DialogHeader className="border-b border-zinc-800 pb-4">
+            <DialogTitle>Reschedule Booking</DialogTitle>
+            <DialogDescription>
+              Select a new date and time for your booking
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-6 py-4">
+            <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800">
+              <h3 className="font-semibold mb-3 text-zinc-300">Current Booking</h3>
+              <div className="text-sm text-zinc-400 space-y-1">
+                <p>
+                  <span className="font-medium text-zinc-300">Booking Code:</span>{" "}
+                  <span className="font-mono text-[#f59e0b]">
+                    {selectedRescheduleBooking?.bookingCode || `MWY-${String(selectedRescheduleBooking?.id).padStart(6, '0')}`}
+                  </span>
+                </p>
+                <p>
+                  <span className="font-medium text-zinc-300">Property:</span>{" "}
+                  {selectedRescheduleBooking?.propertyDetails?.unit} {selectedRescheduleBooking?.propertyDetails?.building}
+                </p>
+                <p>
+                  <span className="font-medium text-zinc-300">Current Date:</span>{" "}
+                  {selectedRescheduleBooking?.date}
+                </p>
+                <p>
+                  <span className="font-medium text-zinc-300">Current Time:</span>{" "}
+                  {selectedRescheduleBooking?.slot === 1
+                    ? "Morning"
+                    : selectedRescheduleBooking?.slot === 2
+                      ? "Afternoon"
+                      : "Evening"}
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-800">
+              <h3 className="font-semibold mb-3 text-zinc-300">Select New Date & Time</h3>
+              <DateSlotPicker
+                date={rescheduleDate}
+                slot={rescheduleSlot}
+                onDateChange={setRescheduleDate}
+                onSlotChange={setRescheduleSlot}
+                minDate={new Date()}
+                error={null}
+                duration={1}
+                allowEvening={true}
+                blockedSlotsMap={{}}
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="border-t border-zinc-800 pt-4">
+            <Button
+              variant="ghost"
+              onClick={() => setRescheduleOpen(false)}
+              className="text-red-500 hover:text-red-400 hover:bg-red-500/10"
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleRescheduleConfirm}
+              disabled={!rescheduleDate || !rescheduleSlot || rescheduleLoading}
+              className="bg-zinc-600 text-white hover:bg-zinc-500"
+            >
+              {rescheduleLoading ? "Updating..." : "Confirm Reschedule"}
             </Button>
           </DialogFooter>
         </DialogContent>

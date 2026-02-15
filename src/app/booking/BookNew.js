@@ -58,6 +58,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
           propertyType: "",
           propertySize: "",
           services: [],
+          videographySubService: "",
           preferredDate: "",
           timeSlot: "",
           startTime: "",
@@ -91,6 +92,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
             propertyType: draft.propertyDetails?.type || "",
             propertySize: draft.propertyDetails?.size || "",
             services: draft.shootDetails?.services || [],
+            videographySubService: draft.shootDetails?.videographySubService || "",
             preferredDate: draft.date || "",
             timeSlot:
               draft.slot === 1
@@ -201,7 +203,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
   const updatePropertyField = (index, field, value) => {
     setValue(`properties.${index}.${field}`, value, { shouldValidate: true });
     
-    // If the changed field affects duration, recalculate it
+    // If changed field affects duration, recalculate it
     if (['propertyType', 'propertySize', 'services'].includes(field)) {
       const property = getValues(`properties.${index}`);
       // Only calculate if we have the minimum required info
@@ -222,6 +224,12 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     const newServices = currentServices.includes(serviceName)
       ? currentServices.filter((s) => s !== serviceName)
       : [...currentServices, serviceName];
+    
+    // Clear videography sub-service if videography is being deselected
+    if (serviceName === "Videography" && !newServices.includes("Videography")) {
+      setValue(`properties.${index}.videographySubService`, "");
+    }
+    
     updatePropertyField(index, "services", newServices);
   };
 
@@ -233,20 +241,37 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     try {
       const res = await createBookings(data.properties);
       if (!res.success) throw new Error(res.message);
-      const ids = res.data;
-      setBookingIds(ids);
-      setStep("payment");
-      window.scrollTo({ top: 0, behavior: "smooth" });
+      const bookingData = res.data;
+      const bookingIds = bookingData.map(b => b.id);
+      console.log('Booking codes generated:', bookingData.map(b => b.bookingCode));
+      
+      // Go directly to payment without confirmation step
+      setIsProcessingPayment(true);
+      const paymentRes = await createTransactionAndPaymentIntent(
+        bookingIds,
+        couponCode,
+      );
+      if (!paymentRes.success) throw new Error(paymentRes.message);
+      const result = paymentRes.data;
+      if (result.url) {
+        window.location.href = result.url;
+      } else {
+        throw new Error("No payment URL returned");
+      }
     } catch (error) {
-      toast.error(error.message || "Failed to save bookings");
+      toast.error(error.message || "Failed to process booking");
+    } finally {
+      setIsProcessingPayment(false);
     }
   };
 
   const handleFinalSubmit = async () => {
     setIsProcessingPayment(true);
     try {
+      // Extract just IDs for payment processing
+      const idsForPayment = bookingIds.map(b => typeof b === 'object' ? b.id : b);
       const res = await createTransactionAndPaymentIntent(
-        bookingIds,
+        idsForPayment,
         couponCode,
       );
       if (!res.success) throw new Error(res.message);
@@ -281,7 +306,22 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     if (!sizeConfig) return 0;
 
     return property.services.reduce((total, service) => {
-      const priceConfig = sizeConfig.prices[service];
+      let priceConfig = sizeConfig.prices[service];
+      
+      // Handle videography sub-services
+      if (service === "Videography" && property.videographySubService && typeof priceConfig === "object") {
+        if (property.videographySubService.includes('.')) {
+          // Long Form with subcategories
+          const [mainService, category] = property.videographySubService.split('.');
+          const categoryConfig = priceConfig[mainService]?.[category];
+          priceConfig = categoryConfig;
+        } else {
+          // Short Form - direct pricing
+          const categoryConfig = priceConfig[property.videographySubService];
+          priceConfig = categoryConfig;
+        }
+      }
+      
       const price =
         typeof priceConfig === "object"
           ? priceConfig.price || 0
@@ -306,7 +346,22 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     let allowEvening = false;
 
     property.services.forEach((service) => {
-      const config = sizeConfig.prices[service];
+      let config = sizeConfig.prices[service];
+      
+      // Handle videography sub-services
+      if (service === "Videography" && property.videographySubService && typeof config === "object") {
+        if (property.videographySubService.includes('.')) {
+          // Long Form with subcategories
+          const [mainService, category] = property.videographySubService.split('.');
+          const categoryConfig = config[mainService]?.[category];
+          config = categoryConfig;
+        } else {
+          // Short Form - direct pricing
+          const categoryConfig = config[property.videographySubService];
+          config = categoryConfig;
+        }
+      }
+      
       if (config && typeof config === "object") {
         const sDuration = config.slots || 1;
         if (sDuration > duration) duration = sDuration;

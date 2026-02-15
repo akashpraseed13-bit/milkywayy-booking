@@ -9,6 +9,7 @@ import { sequelize as db } from "@/lib/db/db";
 import Booking from "@/lib/db/models/booking";
 import Coupon from "@/lib/db/models/coupon";
 import Transaction from "@/lib/db/models/transaction";
+import User from "@/lib/db/models/user";
 import WalletTransaction from "@/lib/db/models/wallettransaction";
 import { auth } from "@/lib/helpers/auth";
 import { getPricingConfig } from "@/lib/helpers/pricing";
@@ -245,7 +246,13 @@ const calculatePropertyPrice = (property, pricingConfig) => {
   if (!sizeConfig) return 0;
 
   return property.services.reduce((total, service) => {
-    const priceConfig = sizeConfig.prices[service];
+    let priceConfig = sizeConfig.prices[service];
+    
+    // Handle videography sub-services
+    if (service === "Videography" && property.videographySubService && typeof priceConfig === "object") {
+      priceConfig = priceConfig[property.videographySubService];
+    }
+    
     const price =
       typeof priceConfig === "object"
         ? priceConfig.price || 0
@@ -274,6 +281,50 @@ const getBookingsHandler = async (userId) => {
   }
 };
 export const getBookings = actionWrapper(getBookingsHandler);
+
+export const getBookingByCode = actionWrapper(async (bookingCode) => {
+  const session = await auth();
+
+  if (!session?.id) throw new Error("Unauthorized");
+
+  const booking = await Booking.findOne({
+    where: {
+      bookingCode: bookingCode,
+      userId: session.id,
+    },
+  });
+
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
+
+  return { success: true, data: booking.toJSON() };
+});
+
+export const rescheduleBookingByCode = actionWrapper(async (bookingCode, updateData) => {
+  const session = await auth();
+
+  if (!session?.id) throw new Error("Unauthorized");
+
+  const booking = await Booking.findOne({
+    where: {
+      bookingCode: bookingCode,
+      userId: session.id,
+    },
+  });
+
+  if (!booking) {
+    throw new Error("Booking not found");
+  }
+
+  await booking.update({
+    ...updateData,
+    rescheduledAt: new Date(),
+    rescheduleCount: (booking.rescheduleCount || 0) + 1,
+  });
+
+  return { success: true, data: booking.toJSON() };
+});
 
 const getDraftsHandler = async () => {
   try {
@@ -337,7 +388,13 @@ const saveDraftsHandler = async (properties) => {
       );
       if (sizeConfig) {
         property.services.forEach((s) => {
-          const sConfig = sizeConfig.prices[s];
+          let sConfig = sizeConfig.prices[s];
+          
+          // Handle videography sub-services
+          if (s === "Videography" && property.videographySubService && typeof sConfig === "object") {
+            sConfig = sConfig[property.videographySubService];
+          }
+          
           if (sConfig) {
             const sDuration =
               typeof sConfig === "object" ? sConfig.slots || 1 : 1;
@@ -349,7 +406,10 @@ const saveDraftsHandler = async (properties) => {
 
     const booking = await Booking.create({
       userId: userId,
-      shootDetails: { services: property.services },
+      shootDetails: { 
+        services: property.services,
+        videographySubService: property.videographySubService || null
+      },
       propertyDetails: {
         type: property.propertyType,
         size: property.propertySize,
@@ -372,7 +432,13 @@ const saveDraftsHandler = async (properties) => {
     createdBookings.push(booking);
   }
 
-  return createdBookings.map((b) => b.id);
+  // Generate booking codes for new bookings
+  for (const booking of createdBookings) {
+    const bookingCode = `MWY-${String(booking.id).padStart(6, '0')}`;
+    await booking.update({ bookingCode });
+  }
+
+  return createdBookings.map((b) => ({ id: b.id, bookingCode: b.bookingCode }));
 };
 export const saveDrafts = actionWrapper(saveDraftsHandler);
 
@@ -390,13 +456,14 @@ const createTransactionAndPaymentIntentHandler = async (
   const userId = session.id;
 
   // Fetch bookings to calculate total and verify ownership
-
+  console.log('Looking for bookings:', bookingIds, 'for user:', userId);
   const bookings = await Booking.findAll({
     where: {
       id: bookingIds,
       userId: userId,
     },
   });
+  console.log('Found bookings:', bookings.map(b => ({ id: b.id, userId: b.userId, status: b.status })));
 
   if (bookings.length !== bookingIds.length) {
     throw new Error("Some bookings not found or unauthorized");
@@ -500,8 +567,10 @@ const createTransactionAndPaymentIntentHandler = async (
   );
 
   // Create Stripe Checkout Session
+  const user = await User.findByPk(userId);
   const stripeSession = await stripe.checkout.sessions.create({
     payment_method_types: ["card"],
+    customer_email: user?.email || undefined,
     line_items: [
       {
         price_data: {

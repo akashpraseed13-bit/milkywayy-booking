@@ -22,22 +22,9 @@ import { getAvailableSlots } from "@/lib/helpers/bookingUtils";
 import { cn } from "@/lib/utils";
 
 const TIME_SLOTS = [
-  { value: "10:00", label: "10:00 AM" },
-  { value: "10:30", label: "10:30 AM" },
-  { value: "11:00", label: "11:00 AM" },
-  { value: "11:30", label: "11:30 AM" },
-  { value: "12:00", label: "12:00 PM" },
-  { value: "12:30", label: "12:30 PM" },
-  { value: "13:00", label: "01:00 PM" },
-  { value: "13:30", label: "01:30 PM" },
-  { value: "14:00", label: "02:00 PM" },
-  { value: "14:30", label: "02:30 PM" },
-  { value: "15:00", label: "03:00 PM" },
-  { value: "15:30", label: "03:30 PM" },
-  { value: "16:00", label: "04:00 PM" },
-  { value: "16:30", label: "04:30 PM" },
-  { value: "17:00", label: "05:00 PM" },
-  { value: "17:30", label: "05:30 PM" },
+  { value: 1, label: "Morning", startTime: "08:00", endTime: "12:00" },
+  { value: 2, label: "Afternoon", startTime: "12:00", endTime: "17:00" },
+  { value: 3, label: "Evening", startTime: "17:00", endTime: "21:00" }
 ];
 
 export default function DateSlotPicker({
@@ -385,7 +372,7 @@ export default function DateSlotPicker({
                     <p className="text-sm text-gray-400 mb-2">
                       For {new Date(date).toLocaleDateString()}
                     </p>
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-1 gap-2">
                       {TIME_SLOTS.map((timeSlot) => {
                         const isAvailable = isSlotAvailable(
                           timeSlot.value,
@@ -410,7 +397,12 @@ export default function DateSlotPicker({
                                 "cursor-not-allowed bg-muted text-muted-foreground opacity-50",
                             )}
                           >
-                            <span>{timeSlot.label}</span>
+                            <div className="flex flex-col items-start">
+                              <span className="font-medium">{timeSlot.label}</span>
+                              <span className="text-xs text-gray-400">
+                                {timeSlot.startTime} - {timeSlot.endTime}
+                              </span>
+                            </div>
                             {isSelectedSlot && (
                               <span className="w-1.5 h-1.5 rounded-full bg-accent-foreground"></span>
                             )}

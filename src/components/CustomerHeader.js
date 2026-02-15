@@ -13,59 +13,41 @@ export default function CustomerHeader() {
   const pathname = usePathname();
   const { isAuthenticated } = authState;
 
-  const handleLogout = async () => {
-    await logout();
-    router.push("/");
-  };
-
-  const isDashboardPage = pathname.startsWith("/dashboard");
-
   return (
     <HeaderBackground className="fixed top-0 left-0 right-0 z-50 flex py-4 items-center justify-between border-b border-white/10 px-4 lg:px-8">
-      <div className="flex items-center">
-        <Link
-          href="/"
-          className="flex items-center gap-2 text-xl font-bold text-white"
-        >
-          <Image
-            src="/logo-texxt.png"
-            height="40"
-            width="200"
-            alt="Milkywayy"
-          />
-        </Link>
-      </div>
+      <Link href="/" className="flex items-center gap-2 text-xl font-bold text-white">
+        <Image src="/logo-texxt.png" height={40} width={200} alt="Milkywayy" />
+      </Link>
 
-      <div className="flex items-center gap-4">
-        {isAuthenticated
-          ? <>
-              <Button
-                asChild
-                variant="ghost"
-                className="border border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
-              >
-                <Link
-                  href={isDashboardPage ? "/booking" : "/dashboard/bookings"}
-                >
-                  {isDashboardPage ? "Book Now" : "Dashboard"}
-                </Link>
-              </Button>
-              <Button
-                onClick={handleLogout}
-                variant="ghost"
-                className="border border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
-              >
-                Logout
-              </Button>
-            </>
-          : <Button
-              onClick={login}
-              variant="ghost"
-              className="border border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
-            >
-              Login
-            </Button>}
-      </div>
+      {isAuthenticated ? (
+        <div className="flex items-center gap-4">
+          <span className="text-sm font-medium text-white">
+            Hi, {authState.user?.fullName || authState.user?.email || 'User'}
+          </span>
+          <Button
+            variant="ghost"
+            className="border border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            onClick={() => router.push("/dashboard/bookings")}
+          >
+            Dashboard
+          </Button>
+          <Button
+            variant="ghost"
+            className="border border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+            onClick={logout}
+          >
+            Logout
+          </Button>
+        </div>
+      ) : (
+        <Button
+          variant="ghost"
+          className="border border-white/20 bg-transparent text-white hover:bg-white/10 hover:text-white"
+          onClick={login}
+        >
+          Dashboard
+        </Button>
+      )}
     </HeaderBackground>
   );
 }
