@@ -16,7 +16,11 @@ import { validateCoupon } from "@/lib/actions/coupons";
 import { PRICING_CONFIG as STATIC_PRICING_CONFIG } from "@/lib/config/pricing";
 import { useAuth } from "@/lib/contexts/auth";
 import { bookingSchema } from "@/lib/schema/booking.schema";
-import { calculateBookingDuration, getAvailableSlots } from "@/lib/helpers/bookingUtils";
+import {
+  calculateBookingDuration,
+  getBookingLoadBreakdown,
+  isNightServiceSelected,
+} from "@/lib/helpers/bookingUtils";
 
 // Modular Components
 import { PropertyCard } from "./components/PropertyCard";
@@ -40,6 +44,8 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
   const [couponSuccess, setCouponSuccess] = useState("");
   const [bookingIds, setBookingIds] = useState([]);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [rollingWindowDays, setRollingWindowDays] = useState(90);
+  const [timeSlotSettings, setTimeSlotSettings] = useState(null);
   const { authState, login } = useAuth();
 
   const {
@@ -104,9 +110,9 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                     : "",
             startTime: 
               draft.startTime || (
-              draft.slot === 1 ? "10:00" :
+              draft.slot === 1 ? "09:00" :
               draft.slot === 2 ? "13:00" :
-              draft.slot === 3 ? "16:00" : ""),
+              draft.slot === 3 ? "17:00" : ""),
             duration: draft.duration || 0,
             building: draft.propertyDetails?.building || "",
             community: draft.propertyDetails?.community || "",
@@ -125,6 +131,32 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     };
     loadDrafts();
   }, [setValue]);
+
+  useEffect(() => {
+    const loadTimeSlotSettings = async () => {
+      try {
+        const res = await fetch("/api/admin/timeslots", {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+          cache: "no-store",
+        });
+        if (!res.ok) return;
+        const data = await res.json();
+        const days = parseInt(
+          data?.config?.systemSettings?.rollingWindowDays,
+          10,
+        );
+        if (Number.isFinite(days) && days > 0) {
+          setRollingWindowDays(days);
+        }
+        setTimeSlotSettings(data?.config?.systemSettings || null);
+      } catch (error) {
+        // Use default fallback when settings are unavailable.
+      }
+    };
+
+    loadTimeSlotSettings();
+  }, []);
 
   // Auto-save drafts
   useEffect(() => {
@@ -202,16 +234,73 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
 
   const updatePropertyField = (index, field, value) => {
     setValue(`properties.${index}.${field}`, value, { shouldValidate: true });
+
+    const nextProperty = {
+      ...getValues(`properties.${index}`),
+      [field]: value,
+    };
+
+    // Keep sub-service in sync with actual Videography selection.
+    if (
+      !nextProperty?.services?.includes("Videography") &&
+      nextProperty?.videographySubService
+    ) {
+      setValue(`properties.${index}.videographySubService`, "", {
+        shouldValidate: true,
+      });
+      nextProperty.videographySubService = "";
+    }
+
+    // If service mix changes slot visibility, clear stale slot/time.
+    const selectedSlot = nextProperty.startTime || nextProperty.timeSlot;
+    if (selectedSlot) {
+      const startPeriodMap = {
+        "09:00": "morning",
+        "10:00": "morning",
+        morning: "morning",
+        "13:00": "afternoon",
+        afternoon: "afternoon",
+        "16:00": "evening",
+        "17:00": "evening",
+        evening: "evening",
+      };
+      const startPeriod = startPeriodMap[selectedSlot] || selectedSlot;
+      const nightService = isNightServiceSelected(
+        nextProperty?.services || [],
+        nextProperty?.videographySubService || "",
+      );
+      const isValidStart = nightService
+        ? startPeriod === "evening"
+        : startPeriod === "morning" || startPeriod === "afternoon";
+
+      if (!isValidStart) {
+        setValue(`properties.${index}.timeSlot`, "", { shouldValidate: true });
+        setValue(`properties.${index}.startTime`, "", { shouldValidate: true });
+      }
+    }
     
     // If changed field affects duration, recalculate it
-    if (['propertyType', 'propertySize', 'services'].includes(field)) {
-      const property = getValues(`properties.${index}`);
+    if (["propertyType", "propertySize", "services", "videographySubService"].includes(field)) {
+      const property = {
+        ...nextProperty,
+        videographySubService:
+          nextProperty?.services?.includes("Videography")
+            ? nextProperty?.videographySubService
+            : "",
+      };
       // Only calculate if we have the minimum required info
       if (property.propertyType && property.propertySize && property.services?.length > 0) {
         const duration = calculateBookingDuration(
-          { id: property.services }, // Simulating service object
-          { type: property.propertyType, size: property.propertySize },
-          { community: property.community }
+          { id: property.services, videographySubService: property.videographySubService },
+          {
+            type: property.propertyType,
+            size: property.propertySize,
+            videographySubService: property.videographySubService,
+          },
+          {
+            slotCapacity: timeSlotSettings?.slotCapacity,
+            weightModel: timeSlotSettings?.weightModel,
+          }
         );
         setValue(`properties.${index}.duration`, duration);
       } else {
@@ -219,6 +308,34 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
       }
     }
   };
+
+  useEffect(() => {
+    if (!properties?.length) return;
+    properties.forEach((property, index) => {
+      if (
+        property.propertyType &&
+        property.propertySize &&
+        property.services?.length > 0
+      ) {
+        const duration = calculateBookingDuration(
+          {
+            id: property.services,
+            videographySubService: property.videographySubService,
+          },
+          {
+            type: property.propertyType,
+            size: property.propertySize,
+            videographySubService: property.videographySubService,
+          },
+          {
+            slotCapacity: timeSlotSettings?.slotCapacity,
+            weightModel: timeSlotSettings?.weightModel,
+          },
+        );
+        setValue(`properties.${index}.duration`, duration);
+      }
+    });
+  }, [timeSlotSettings]);
 
   const toggleService = async (index, serviceName, currentServices) => {
     const newServices = currentServices.includes(serviceName)
@@ -409,10 +526,18 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
 
   const getOccupiedSlots = (currentIndex) => {
     const occupied = {};
-    const HOURLY_SLOTS = [
-      "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
-      "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
-    ];
+    const PERIOD_TO_HOURLY = {
+      morning: ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30"],
+      afternoon: ["13:00", "13:30", "14:00", "14:30", "15:00", "15:30"],
+      evening: ["17:00", "17:30", "18:00", "18:30", "19:00", "19:30"],
+    };
+    const START_TIME_TO_PERIOD = {
+      "09:00": "morning",
+      "10:00": "morning",
+      "13:00": "afternoon",
+      "16:00": "evening",
+      "17:00": "evening",
+    };
 
     properties.forEach((p, idx) => {
       if (idx === currentIndex) return;
@@ -420,38 +545,29 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
 
       const slotValue = p.startTime || p.timeSlot;
       if (!slotValue) return;
-
-      const duration = p.duration || 1;
-      // Handle legacy slots for local blocking
-      if (slotValue === 'morning') {
-        if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
-        occupied[p.preferredDate].push('morning');
-        return;
-      }
-      if (slotValue === 'afternoon') {
-        if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
-        occupied[p.preferredDate].push('afternoon');
-        return;
-      }
-      if (slotValue === 'evening') {
-        if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
-        occupied[p.preferredDate].push('evening');
-        return;
-      }
-
-      const startIndex = HOURLY_SLOTS.indexOf(slotValue);
-      if (startIndex === -1) return;
+      const startPeriod = START_TIME_TO_PERIOD[slotValue] || slotValue;
+      const slotsRequired = Math.min(Math.max(parseInt(p.duration, 10) || 1, 1), 2);
+      const isNight = isNightCompatibleProperty(p);
 
       if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
-
-      // Duration is in hours, so * 2 for 30-min slots
-      const numSlots = duration * 2;
-      for (let i = 0; i < numSlots; i++) {
-        const slotIndex = startIndex + i;
-        if (slotIndex < HOURLY_SLOTS.length) {
-          occupied[p.preferredDate].push(HOURLY_SLOTS[slotIndex]);
+      let requiredPeriods = [startPeriod];
+      if (slotsRequired === 2) {
+        if (isNight && startPeriod === "evening") {
+          requiredPeriods = ["afternoon", "evening"];
+        } else if (!isNight && startPeriod === "morning") {
+          requiredPeriods = ["morning", "afternoon"];
+        } else if (!isNight && startPeriod === "afternoon") {
+          requiredPeriods = ["afternoon", "evening"];
         }
       }
+
+      requiredPeriods.forEach((period) => {
+        (PERIOD_TO_HOURLY[period] || []).forEach((hour) => {
+          if (!occupied[p.preferredDate].includes(hour)) {
+            occupied[p.preferredDate].push(hour);
+          }
+        });
+      });
     });
     return occupied;
   };
@@ -504,6 +620,35 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     }
   }, [amountAfterAuto]);
 
+  const today = new Date();
+  const startDate = new Date(
+    today.getFullYear(),
+    today.getMonth(),
+    today.getDate(),
+  );
+  const maxSelectableDate = new Date(startDate);
+  maxSelectableDate.setDate(
+    maxSelectableDate.getDate() + (Math.max(rollingWindowDays, 1) - 1),
+  );
+
+  const getPropertyLoadBreakdown = (property) => {
+    return getBookingLoadBreakdown({
+      propertyType: property?.propertyType,
+      propertySize: property?.propertySize,
+      services: property?.services || [],
+      videographySubService: property?.videographySubService || "",
+      slotCapacity: timeSlotSettings?.slotCapacity,
+      weightModel: timeSlotSettings?.weightModel,
+    });
+  };
+
+  const isNightCompatibleProperty = (property) => {
+    return isNightServiceSelected(
+      property?.services || [],
+      property?.videographySubService || "",
+    );
+  };
+
   return (
     <div className="min-h-screen pt-24 py-8 relative">
       <StarBackground />
@@ -545,6 +690,9 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                     toggleService={toggleService}
                     updatePropertyField={updatePropertyField}
                     isOnlyProperty={properties.length === 1}
+                    maxDate={maxSelectableDate}
+                    getPropertyLoadBreakdown={getPropertyLoadBreakdown}
+                    isNightCompatibleProperty={isNightCompatibleProperty}
                   />
                 ))}
 

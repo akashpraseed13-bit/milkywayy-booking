@@ -66,7 +66,7 @@ export function PaymentStep({
                 <div className="flex justify-between">
                   <span className="text-muted-foreground">Date & Time</span>
                   <span>
-                    {property.preferredDate} | {property.timeSlot}
+                    {property.preferredDate} | {property.startTime || property.timeSlot}
                   </span>
                 </div>
                 <div className="flex justify-between">

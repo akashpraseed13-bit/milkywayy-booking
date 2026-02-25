@@ -18,14 +18,21 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { getAvailabilityForRange } from "@/lib/actions/bookings";
-import { getAvailableSlots } from "@/lib/helpers/bookingUtils";
 import { cn } from "@/lib/utils";
 
 const TIME_SLOTS = [
-  { value: 1, label: "Morning", startTime: "08:00", endTime: "12:00" },
-  { value: 2, label: "Afternoon", startTime: "12:00", endTime: "17:00" },
-  { value: 3, label: "Evening", startTime: "17:00", endTime: "21:00" }
+  { value: "09:00", period: "morning", label: "Morning", startTime: "09:00", endTime: "12:00" },
+  { value: "13:00", period: "afternoon", label: "Afternoon", startTime: "13:00", endTime: "16:00" },
+  { value: "17:00", period: "evening", label: "Evening", startTime: "17:00", endTime: "20:00" },
 ];
+
+const LEGACY_BLOCK_TO_HOURLY = {
+  morning: ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30"],
+  afternoon: ["13:00", "13:30", "14:00", "14:30", "15:00", "15:30"],
+  evening: ["17:00", "17:30", "18:00", "18:30", "19:00", "19:30"],
+};
+
+const PERIOD_ORDER = ["morning", "afternoon", "evening"];
 
 export default function DateSlotPicker({
   date,
@@ -33,9 +40,10 @@ export default function DateSlotPicker({
   onDateChange,
   onSlotChange,
   minDate = new Date(),
+  maxDate,
   error,
   duration = 1,
-  allowEvening = false,
+  isNightService = false,
   blockedSlotsMap = {},
 }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -140,6 +148,16 @@ export default function DateSlotPicker({
     onSlotChange(""); // Reset slot when date changes
   };
 
+  const visibleSlots = useMemo(() => {
+    if (isNightService) {
+      return TIME_SLOTS.filter((slotMeta) => slotMeta.period === "evening");
+    }
+    return TIME_SLOTS.filter(
+      (slotMeta) =>
+        slotMeta.period === "morning" || slotMeta.period === "afternoon",
+    );
+  }, [isNightService]);
+
   const isDateDisabled = (day) => {
     if (!day) return true;
     const dateObj = new Date(currentYear, currentMonth, day);
@@ -148,6 +166,11 @@ export default function DateSlotPicker({
     const minDateStart = new Date(minDate);
     minDateStart.setHours(0, 0, 0, 0);
     if (dateObj < minDateStart) return true;
+    if (maxDate) {
+      const maxDateEnd = new Date(maxDate);
+      maxDateEnd.setHours(23, 59, 59, 999);
+      if (dateObj > maxDateEnd) return true;
+    }
 
     // Check availability
     // Construct date string YYYY-MM-DD
@@ -160,7 +183,7 @@ export default function DateSlotPicker({
     const blockedSlots = [...new Set([...serverBlocked, ...localBlocked])];
 
     // Check if ANY valid start slot exists for this date
-    const hasValidSlot = TIME_SLOTS.some((timeSlot) => {
+    const hasValidSlot = visibleSlots.some((timeSlot) => {
       return isSlotAvailable(timeSlot.value, blockedSlots);
     });
 
@@ -168,49 +191,61 @@ export default function DateSlotPicker({
   };
 
   const isSlotAvailable = (startSlotValue, blockedSlots) => {
-    const startSlotIndex = TIME_SLOTS.findIndex(
-      (s) => s.value === startSlotValue,
-    );
-    if (startSlotIndex === -1) return false;
+    const normalizeBlockedSlots = (rawSlots) => {
+      const expanded = new Set();
+      rawSlots.forEach((raw) => {
+        if (LEGACY_BLOCK_TO_HOURLY[raw]) {
+          LEGACY_BLOCK_TO_HOURLY[raw].forEach((h) => expanded.add(h));
+          return;
+        }
+        if (raw === 1 || raw === "1") {
+          LEGACY_BLOCK_TO_HOURLY.morning.forEach((h) => expanded.add(h));
+          return;
+        }
+        if (raw === 2 || raw === "2") {
+          LEGACY_BLOCK_TO_HOURLY.afternoon.forEach((h) => expanded.add(h));
+          return;
+        }
+        if (raw === 3 || raw === "3") {
+          LEGACY_BLOCK_TO_HOURLY.evening.forEach((h) => expanded.add(h));
+          return;
+        }
+        expanded.add(String(raw));
+      });
+      return expanded;
+    };
 
-    // A slot is blocked if it matches exactly, or if it falls within a blocked range.
-    // For now, blockedSlots might contain "morning", "afternoon", "evening" OR "10:00" etc.
-    
-    // Convert old blocked slots to hourly blocks for compatibility
-    const expandedBlockedSlots = new Set();
-    blockedSlots.forEach(slot => {
-      if (slot === 'morning') {
-        ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30'].forEach(s => expandedBlockedSlots.add(s));
-      } else if (slot === 'afternoon') {
-        ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'].forEach(s => expandedBlockedSlots.add(s));
-      } else if (slot === 'evening') {
-        ['16:00', '16:30', '17:00', '17:30'].forEach(s => expandedBlockedSlots.add(s));
+    const startSlotMeta = TIME_SLOTS.find((s) => s.value === startSlotValue);
+    if (!startSlotMeta) return false;
+    const startPeriodIdx = PERIOD_ORDER.indexOf(startSlotMeta.period);
+    if (startPeriodIdx === -1) return false;
+
+    const expandedBlockedSlots = normalizeBlockedSlots(blockedSlots);
+
+    const blocksNeeded = Math.min(Math.max(parseInt(duration, 10) || 1, 1), 2);
+    let requiredPeriods = [startSlotMeta.period];
+    if (blocksNeeded === 2) {
+      if (isNightService) {
+        // PDF rule: for night services with >6 weight, evening path blocks A+E.
+        if (startSlotMeta.period !== "evening") return false;
+        requiredPeriods = ["afternoon", "evening"];
       } else {
-        expandedBlockedSlots.add(slot);
+        if (startSlotMeta.period === "morning") {
+          requiredPeriods = ["morning", "afternoon"];
+        } else if (startSlotMeta.period === "afternoon") {
+          requiredPeriods = ["afternoon", "evening"];
+        } else {
+          return false;
+        }
       }
-    });
+    }
 
-    // Check if the start slot itself is blocked
-    if (expandedBlockedSlots.has(startSlotValue)) return false;
-
-    // Duration is in hours. Each slot is 30 mins. So duration * 2 slots.
-    const numSlotsNeeded = duration * 2;
-
-    // Check subsequent slots based on duration
-    for (let i = 0; i < numSlotsNeeded; i++) {
-      const nextSlotIndex = startSlotIndex + i;
-
-      // If we exceed available slots (ends at 18:00)
-      if (nextSlotIndex >= TIME_SLOTS.length) {
-        // We only allow extension if allowEvening is true? 
-        // Actually, the spec says slots are 10:00 to 18:00.
-        // If duration is 3h and they start at 16:00, they end at 19:00. 
-        // This exceeds working hours (18:00).
-        return false;
-      }
-
-      const nextSlotValue = TIME_SLOTS[nextSlotIndex].value;
-      if (expandedBlockedSlots.has(nextSlotValue)) return false;
+    for (const period of requiredPeriods) {
+      const periodHourly = LEGACY_BLOCK_TO_HOURLY[period] || [];
+      const periodBlocked = periodHourly.some((hour) =>
+        expandedBlockedSlots.has(hour),
+      );
+      if (periodBlocked) return false;
     }
 
     return true;
@@ -251,7 +286,7 @@ export default function DateSlotPicker({
     if (!date) return "";
     const d = parseDate(date);
     const dateStr = d ? d.toLocaleDateString() : "";
-    const slotLabel = TIME_SLOTS.find((s) => s.value === slot)?.label || "";
+    const slotLabel = TIME_SLOTS.find((s) => s.value === String(slot))?.label || "";
     return slotLabel ? `${dateStr} - ${slotLabel} ` : dateStr;
   };
 
@@ -373,7 +408,7 @@ export default function DateSlotPicker({
                       For {new Date(date).toLocaleDateString()}
                     </p>
                     <div className="grid grid-cols-1 gap-2">
-                      {TIME_SLOTS.map((timeSlot) => {
+                      {visibleSlots.map((timeSlot) => {
                         const isAvailable = isSlotAvailable(
                           timeSlot.value,
                           currentBlockedSlots,

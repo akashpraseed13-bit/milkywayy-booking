@@ -8,10 +8,12 @@ import { actionWrapper } from "@/lib/actions/utils";
 import { sequelize as db } from "@/lib/db/db";
 import Booking from "@/lib/db/models/booking";
 import Coupon from "@/lib/db/models/coupon";
+import DynamicConfig from "@/lib/db/models/dynamicconfig";
 import Transaction from "@/lib/db/models/transaction";
 import User from "@/lib/db/models/user";
 import WalletTransaction from "@/lib/db/models/wallettransaction";
 import { auth } from "@/lib/helpers/auth";
+import { calculateBookingDuration } from "@/lib/helpers/bookingUtils";
 import { getPricingConfig } from "@/lib/helpers/pricing";
 import { USER_ROLES } from "../config/app.config";
 
@@ -23,37 +25,223 @@ const SLOT_MAPPING = {
   evening: 3,
 };
 
+const START_TIME_TO_SLOT = {
+  "09:00": 1,
+  "13:00": 2,
+  "17:00": 3,
+  "10:00": 1, // legacy
+  "16:00": 3, // legacy
+};
+
 const REVERSE_SLOT_MAPPING = {
   1: "morning",
   2: "afternoon",
   3: "evening",
 };
 
-const HOURLY_SLOTS = [
-  "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
-  "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
-];
+const PERIOD_TO_HOURLY = {
+  morning: ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30"],
+  afternoon: ["13:00", "13:30", "14:00", "14:30", "15:00", "15:30"],
+  evening: ["17:00", "17:30", "18:00", "18:30", "19:00", "19:30"],
+};
 
-const getTimeSlots = (startTime, durationHours) => {
+const START_TIME_TO_PERIOD = {
+  "09:00": "morning",
+  "13:00": "afternoon",
+  "17:00": "evening",
+  "10:00": "morning", // legacy
+  "16:00": "evening", // legacy
+};
+
+const PERIOD_ORDER = ["morning", "afternoon", "evening"];
+
+const isNightServiceFromProperty = (property) => {
+  const services = Array.isArray(property?.services) ? property.services : [];
+  if (!services.includes("Videography")) return false;
+  const sub = property?.videographySubService || "";
+  return sub.includes("Night Light") || sub.includes("Daylight + Night");
+};
+
+const isNightServiceFromBooking = (booking) => {
+  const services = Array.isArray(booking?.shootDetails?.services)
+    ? booking.shootDetails.services
+    : [];
+  if (!services.includes("Videography")) return false;
+  const sub = booking?.shootDetails?.videographySubService || "";
+  return sub.includes("Night Light") || sub.includes("Daylight + Night");
+};
+
+const getTimeSlots = (startTime, durationHours, options = {}) => {
   if (!startTime) return [];
-  
-  // Handle legacy slots
-  if (startTime === 'morning') return ['10:00', '10:30', '11:00', '11:30', '12:00', '12:30'];
-  if (startTime === 'afternoon') return ['13:00', '13:30', '14:00', '14:30', '15:00', '15:30'];
-  if (startTime === 'evening') return ['16:00', '16:30', '17:00', '17:30'];
+  const isNightService = Boolean(options.isNightService);
 
-  const startIndex = HOURLY_SLOTS.indexOf(startTime);
-  if (startIndex === -1) return [];
+  const startPeriod = START_TIME_TO_PERIOD[startTime] || startTime;
+  const blocksNeeded = Math.min(Math.max(parseInt(durationHours, 10) || 1, 1), 2);
 
-  const slots = [];
-  const numSlots = durationHours * 2;
-  for (let i = 0; i < numSlots; i++) {
-    const idx = startIndex + i;
-    if (idx < HOURLY_SLOTS.length) {
-      slots.push(HOURLY_SLOTS[idx]);
+  let requiredPeriods = [startPeriod];
+  if (blocksNeeded === 2) {
+    if (isNightService && startPeriod === "evening") {
+      requiredPeriods = ["afternoon", "evening"];
+    } else if (!isNightService && startPeriod === "morning") {
+      requiredPeriods = ["morning", "afternoon"];
+    } else if (!isNightService && startPeriod === "afternoon") {
+      requiredPeriods = ["afternoon", "evening"];
+    } else {
+      return [];
     }
   }
-  return slots;
+
+  return requiredPeriods.flatMap((period) => PERIOD_TO_HOURLY[period] || []);
+};
+
+const PERIODS = ["morning", "afternoon", "evening"];
+
+const DEFAULT_WORKING_DAYS = {
+  Monday: true,
+  Tuesday: true,
+  Wednesday: true,
+  Thursday: true,
+  Friday: true,
+  Saturday: true,
+  Sunday: false,
+};
+
+const getDayNameFromDateStr = (dateStr) => {
+  const date = new Date(`${dateStr}T00:00:00`);
+  const dayNames = [
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+  ];
+  return dayNames[date.getDay()];
+};
+
+const enumerateDateRange = (startDate, endDate) => {
+  const out = [];
+  const start = new Date(`${startDate}T00:00:00`);
+  const end = new Date(`${endDate}T00:00:00`);
+  const cursor = new Date(start);
+  while (cursor <= end) {
+    const y = cursor.getFullYear();
+    const m = String(cursor.getMonth() + 1).padStart(2, "0");
+    const d = String(cursor.getDate()).padStart(2, "0");
+    out.push(`${y}-${m}-${d}`);
+    cursor.setDate(cursor.getDate() + 1);
+  }
+  return out;
+};
+
+const normalizeTimeSlotConfig = (value) => {
+  const fallback = {
+    version: 2,
+    weeklyRules: {},
+    dateOverrides: {},
+    slotRules: [],
+    systemSettings: {
+      rollingWindowDays: 90,
+      slotCapacity: 6,
+      weightModel: {},
+      workingDays: DEFAULT_WORKING_DAYS,
+      blockDefinitions: {},
+    },
+  };
+
+  if (!value || typeof value !== "object") return fallback;
+
+  // Backward compatibility: old format with weekday keys at root.
+  const weekdayKeys = Object.keys(DEFAULT_WORKING_DAYS);
+  const hasWeekdayRoot = weekdayKeys.some((k) => Array.isArray(value[k]));
+  if (hasWeekdayRoot) {
+    return {
+      ...fallback,
+      weeklyRules: value,
+    };
+  }
+
+  return {
+    ...fallback,
+    ...value,
+    weeklyRules: value.weeklyRules || {},
+    dateOverrides: value.dateOverrides || {},
+    systemSettings: {
+      ...fallback.systemSettings,
+      ...(value.systemSettings || {}),
+      slotCapacity: 6,
+      weightModel: {
+        ...(fallback.systemSettings.weightModel || {}),
+        ...(value.systemSettings?.weightModel || {}),
+      },
+      workingDays: {
+        ...DEFAULT_WORKING_DAYS,
+        ...(value.systemSettings?.workingDays || {}),
+      },
+    },
+  };
+};
+
+const getAdminBlockedSlotsForDate = (dateStr, config) => {
+  const blocked = new Set();
+  if (!config) return blocked;
+
+  const dayName = getDayNameFromDateStr(dateStr);
+  const workingDays = config.systemSettings?.workingDays || DEFAULT_WORKING_DAYS;
+  const isWorkingDay = Boolean(workingDays[dayName]);
+
+  if (!isWorkingDay) {
+    PERIODS.forEach((period) =>
+      getTimeSlots(period, 1).forEach((slot) => blocked.add(slot)),
+    );
+    return blocked;
+  }
+
+  const override = config.dateOverrides?.[dateStr] || {};
+  if (override.fullDayBlocked) {
+    PERIODS.forEach((period) =>
+      getTimeSlots(period, 1).forEach((slot) => blocked.add(slot)),
+    );
+    return blocked;
+  }
+
+  // Weekly-level inactive periods
+  const dayRules = config.weeklyRules?.[dayName] || [];
+  dayRules.forEach((periodRule) => {
+    if (periodRule?.period && periodRule.isActive === false) {
+      getTimeSlots(periodRule.period, 1).forEach((slot) => blocked.add(slot));
+    }
+  });
+
+  // Date override block flags
+  PERIODS.forEach((period) => {
+    if (override.blocks?.[period] === "blocked") {
+      getTimeSlots(period, 1).forEach((slot) => blocked.add(slot));
+    }
+  });
+
+  return blocked;
+};
+
+const getRollingWindowBounds = (config) => {
+  const rollingWindowDays = Math.max(
+    parseInt(config?.systemSettings?.rollingWindowDays, 10) || 90,
+    1,
+  );
+  const today = new Date();
+  const min = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+  const max = new Date(min);
+  // Inclusive range: today counts as day 1.
+  max.setDate(max.getDate() + (rollingWindowDays - 1));
+  return { min, max };
+};
+
+const isDateOutsideRollingWindow = (dateStr, config) => {
+  if (!dateStr) return false;
+  const selected = new Date(`${dateStr}T00:00:00`);
+  const { min, max } = getRollingWindowBounds(config);
+  return selected < min || selected > max;
 };
 
 const isSlotBlocked = (booking) => {
@@ -104,7 +292,9 @@ const getUnavailableSlotsHandler = async (date) => {
       if (isSlotBlocked(b)) {
         const bStartTime = b.startTime || REVERSE_SLOT_MAPPING[b.slot];
         const bDuration = b.duration || 1;
-        const bSlots = getTimeSlots(bStartTime, bDuration);
+        const bSlots = getTimeSlots(bStartTime, bDuration, {
+          isNightService: isNightServiceFromBooking(b),
+        });
         blockedSlots.push(...bSlots);
       }
     });
@@ -133,6 +323,21 @@ const getAvailabilityForRangeHandler = async (startDate, endDate) => {
     });
 
     const availabilityMap = {};
+    const configEntry = await DynamicConfig.findOne({
+      where: { key: "timeSlots" },
+      attributes: ["value"],
+    });
+    const timeSlotConfig = normalizeTimeSlotConfig(configEntry?.value);
+
+    // Merge admin calendar blocks into availability first.
+    enumerateDateRange(startDate, endDate).forEach((dateStr) => {
+      const blockedByAdmin = getAdminBlockedSlotsForDate(dateStr, timeSlotConfig);
+      if (blockedByAdmin.size === 0) return;
+      if (!availabilityMap[dateStr]) {
+        availabilityMap[dateStr] = new Set();
+      }
+      blockedByAdmin.forEach((slot) => availabilityMap[dateStr].add(slot));
+    });
 
     bookings.forEach((b) => {
       if (!b.date) return;
@@ -150,7 +355,9 @@ const getAvailabilityForRangeHandler = async (startDate, endDate) => {
         
         const bStartTime = b.startTime || REVERSE_SLOT_MAPPING[b.slot];
         const bDuration = b.duration || 1;
-        const bSlots = getTimeSlots(bStartTime, bDuration);
+        const bSlots = getTimeSlots(bStartTime, bDuration, {
+          isNightService: isNightServiceFromBooking(b),
+        });
         
         bSlots.forEach(slot => availabilityMap[dateStr].add(slot));
       }
@@ -174,33 +381,75 @@ export const getAvailabilityForRange = actionWrapper(
 
 const checkAvailability = async (properties, excludeBookingIds = []) => {
   const pricingConfig = await getPricingConfig();
+  const configEntry = await DynamicConfig.findOne({
+    where: { key: "timeSlots" },
+    attributes: ["value"],
+  });
+  const timeSlotConfig = normalizeTimeSlotConfig(configEntry?.value);
 
   for (const property of properties) {
     if (!property.preferredDate) continue;
+    if (isDateOutsideRollingWindow(property.preferredDate, timeSlotConfig)) {
+      throw new Error(
+        `Selected date ${property.preferredDate} is outside the booking window.`,
+      );
+    }
     const startTime = property.startTime || property.timeSlot;
     if (!startTime) continue;
 
-    // Calculate duration (if not provided)
-    let duration = property.duration || 1;
-    if (!property.duration && property.propertyType && property.propertySize && property.services) {
-      const typeConfig = pricingConfig[property.propertyType];
-      const sizeConfig = typeConfig?.sizes.find(
-        (s) => s.label === property.propertySize,
+    // Calculate slots required by weight model
+    const duration = calculateBookingDuration(
+      {
+        id: property.services || [],
+        videographySubService: property.videographySubService || "",
+      },
+      {
+        type: property.propertyType,
+        size: property.propertySize,
+        videographySubService: property.videographySubService || "",
+      },
+      {
+        slotCapacity: timeSlotConfig?.systemSettings?.slotCapacity,
+        weightModel: timeSlotConfig?.systemSettings?.weightModel,
+      },
+    );
+
+    const startPeriod = START_TIME_TO_PERIOD[startTime] || startTime;
+    const hasServiceContext =
+      Array.isArray(property.services) && property.services.length > 0;
+    const isNightCompatible = hasServiceContext
+      ? isNightServiceFromProperty(property)
+      : startPeriod === "evening";
+    if (hasServiceContext && isNightCompatible && startPeriod !== "evening") {
+      throw new Error(
+        `Night service bookings must use Evening slot on ${property.preferredDate}.`,
       );
-      if (sizeConfig) {
-        property.services.forEach((s) => {
-          const sConfig = sizeConfig.prices[s];
-          if (sConfig) {
-            const sDuration =
-              typeof sConfig === "object" ? sConfig.slots || 1 : 1;
-            if (sDuration > duration) duration = sDuration;
-          }
-        });
-      }
+    }
+    if (
+      hasServiceContext &&
+      !isNightCompatible &&
+      !["morning", "afternoon"].includes(startPeriod)
+    ) {
+      throw new Error(
+        `Only Morning/Afternoon are available for non-night services on ${property.preferredDate}.`,
+      );
     }
 
-    const requestedSlots = getTimeSlots(startTime, duration);
+    const requestedSlots = getTimeSlots(startTime, duration, {
+      isNightService: isNightCompatible,
+    });
     if (requestedSlots.length === 0) continue;
+
+    const blockedByAdmin = getAdminBlockedSlotsForDate(
+      property.preferredDate,
+      timeSlotConfig,
+    );
+    const blockedByRules = requestedSlots.some((slot) => blockedByAdmin.has(slot));
+    if (blockedByRules) {
+      throw new Error(
+        `Selected time on ${property.preferredDate} is blocked by admin calendar rules.`,
+      );
+    }
 
     const whereClause = {
       date: property.preferredDate,
@@ -220,7 +469,9 @@ const checkAvailability = async (properties, excludeBookingIds = []) => {
 
       const bStartTime = b.startTime || REVERSE_SLOT_MAPPING[b.slot];
       const bDuration = b.duration || 1;
-      const bSlots = getTimeSlots(bStartTime, bDuration);
+      const bSlots = getTimeSlots(bStartTime, bDuration, {
+        isNightService: isNightServiceFromBooking(b),
+      });
 
       // Check for intersection
       return requestedSlots.some(slot => bSlots.includes(slot));
@@ -375,34 +626,30 @@ const saveDraftsHandler = async (properties) => {
   const createdBookings = [];
 
   const pricingConfig = await getPricingConfig();
+  const configEntry = await DynamicConfig.findOne({
+    where: { key: "timeSlots" },
+    attributes: ["value"],
+  });
+  const timeSlotConfig = normalizeTimeSlotConfig(configEntry?.value);
 
   for (const property of properties) {
     const price = calculatePropertyPrice(property, pricingConfig);
 
-    // Calculate duration
-    let duration = 1;
-    if (property.propertyType && property.propertySize && property.services) {
-      const typeConfig = pricingConfig[property.propertyType];
-      const sizeConfig = typeConfig?.sizes.find(
-        (s) => s.label === property.propertySize,
-      );
-      if (sizeConfig) {
-        property.services.forEach((s) => {
-          let sConfig = sizeConfig.prices[s];
-          
-          // Handle videography sub-services
-          if (s === "Videography" && property.videographySubService && typeof sConfig === "object") {
-            sConfig = sConfig[property.videographySubService];
-          }
-          
-          if (sConfig) {
-            const sDuration =
-              typeof sConfig === "object" ? sConfig.slots || 1 : 1;
-            if (sDuration > duration) duration = sDuration;
-          }
-        });
-      }
-    }
+    const duration = calculateBookingDuration(
+      {
+        id: property.services || [],
+        videographySubService: property.videographySubService || "",
+      },
+      {
+        type: property.propertyType,
+        size: property.propertySize,
+        videographySubService: property.videographySubService || "",
+      },
+      {
+        slotCapacity: timeSlotConfig?.systemSettings?.slotCapacity,
+        weightModel: timeSlotConfig?.systemSettings?.weightModel,
+      },
+    );
 
     const booking = await Booking.create({
       userId: userId,
@@ -423,8 +670,11 @@ const saveDraftsHandler = async (properties) => {
         email: property.contactEmail,
       },
       date: property.preferredDate || null,
-      startTime: property.startTime || (property.timeSlot === 'morning' ? '10:00' : property.timeSlot === 'afternoon' ? '13:00' : property.timeSlot === 'evening' ? '16:00' : null),
-      slot: SLOT_MAPPING[property.timeSlot] || null,
+      startTime: property.startTime || (property.timeSlot === 'morning' ? '09:00' : property.timeSlot === 'afternoon' ? '13:00' : property.timeSlot === 'evening' ? '17:00' : null),
+      slot:
+        SLOT_MAPPING[property.timeSlot] ||
+        START_TIME_TO_SLOT[property.startTime] ||
+        null,
       duration: property.duration || duration,
       total: price,
       status: "DRAFT",

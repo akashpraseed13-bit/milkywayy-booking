@@ -36,7 +36,7 @@ describe('DateSlotPicker', () => {
     expect(screen.getByText(/Available Slots/i)).toBeInTheDocument();
   });
 
-  it('renders hourly slots', async () => {
+  it('renders block slots', async () => {
     render(
       <DateSlotPicker 
         date="2026-01-05" 
@@ -49,46 +49,18 @@ describe('DateSlotPicker', () => {
     fireEvent.click(screen.getByPlaceholderText(/Select Date & Time/i));
 
     await waitFor(() => {
-        expect(screen.getByText('10:00 AM')).toBeInTheDocument();
+      expect(screen.getByText('Morning')).toBeInTheDocument();
     });
-    expect(screen.getByText('05:30 PM')).toBeInTheDocument();
+    expect(screen.getByText('Afternoon')).toBeInTheDocument();
+    expect(screen.queryByText('Evening')).not.toBeInTheDocument();
   });
 
-  it('disables slots that exceed 18:00 based on duration', async () => {
-    // Duration 4 hours. 15:00 + 4h = 19:00 > 18:00.
-    // 14:00 + 4h = 18:00. Should be available.
-    render(
-      <DateSlotPicker 
-        date="2026-01-05" 
-        slot="" 
-        duration={4}
-        onDateChange={mockOnDateChange} 
-        onSlotChange={mockOnSlotChange} 
-      />
-    );
-
-    fireEvent.click(screen.getByPlaceholderText(/Select Date & Time/i));
-
-    await waitFor(() => {
-        expect(screen.getByText('02:00 PM')).toBeInTheDocument();
-    });
-
-    const slot1400 = screen.getByText('02:00 PM').closest('button');
-    const slot1500 = screen.getByText('03:00 PM').closest('button');
-
-    expect(slot1400).not.toBeDisabled();
-    expect(slot1500).toBeDisabled();
-  });
-
-  it('disables slots that overlap with blocked slots', async () => {
-    // Blocked slot at 12:00
-    // User wants 2 hours. 11:00 should be disabled because 11:00-13:00 overlaps 12:00.
+  it('keeps evening hidden for non-night services', async () => {
     render(
       <DateSlotPicker 
         date="2026-01-05" 
         slot="" 
         duration={2}
-        blockedSlotsMap={{"2026-01-05": ["12:00"]}}
         onDateChange={mockOnDateChange} 
         onSlotChange={mockOnSlotChange} 
       />
@@ -97,17 +69,44 @@ describe('DateSlotPicker', () => {
     fireEvent.click(screen.getByPlaceholderText(/Select Date & Time/i));
 
     await waitFor(() => {
-        expect(screen.getByText('11:00 AM')).toBeInTheDocument();
+      expect(screen.getByText('Morning')).toBeInTheDocument();
     });
 
-    const slot1100 = screen.getByText('11:00 AM').closest('button');
-    const slot1130 = screen.getByText('11:30 AM').closest('button');
-    const slot1200 = screen.getByText('12:00 PM').closest('button');
-    const slot1000 = screen.getByText('10:00 AM').closest('button'); // 10:00-12:00, touches 12:00 but shouldn't overlap if we use strict <
+    const morningButton = screen.getByText('Morning').closest('button');
+    const afternoonButton = screen.getByText('Afternoon').closest('button');
 
-    expect(slot1100).toBeDisabled();
-    expect(slot1130).toBeDisabled();
-    expect(slot1200).toBeDisabled();
-    expect(slot1000).not.toBeDisabled();
+    expect(morningButton).not.toBeDisabled();
+    expect(afternoonButton).not.toBeDisabled();
+    expect(screen.queryByText('Evening')).not.toBeInTheDocument();
+  });
+
+  it('disables slots that overlap with blocked slots', async () => {
+    // With duration=2 blocks:
+    // - Morning needs Morning+Afternoon, so it is blocked.
+    // - Afternoon needs Afternoon+Evening, so it is blocked.
+    // - Evening cannot fit 2 contiguous blocks, so it is blocked.
+    render(
+      <DateSlotPicker 
+        date="2026-01-05" 
+        slot="" 
+        duration={2}
+        blockedSlotsMap={{"2026-01-05": ["13:00"]}}
+        onDateChange={mockOnDateChange} 
+        onSlotChange={mockOnSlotChange} 
+      />
+    );
+
+    fireEvent.click(screen.getByPlaceholderText(/Select Date & Time/i));
+
+    await waitFor(() => {
+      expect(screen.getByText('Afternoon')).toBeInTheDocument();
+    });
+
+    const morningButton = screen.getByText('Morning').closest('button');
+    const afternoonButton = screen.getByText('Afternoon').closest('button');
+
+    expect(afternoonButton).toBeDisabled();
+    expect(morningButton).toBeDisabled();
+    expect(screen.queryByText('Evening')).not.toBeInTheDocument();
   });
 });

@@ -59,6 +59,9 @@ export function PropertyCard({
   toggleService,
   updatePropertyField,
   isOnlyProperty,
+  maxDate,
+  getPropertyLoadBreakdown,
+  isNightCompatibleProperty,
 }) {
   const price = getPropertyPrice(property);
   const titleParts = [];
@@ -67,6 +70,10 @@ export function PropertyCard({
   if (property.propertySize) titleParts.push(property.propertySize);
 
   const { duration, allowEvening } = getPropertyDurationAndEvening(property);
+  const loadBreakdown = getPropertyLoadBreakdown
+    ? getPropertyLoadBreakdown(property)
+    : null;
+  const isNightService = Boolean(isNightCompatibleProperty?.(property));
 
   return (
     <Card
@@ -649,7 +656,9 @@ export function PropertyCard({
                 slot={property.startTime}
                 duration={property.duration || 1}
                 allowEvening={allowEvening}
+                isNightService={isNightService}
                 blockedSlotsMap={getOccupiedSlots(index)}
+                maxDate={maxDate}
                 onDateChange={(d) =>
                   updatePropertyField(index, "preferredDate", d)
                 }
@@ -659,6 +668,13 @@ export function PropertyCard({
                   errors.properties?.[index]?.startTime?.message
                 }
               />
+              {loadBreakdown && property.propertyType && property.propertySize && property.services?.length > 0 && (
+                <p className="text-xs text-muted-foreground mt-2">
+                  Load: {loadBreakdown.propertyWeight} (property) + {loadBreakdown.serviceWeightSum} (services) = {loadBreakdown.totalLoad}
+                  {" "} | Capacity: {loadBreakdown.slotCapacity}
+                  {" "} | Slots required: {loadBreakdown.slotsRequired}
+                </p>
+              )}
             </div>
 
             <Separator className="bg-zinc-800 my-2" />
