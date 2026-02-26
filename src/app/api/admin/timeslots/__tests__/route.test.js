@@ -49,6 +49,7 @@ describe("Admin TimeSlots API Route", () => {
         slot: 1,
         startTime: "09:00",
         status: "CONFIRMED",
+        shootDetails: { services: ["Photography"] },
         propertyDetails: { type: "Apartment", size: "2BR" },
       },
       {
@@ -58,6 +59,10 @@ describe("Admin TimeSlots API Route", () => {
         slot: null,
         startTime: "13:00",
         status: "COMPLETED",
+        shootDetails: {
+          services: ["Videography"],
+          videographySubService: "Long Form.Night Light",
+        },
         propertyDetails: { type: "Villa/Townhouse", size: "3BR" },
       },
     ]);
@@ -76,6 +81,7 @@ describe("Admin TimeSlots API Route", () => {
       expect.objectContaining({
         bookingCode: "BK-001",
         propertyLabel: "Apartment - 2BR",
+        serviceLabel: "Photography",
         arrival: "09:00 - 09:30",
       }),
     );
@@ -98,6 +104,7 @@ describe("Admin TimeSlots API Route", () => {
           "slot",
           "startTime",
           "status",
+          "shootDetails",
           "propertyDetails",
         ],
       }),

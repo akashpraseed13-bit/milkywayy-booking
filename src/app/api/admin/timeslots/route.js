@@ -239,6 +239,7 @@ export async function GET(request) {
         "slot",
         "startTime",
         "status",
+        "shootDetails",
         "propertyDetails",
       ],
     });
@@ -262,12 +263,27 @@ export async function GET(request) {
 
       const propertyType = booking.propertyDetails?.type || "Property";
       const propertySize = booking.propertyDetails?.size || "";
+      const services = Array.isArray(booking.shootDetails?.services)
+        ? booking.shootDetails.services
+        : [];
+      const videographySubService = booking.shootDetails?.videographySubService || "";
+      const videographySelections = String(videographySubService)
+        .split("|")
+        .map((v) => v.trim())
+        .filter(Boolean);
+      const serviceLabel = [
+        services.length ? services.join(", ") : "",
+        videographySelections.length ? `(${videographySelections.join(", ")})` : "",
+      ]
+        .filter(Boolean)
+        .join(" ");
       const arrivalStart = booking.startTime || "--:--";
       const arrivalEnd = addMinutesToTime(arrivalStart, 30);
 
       bookedDetailsMap[booking.date][period].push({
         bookingCode: booking.bookingCode || `BK-${booking.id || ""}`,
         propertyLabel: [propertyType, propertySize].filter(Boolean).join(" - "),
+        serviceLabel,
         arrival: `${arrivalStart} - ${arrivalEnd}`,
       });
     });

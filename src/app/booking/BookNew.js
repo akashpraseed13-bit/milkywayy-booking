@@ -16,11 +16,7 @@ import { validateCoupon } from "@/lib/actions/coupons";
 import { PRICING_CONFIG as STATIC_PRICING_CONFIG } from "@/lib/config/pricing";
 import { useAuth } from "@/lib/contexts/auth";
 import { bookingSchema } from "@/lib/schema/booking.schema";
-import {
-  calculateBookingDuration,
-  getBookingLoadBreakdown,
-  isNightServiceSelected,
-} from "@/lib/helpers/bookingUtils";
+import { calculateBookingDuration, getAvailableSlots } from "@/lib/helpers/bookingUtils";
 
 // Modular Components
 import { PropertyCard } from "./components/PropertyCard";
@@ -44,8 +40,6 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
   const [couponSuccess, setCouponSuccess] = useState("");
   const [bookingIds, setBookingIds] = useState([]);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [rollingWindowDays, setRollingWindowDays] = useState(90);
-  const [timeSlotSettings, setTimeSlotSettings] = useState(null);
   const { authState, login } = useAuth();
 
   const {
@@ -110,9 +104,9 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                     : "",
             startTime: 
               draft.startTime || (
-              draft.slot === 1 ? "09:00" :
+              draft.slot === 1 ? "10:00" :
               draft.slot === 2 ? "13:00" :
-              draft.slot === 3 ? "17:00" : ""),
+              draft.slot === 3 ? "16:00" : ""),
             duration: draft.duration || 0,
             building: draft.propertyDetails?.building || "",
             community: draft.propertyDetails?.community || "",
@@ -131,32 +125,6 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     };
     loadDrafts();
   }, [setValue]);
-
-  useEffect(() => {
-    const loadTimeSlotSettings = async () => {
-      try {
-        const res = await fetch("/api/admin/timeslots", {
-          method: "GET",
-          headers: { "Content-Type": "application/json" },
-          cache: "no-store",
-        });
-        if (!res.ok) return;
-        const data = await res.json();
-        const days = parseInt(
-          data?.config?.systemSettings?.rollingWindowDays,
-          10,
-        );
-        if (Number.isFinite(days) && days > 0) {
-          setRollingWindowDays(days);
-        }
-        setTimeSlotSettings(data?.config?.systemSettings || null);
-      } catch (error) {
-        // Use default fallback when settings are unavailable.
-      }
-    };
-
-    loadTimeSlotSettings();
-  }, []);
 
   // Auto-save drafts
   useEffect(() => {
@@ -235,72 +203,20 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
   const updatePropertyField = (index, field, value) => {
     setValue(`properties.${index}.${field}`, value, { shouldValidate: true });
 
-    const nextProperty = {
-      ...getValues(`properties.${index}`),
-      [field]: value,
-    };
-
-    // Keep sub-service in sync with actual Videography selection.
-    if (
-      !nextProperty?.services?.includes("Videography") &&
-      nextProperty?.videographySubService
-    ) {
-      setValue(`properties.${index}.videographySubService`, "", {
-        shouldValidate: true,
-      });
-      nextProperty.videographySubService = "";
-    }
-
-    // If service mix changes slot visibility, clear stale slot/time.
-    const selectedSlot = nextProperty.startTime || nextProperty.timeSlot;
-    if (selectedSlot) {
-      const startPeriodMap = {
-        "09:00": "morning",
-        "10:00": "morning",
-        morning: "morning",
-        "13:00": "afternoon",
-        afternoon: "afternoon",
-        "16:00": "evening",
-        "17:00": "evening",
-        evening: "evening",
-      };
-      const startPeriod = startPeriodMap[selectedSlot] || selectedSlot;
-      const nightService = isNightServiceSelected(
-        nextProperty?.services || [],
-        nextProperty?.videographySubService || "",
-      );
-      const isValidStart = nightService
-        ? startPeriod === "evening"
-        : startPeriod === "morning" || startPeriod === "afternoon";
-
-      if (!isValidStart) {
-        setValue(`properties.${index}.timeSlot`, "", { shouldValidate: true });
-        setValue(`properties.${index}.startTime`, "", { shouldValidate: true });
-      }
-    }
-    
     // If changed field affects duration, recalculate it
     if (["propertyType", "propertySize", "services", "videographySubService"].includes(field)) {
-      const property = {
-        ...nextProperty,
-        videographySubService:
-          nextProperty?.services?.includes("Videography")
-            ? nextProperty?.videographySubService
-            : "",
-      };
+      const current = getValues(`properties.${index}`);
+      const property = { ...current, [field]: value };
       // Only calculate if we have the minimum required info
       if (property.propertyType && property.propertySize && property.services?.length > 0) {
         const duration = calculateBookingDuration(
-          { id: property.services, videographySubService: property.videographySubService },
+          { id: property.services }, // Simulating service object
           {
             type: property.propertyType,
             size: property.propertySize,
             videographySubService: property.videographySubService,
           },
-          {
-            slotCapacity: timeSlotSettings?.slotCapacity,
-            weightModel: timeSlotSettings?.weightModel,
-          }
+          { community: property.community },
         );
         setValue(`properties.${index}.duration`, duration);
       } else {
@@ -309,88 +225,64 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     }
   };
 
-  useEffect(() => {
-    if (!properties?.length) return;
-    properties.forEach((property, index) => {
-      if (
-        property.propertyType &&
-        property.propertySize &&
-        property.services?.length > 0
-      ) {
-        const duration = calculateBookingDuration(
-          {
-            id: property.services,
-            videographySubService: property.videographySubService,
-          },
-          {
-            type: property.propertyType,
-            size: property.propertySize,
-            videographySubService: property.videographySubService,
-          },
-          {
-            slotCapacity: timeSlotSettings?.slotCapacity,
-            weightModel: timeSlotSettings?.weightModel,
-          },
-        );
-        setValue(`properties.${index}.duration`, duration);
-      }
-    });
-  }, [timeSlotSettings]);
-
   const toggleService = async (index, serviceName, currentServices) => {
     const newServices = currentServices.includes(serviceName)
       ? currentServices.filter((s) => s !== serviceName)
       : [...currentServices, serviceName];
-    
-    // Clear videography sub-service if videography is being deselected
-    if (serviceName === "Videography" && !newServices.includes("Videography")) {
-      setValue(`properties.${index}.videographySubService`, "");
-    }
-    
-    updatePropertyField(index, "services", newServices);
-  };
 
-  const onContinue = async (data) => {
-    if (!authState.isAuthenticated) {
-      login();
-      return;
+    setValue(`properties.${index}.services`, newServices, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
+
+    const property = getValues(`properties.${index}`);
+    const hasVideography = newServices.includes("Videography");
+    const nextVideographySubService = hasVideography
+      ? property?.videographySubService || ""
+      : "";
+
+    if (!hasVideography) {
+      setValue(`properties.${index}.videographySubService`, "", {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
     }
-    try {
-      const res = await createBookings(data.properties);
-      if (!res.success) throw new Error(res.message);
-      const bookingData = res.data;
-      const bookingIds = bookingData.map(b => b.id);
-      console.log('Booking codes generated:', bookingData.map(b => b.bookingCode));
-      
-      // Go directly to payment without confirmation step
-      setIsProcessingPayment(true);
-      const paymentRes = await createTransactionAndPaymentIntent(
-        bookingIds,
-        couponCode,
+
+    if (property?.propertyType && property?.propertySize && newServices.length > 0) {
+      const duration = calculateBookingDuration(
+        { id: newServices },
+        {
+          type: property.propertyType,
+          size: property.propertySize,
+          videographySubService: nextVideographySubService,
+        },
+        { community: property.community },
       );
-      if (!paymentRes.success) throw new Error(paymentRes.message);
-      const result = paymentRes.data;
-      if (result.url) {
-        window.location.href = result.url;
-      } else {
-        throw new Error("No payment URL returned");
-      }
-    } catch (error) {
-      toast.error(error.message || "Failed to process booking");
-    } finally {
-      setIsProcessingPayment(false);
+      setValue(`properties.${index}.duration`, duration);
+    } else {
+      setValue(`properties.${index}.duration`, 0);
     }
-  };
 
+    await trigger(`properties.${index}.services`);
+  };
+ 
   const handleFinalSubmit = async () => {
+    console.log('handleFinalSubmit called with bookingIds:', bookingIds);
     setIsProcessingPayment(true);
     try {
       // Extract just IDs for payment processing
       const idsForPayment = bookingIds.map(b => typeof b === 'object' ? b.id : b);
+      console.log('IDs for payment:', idsForPayment);
+      
+      if (idsForPayment.length === 0) {
+        throw new Error('No booking IDs available for payment');
+      }
+      
       const res = await createTransactionAndPaymentIntent(
         idsForPayment,
         couponCode,
       );
+      console.log('Payment response:', res);
       if (!res.success) throw new Error(res.message);
       const result = res.data;
       if (result.url) {
@@ -422,21 +314,31 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     );
     if (!sizeConfig) return 0;
 
+    const videographySelections = String(property.videographySubService || "")
+      .split("|")
+      .map((v) => v.trim())
+      .filter(Boolean);
+
     return property.services.reduce((total, service) => {
       let priceConfig = sizeConfig.prices[service];
       
       // Handle videography sub-services
       if (service === "Videography" && property.videographySubService && typeof priceConfig === "object") {
-        if (property.videographySubService.includes('.')) {
-          // Long Form with subcategories
-          const [mainService, category] = property.videographySubService.split('.');
-          const categoryConfig = priceConfig[mainService]?.[category];
-          priceConfig = categoryConfig;
-        } else {
-          // Short Form - direct pricing
-          const categoryConfig = priceConfig[property.videographySubService];
-          priceConfig = categoryConfig;
-        }
+        const videographyTotal = videographySelections.reduce((sum, selection) => {
+          let selectionConfig = priceConfig;
+          if (selection.includes(".")) {
+            const [mainService, category] = selection.split(".");
+            selectionConfig = selectionConfig?.[mainService]?.[category] || selectionConfig?.[mainService];
+          } else {
+            selectionConfig = selectionConfig?.[selection];
+          }
+          const val =
+            typeof selectionConfig === "object"
+              ? Number(selectionConfig?.price || 0)
+              : Number(selectionConfig || 0);
+          return sum + (Number.isFinite(val) ? val : 0);
+        }, 0);
+        return total + videographyTotal;
       }
       
       const price =
@@ -462,21 +364,31 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     let duration = 1;
     let allowEvening = false;
 
+    const videographySelections = String(property.videographySubService || "")
+      .split("|")
+      .map((v) => v.trim())
+      .filter(Boolean);
+
     property.services.forEach((service) => {
       let config = sizeConfig.prices[service];
       
       // Handle videography sub-services
       if (service === "Videography" && property.videographySubService && typeof config === "object") {
-        if (property.videographySubService.includes('.')) {
-          // Long Form with subcategories
-          const [mainService, category] = property.videographySubService.split('.');
-          const categoryConfig = config[mainService]?.[category];
-          config = categoryConfig;
-        } else {
-          // Short Form - direct pricing
-          const categoryConfig = config[property.videographySubService];
-          config = categoryConfig;
-        }
+        videographySelections.forEach((selection) => {
+          let selectionConfig = config;
+          if (selection.includes(".")) {
+            const [mainService, category] = selection.split(".");
+            selectionConfig = selectionConfig?.[mainService]?.[category] || selectionConfig?.[mainService];
+          } else {
+            selectionConfig = selectionConfig?.[selection];
+          }
+          if (selectionConfig && typeof selectionConfig === "object") {
+            const sDuration = selectionConfig.slots || 1;
+            if (sDuration > duration) duration = sDuration;
+            if (selectionConfig.allowEvening) allowEvening = true;
+          }
+        });
+        return;
       }
       
       if (config && typeof config === "object") {
@@ -526,18 +438,10 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
 
   const getOccupiedSlots = (currentIndex) => {
     const occupied = {};
-    const PERIOD_TO_HOURLY = {
-      morning: ["09:00", "09:30", "10:00", "10:30", "11:00", "11:30"],
-      afternoon: ["13:00", "13:30", "14:00", "14:30", "15:00", "15:30"],
-      evening: ["17:00", "17:30", "18:00", "18:30", "19:00", "19:30"],
-    };
-    const START_TIME_TO_PERIOD = {
-      "09:00": "morning",
-      "10:00": "morning",
-      "13:00": "afternoon",
-      "16:00": "evening",
-      "17:00": "evening",
-    };
+    const HOURLY_SLOTS = [
+      "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
+      "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
+    ];
 
     properties.forEach((p, idx) => {
       if (idx === currentIndex) return;
@@ -545,29 +449,38 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
 
       const slotValue = p.startTime || p.timeSlot;
       if (!slotValue) return;
-      const startPeriod = START_TIME_TO_PERIOD[slotValue] || slotValue;
-      const slotsRequired = Math.min(Math.max(parseInt(p.duration, 10) || 1, 1), 2);
-      const isNight = isNightCompatibleProperty(p);
 
-      if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
-      let requiredPeriods = [startPeriod];
-      if (slotsRequired === 2) {
-        if (isNight && startPeriod === "evening") {
-          requiredPeriods = ["afternoon", "evening"];
-        } else if (!isNight && startPeriod === "morning") {
-          requiredPeriods = ["morning", "afternoon"];
-        } else if (!isNight && startPeriod === "afternoon") {
-          requiredPeriods = ["afternoon", "evening"];
-        }
+      const duration = p.duration || 1;
+      // Handle legacy slots for local blocking
+      if (slotValue === 'morning') {
+        if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
+        occupied[p.preferredDate].push('morning');
+        return;
+      }
+      if (slotValue === 'afternoon') {
+        if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
+        occupied[p.preferredDate].push('afternoon');
+        return;
+      }
+      if (slotValue === 'evening') {
+        if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
+        occupied[p.preferredDate].push('evening');
+        return;
       }
 
-      requiredPeriods.forEach((period) => {
-        (PERIOD_TO_HOURLY[period] || []).forEach((hour) => {
-          if (!occupied[p.preferredDate].includes(hour)) {
-            occupied[p.preferredDate].push(hour);
-          }
-        });
-      });
+      const startIndex = HOURLY_SLOTS.indexOf(slotValue);
+      if (startIndex === -1) return;
+
+      if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
+
+      // Duration is in hours, so * 2 for 30-min slots
+      const numSlots = duration * 2;
+      for (let i = 0; i < numSlots; i++) {
+        const slotIndex = startIndex + i;
+        if (slotIndex < HOURLY_SLOTS.length) {
+          occupied[p.preferredDate].push(HOURLY_SLOTS[slotIndex]);
+        }
+      }
     });
     return occupied;
   };
@@ -592,6 +505,32 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
       setCouponSuccess(`Coupon applied! You saved AED ${result.discount}`);
     } else {
       setCouponError(result.message);
+    }
+  };
+
+  const onContinue = async (data) => {
+    console.log('onContinue called with data:', data);
+    try {
+      // Create bookings first
+      const res = await createBookings(data.properties);
+      console.log('Create bookings response:', res);
+      
+      if (!res.success) throw new Error(res.message);
+      const bookingData = res.data;
+      console.log('Booking data received:', bookingData);
+      
+      const newBookingIds = bookingData.map(b => b.id);
+      console.log('Extracted booking IDs:', newBookingIds);
+      console.log('Booking codes generated:', bookingData.map(b => b.bookingCode));
+      
+      // Update state with new booking IDs
+      setBookingIds(newBookingIds);
+      
+      // Move to payment step
+      setStep("payment");
+    } catch (error) {
+      console.error('Booking submission error:', error);
+      toast.error(error.message || "Failed to process booking");
     }
   };
 
@@ -620,126 +559,102 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     }
   }, [amountAfterAuto]);
 
-  const today = new Date();
-  const startDate = new Date(
-    today.getFullYear(),
-    today.getMonth(),
-    today.getDate(),
-  );
-  const maxSelectableDate = new Date(startDate);
-  maxSelectableDate.setDate(
-    maxSelectableDate.getDate() + (Math.max(rollingWindowDays, 1) - 1),
-  );
-
-  const getPropertyLoadBreakdown = (property) => {
-    return getBookingLoadBreakdown({
-      propertyType: property?.propertyType,
-      propertySize: property?.propertySize,
-      services: property?.services || [],
-      videographySubService: property?.videographySubService || "",
-      slotCapacity: timeSlotSettings?.slotCapacity,
-      weightModel: timeSlotSettings?.weightModel,
-    });
-  };
-
-  const isNightCompatibleProperty = (property) => {
-    return isNightServiceSelected(
-      property?.services || [],
-      property?.videographySubService || "",
-    );
-  };
-
   return (
     <div className="min-h-screen pt-24 py-8 relative">
       <StarBackground />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8 text-center">
-            <h1 className="font-heading text-white text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-2">
+        <div className="mb-12 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <h1 className="font-heading text-white text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4 bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
             Book Your Property Shoot
           </h1>
-          <p className="text-muted-foreground">
-            Add your property details and preferred schedule
+          <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
+            Add your property details and preferred schedule for professional photography services
           </p>
         </div>
 
-        {step === "details"
-          ? <form onSubmit={handleSubmit(onContinue)} className="space-y-6">
-              <div className="space-y-6">
-                {properties?.map((property, index) => (
-                  <PropertyCard
-                    key={index}
-                    index={index}
-                    property={property}
-                    isOpen={index === openPropertyIndex}
-                    onToggle={() =>
-                      setOpenPropertyIndex(
-                        index === openPropertyIndex ? -1 : index,
-                      )
-                    }
-                    onDuplicate={duplicateProperty}
-                    onRemove={removeProperty}
-                    control={control}
-                    setValue={setValue}
-                    errors={errors}
-                    pricingConfig={PRICING_CONFIG}
-                    getPropertyPrice={getPropertyPrice}
-                    getPropertyDurationAndEvening={
-                      getPropertyDurationAndEvening
-                    }
-                    getOccupiedSlots={getOccupiedSlots}
-                    toggleService={toggleService}
-                    updatePropertyField={updatePropertyField}
-                    isOnlyProperty={properties.length === 1}
-                    maxDate={maxSelectableDate}
-                    getPropertyLoadBreakdown={getPropertyLoadBreakdown}
-                    isNightCompatibleProperty={isNightCompatibleProperty}
-                  />
-                ))}
+        {step === "details" ? (
+          <form onSubmit={handleSubmit(onContinue)} className="space-y-6">
+            <div className="space-y-6">
+              {properties?.map((property, index) => (
+                <PropertyCard
+                  key={index}
+                  index={index}
+                  property={property}
+                  isOpen={index === openPropertyIndex}
+                  onToggle={() =>
+                    setOpenPropertyIndex(index === openPropertyIndex ? -1 : index)
+                  }
+                  onDuplicate={duplicateProperty}
+                  onRemove={removeProperty}
+                  control={control}
+                  setValue={setValue}
+                  errors={errors}
+                  pricingConfig={PRICING_CONFIG}
+                  getPropertyPrice={getPropertyPrice}
+                  getPropertyDurationAndEvening={getPropertyDurationAndEvening}
+                  getOccupiedSlots={getOccupiedSlots}
+                  toggleService={toggleService}
+                  updatePropertyField={updatePropertyField}
+                  isOnlyProperty={properties.length === 1}
+                />
+              ))}
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={addProperty}
-                  className="w-full text-muted-foreground border border-border border-dashed hover:border-solid"
-                >
-                  <Plus size={20} className="mr-2" />
-                  Add Another Property
-                </Button>
-              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={addProperty}
+                className="w-full text-muted-foreground border border-border border-dashed hover:border-solid hover:bg-accent/20 hover:text-foreground transition-all duration-200 group"
+              >
+                <Plus
+                  size={20}
+                  className="mr-2 group-hover:rotate-90 transition-transform duration-200"
+                />
+                Add Another Property
+              </Button>
+            </div>
 
-              <PricingSummary
-                propertyCount={properties.length}
-                totalAmount={totalAmount}
-              />
+            <PricingSummary
+              propertyCount={properties.length}
+              totalAmount={totalAmount}
+            />
 
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={isSubmitting}
-                  className="px-8 w-full"
-                >
-                  {isSubmitting ? "Submitting..." : "Continue to Payment"}
-                </Button>
-              </div>
-            </form>
-          : <PaymentStep
-              properties={properties}
-              onBack={() => setStep("details")}
-              getPropertyPrice={getPropertyPrice}
-              calculateTotal={calculateTotal}
-              appliedAutoDiscounts={appliedAutoDiscounts}
-              discountAmount={discountAmount}
-              amountAfterAuto={amountAfterAuto}
-              autoWalletCredits={autoWalletCredits}
-              couponCode={couponCode}
-              setCouponCode={setCouponCode}
-              handleApplyCoupon={handleApplyCoupon}
-              couponError={couponError}
-              couponSuccess={couponSuccess}
-              handleFinalSubmit={handleFinalSubmit}
-              isProcessingPayment={isProcessingPayment}
-            />}
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                size="lg"
+                disabled={isSubmitting}
+                className="px-8 w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Continue to Payment"
+                )}
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <PaymentStep
+            properties={properties}
+            onBack={() => setStep("details")}
+            getPropertyPrice={getPropertyPrice}
+            calculateTotal={calculateTotal}
+            appliedAutoDiscounts={appliedAutoDiscounts}
+            discountAmount={discountAmount}
+            amountAfterAuto={amountAfterAuto}
+            autoWalletCredits={autoWalletCredits}
+            couponCode={couponCode}
+            setCouponCode={setCouponCode}
+            handleApplyCoupon={handleApplyCoupon}
+            couponError={couponError}
+            couponSuccess={couponSuccess}
+            handleFinalSubmit={handleFinalSubmit}
+            isProcessingPayment={isProcessingPayment}
+          />
+        )}
       </div>
     </div>
   );

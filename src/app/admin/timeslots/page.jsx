@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   CalendarDays,
   ChevronLeft,
@@ -104,12 +104,14 @@ export default function TimeSlotsManager() {
   const [bookedMap, setBookedMap] = useState({});
   const [bookedDetailsMap, setBookedDetailsMap] = useState({});
   const [loading, setLoading] = useState(true);
+  const [calendarRefreshing, setCalendarRefreshing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [currentMonth, setCurrentMonth] = useState(
     new Date(new Date().getFullYear(), new Date().getMonth(), 1),
   );
   const [selectedDateKey, setSelectedDateKey] = useState("");
   const [isDayDialogOpen, setIsDayDialogOpen] = useState(false);
+  const hasLoadedOnceRef = useRef(false);
 
   const monthLabel = useMemo(() => {
     return currentMonth.toLocaleDateString("en-US", {
@@ -120,8 +122,12 @@ export default function TimeSlotsManager() {
 
   const calendarDays = useMemo(() => buildCalendarDays(currentMonth), [currentMonth]);
 
-  const loadConfig = async () => {
-    setLoading(true);
+  const loadConfig = async ({ preserveLayout = false } = {}) => {
+    if (preserveLayout) {
+      setCalendarRefreshing(true);
+    } else {
+      setLoading(true);
+    }
     try {
       const { start, end } = getMonthRange(currentMonth);
       const res = await fetch(`/api/admin/timeslots?start=${start}&end=${end}`, {
@@ -137,12 +143,17 @@ export default function TimeSlotsManager() {
     } catch (error) {
       toast.error("Failed to load time slot config");
     } finally {
-      setLoading(false);
+      if (preserveLayout) {
+        setCalendarRefreshing(false);
+      } else {
+        setLoading(false);
+      }
+      hasLoadedOnceRef.current = true;
     }
   };
 
   useEffect(() => {
-    loadConfig();
+    loadConfig({ preserveLayout: hasLoadedOnceRef.current });
   }, [currentMonth]);
 
   const saveConfig = async () => {
@@ -565,6 +576,9 @@ export default function TimeSlotsManager() {
               </Button>
             </div>
           </div>
+          {calendarRefreshing && (
+            <p className="text-xs text-muted-foreground pt-1">Refreshing calendar...</p>
+          )}
           <div className="flex flex-wrap gap-3 pt-2">
             <Badge className="bg-green-500/20 text-green-500 border-green-500/30">Available</Badge>
             <Badge className="bg-red-500/20 text-red-500 border-red-500/30">Booked</Badge>
@@ -647,6 +661,7 @@ export default function TimeSlotsManager() {
                           >
                             <p>Booking: {detail.bookingCode}</p>
                             <p>Property: {detail.propertyLabel}</p>
+                            {detail.serviceLabel && <p>Services: {detail.serviceLabel}</p>}
                             <p>Arrival: {detail.arrival}</p>
                           </div>
                         ))}

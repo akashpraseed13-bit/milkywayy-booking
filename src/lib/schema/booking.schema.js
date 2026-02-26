@@ -30,14 +30,20 @@ const propertySchema = z.object({
 
   if (!data.videographySubService) return true;
 
-  // Accept:
+  // Accept (single or multi-select):
   // - Short Form
   // - Long Form.Daylight | Long Form.Night Light | Long Form.Daylight + Night
-  const [main] = data.videographySubService.split(".");
+  // - Short Form|Long Form.Daylight (both selected)
+  const tokens = String(data.videographySubService)
+    .split("|")
+    .map((s) => s.trim())
+    .filter(Boolean);
+  if (tokens.length === 0) return false;
+  const mains = tokens.map((token) => token.split(".")[0]);
   const allowedMain = Object.values(VIDEOGRAPHY_SUB_SERVICES);
-  return allowedMain.includes(main);
+  return mains.every((main) => allowedMain.includes(main));
 }, {
-  message: "Videography duration is required when videography service is selected",
+  message: "Select at least one videography option",
   path: ["videographySubService"],
 });
 

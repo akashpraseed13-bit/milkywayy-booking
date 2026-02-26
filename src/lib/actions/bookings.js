@@ -16,6 +16,11 @@ import { auth } from "@/lib/helpers/auth";
 import { calculateBookingDuration } from "@/lib/helpers/bookingUtils";
 import { getPricingConfig } from "@/lib/helpers/pricing";
 import { USER_ROLES } from "../config/app.config";
+import {
+  sendBookingConfirmation,
+  sendCancellationConfirmation,
+  sendRescheduleConfirmation,
+} from "@/lib/actions/notifications";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
@@ -54,6 +59,9 @@ const START_TIME_TO_PERIOD = {
 };
 
 const PERIOD_ORDER = ["morning", "afternoon", "evening"];
+const RESCHEDULE_CUTOFF_HOURS = 6;
+const PARTIAL_REFUND_CUTOFF_HOURS = 3;
+const PARTIAL_REFUND_PERCENT = 50;
 
 const isNightServiceFromProperty = (property) => {
   const services = Array.isArray(property?.services) ? property.services : [];
@@ -69,6 +77,59 @@ const isNightServiceFromBooking = (booking) => {
   if (!services.includes("Videography")) return false;
   const sub = booking?.shootDetails?.videographySubService || "";
   return sub.includes("Night Light") || sub.includes("Daylight + Night");
+};
+
+const getBookingDateTime = (bookingLike) => {
+  const dateStr = bookingLike?.date;
+  if (!dateStr) return null;
+
+  const rawStart =
+    bookingLike?.startTime ||
+    (bookingLike?.slot === 1
+      ? "09:00"
+      : bookingLike?.slot === 2
+        ? "13:00"
+        : bookingLike?.slot === 3
+          ? "17:00"
+          : null);
+  if (!rawStart || typeof rawStart !== "string" || !rawStart.includes(":")) {
+    return null;
+  }
+
+  const [hStr, mStr] = rawStart.split(":");
+  const hours = parseInt(hStr, 10);
+  const minutes = parseInt(mStr, 10);
+  if (!Number.isFinite(hours) || !Number.isFinite(minutes)) return null;
+
+  const [y, m, d] = String(dateStr).split("-").map((n) => parseInt(n, 10));
+  if (!Number.isFinite(y) || !Number.isFinite(m) || !Number.isFinite(d)) {
+    return null;
+  }
+
+  return new Date(y, m - 1, d, hours, minutes, 0, 0);
+};
+
+const getHoursUntilBooking = (bookingLike, now = new Date()) => {
+  const dt = getBookingDateTime(bookingLike);
+  if (!dt) return null;
+  return (dt.getTime() - now.getTime()) / (1000 * 60 * 60);
+};
+
+const getCancellationPolicy = (bookingLike, now = new Date()) => {
+  const hoursLeft = getHoursUntilBooking(bookingLike, now);
+  const isPast = typeof hoursLeft === "number" ? hoursLeft < 0 : false;
+  const partialEligible =
+    typeof hoursLeft === "number" &&
+    hoursLeft >= 0 &&
+    hoursLeft <= PARTIAL_REFUND_CUTOFF_HOURS;
+  const refundPercent = partialEligible ? PARTIAL_REFUND_PERCENT : 100;
+
+  return {
+    hoursLeft,
+    isPast,
+    partialEligible,
+    refundPercent,
+  };
 };
 
 const getTimeSlots = (startTime, durationHours, options = {}) => {
@@ -245,6 +306,8 @@ const isDateOutsideRollingWindow = (dateStr, config) => {
 };
 
 const isSlotBlocked = (booking) => {
+  if (booking.cancelledAt) return false;
+
   // If confirmed, it's blocked
   if (booking.status === "CONFIRMED") return true;
 
@@ -496,12 +559,52 @@ const calculatePropertyPrice = (property, pricingConfig) => {
   );
   if (!sizeConfig) return 0;
 
+  const resolveVideographyPriceConfig = (servicePriceConfig, subService) => {
+    if (
+      !subService ||
+      !servicePriceConfig ||
+      typeof servicePriceConfig !== "object"
+    ) {
+      return servicePriceConfig;
+    }
+
+    if (subService.includes(".")) {
+      const [mainService, category] = subService.split(".");
+      const nested = servicePriceConfig?.[mainService]?.[category];
+      if (nested !== undefined) return nested;
+      const mainConfig = servicePriceConfig?.[mainService];
+      if (
+        mainConfig &&
+        typeof mainConfig === "object" &&
+        !Array.isArray(mainConfig) &&
+        "price" in mainConfig
+      ) {
+        return mainConfig;
+      }
+    }
+
+    const direct = servicePriceConfig?.[subService];
+    if (direct !== undefined) return direct;
+
+    return servicePriceConfig;
+  };
+  const videographySelections = String(property.videographySubService || "")
+    .split("|")
+    .map((v) => v.trim())
+    .filter(Boolean);
+
   return property.services.reduce((total, service) => {
     let priceConfig = sizeConfig.prices[service];
     
     // Handle videography sub-services
     if (service === "Videography" && property.videographySubService && typeof priceConfig === "object") {
-      priceConfig = priceConfig[property.videographySubService];
+      const videographyTotal = videographySelections.reduce((sum, selection) => {
+        const cfg = resolveVideographyPriceConfig(priceConfig, selection);
+        const val =
+          typeof cfg === "object" ? Number(cfg?.price || 0) : Number(cfg || 0);
+        return sum + (Number.isFinite(val) ? val : 0);
+      }, 0);
+      return total + videographyTotal;
     }
     
     const price =
@@ -568,11 +671,111 @@ export const rescheduleBookingByCode = actionWrapper(async (bookingCode, updateD
     throw new Error("Booking not found");
   }
 
+  if (booking.cancelledAt || booking.status === "COMPLETED") {
+    throw new Error("This booking cannot be rescheduled");
+  }
+
+  const hoursUntil = getHoursUntilBooking(booking);
+  if (typeof hoursUntil === "number" && hoursUntil < RESCHEDULE_CUTOFF_HOURS) {
+    throw new Error(
+      `Reschedule is allowed only up to ${RESCHEDULE_CUTOFF_HOURS} hours before shoot time.`,
+    );
+  }
+
+  const selectedDate = updateData?.date || booking.date;
+  const rawStart = updateData?.startTime || updateData?.slot || booking.startTime || booking.slot;
+  const normalizedStartTime = (() => {
+    if (!rawStart) return null;
+    if (typeof rawStart === "string") {
+      if (START_TIME_TO_SLOT[rawStart]) return rawStart;
+      if (SLOT_MAPPING[rawStart]) {
+        return rawStart === "morning"
+          ? "09:00"
+          : rawStart === "afternoon"
+            ? "13:00"
+            : rawStart === "evening"
+              ? "17:00"
+              : null;
+      }
+    }
+    if (rawStart === 1 || rawStart === "1") return "09:00";
+    if (rawStart === 2 || rawStart === "2") return "13:00";
+    if (rawStart === 3 || rawStart === "3") return "17:00";
+    return null;
+  })();
+
+  if (!selectedDate || !normalizedStartTime) {
+    throw new Error("Please select a valid date and time");
+  }
+
+  const slotNumber =
+    START_TIME_TO_SLOT[normalizedStartTime] ||
+    SLOT_MAPPING[updateData?.slot] ||
+    booking.slot ||
+    null;
+  const timeSlotConfigEntry = await DynamicConfig.findOne({
+    where: { key: "timeSlots" },
+    attributes: ["value"],
+  });
+  const timeSlotConfig = normalizeTimeSlotConfig(timeSlotConfigEntry?.value);
+  const normalizedShootDetails = booking.shootDetails || {};
+  const normalizedPropertyDetails = booking.propertyDetails || {};
+  const services = Array.isArray(normalizedShootDetails.services)
+    ? normalizedShootDetails.services
+    : [];
+  const videographySubService = normalizedShootDetails.videographySubService || "";
+  const propertyType = normalizedPropertyDetails.type || "";
+  const propertySize = normalizedPropertyDetails.size || "";
+
+  const computedDuration = calculateBookingDuration(
+    {
+      id: services,
+      videographySubService,
+    },
+    {
+      type: propertyType,
+      size: propertySize,
+      videographySubService,
+    },
+    {
+      slotCapacity: timeSlotConfig?.systemSettings?.slotCapacity,
+      weightModel: timeSlotConfig?.systemSettings?.weightModel,
+    },
+  );
+
+  await checkAvailability(
+    [
+      {
+        preferredDate: selectedDate,
+        startTime: normalizedStartTime,
+        timeSlot: REVERSE_SLOT_MAPPING[slotNumber],
+        duration: computedDuration,
+        services,
+        videographySubService,
+        propertyType,
+        propertySize,
+      },
+    ],
+    [booking.id],
+  );
+
   await booking.update({
-    ...updateData,
+    date: selectedDate,
+    startTime: normalizedStartTime,
+    slot: slotNumber,
+    duration: computedDuration,
     rescheduledAt: new Date(),
     rescheduleCount: (booking.rescheduleCount || 0) + 1,
   });
+
+  try {
+    const user = await User.findByPk(booking.userId);
+    if (user) {
+      await sendRescheduleConfirmation(booking, user);
+    }
+  } catch (err) {
+    console.error("WhatsApp reschedule notification failed:", err);
+  }
 
   return { success: true, data: booking.toJSON() };
 });
@@ -859,15 +1062,128 @@ const cancelBookingHandler = async (bookingId) => {
 
   const booking = await Booking.findOne({
     where: { id: bookingId, userId: session.id },
+    include: [{ model: Transaction, as: "transaction" }],
   });
 
   if (!booking) throw new Error("Booking not found");
+  if (booking.cancelledAt) throw new Error("Booking is already cancelled");
+  if (booking.status === "COMPLETED") {
+    throw new Error("Completed booking cannot be cancelled");
+  }
+
+  const policy = getCancellationPolicy(booking);
+  if (policy.isPast) {
+    throw new Error("Past bookings cannot be cancelled");
+  }
+
+  const transaction = booking.transaction || null;
+  let refundAmount = 0;
+  let refundType = "none";
+  let stripeRefundId = null;
+
+  if (
+    transaction &&
+    transaction.status === "success" &&
+    transaction.stripePaymentIntentId
+  ) {
+    const bookingTotal = Number(booking.total || 0);
+    const txAmount = Number(transaction.amount || 0);
+    const txRefunded = Number(transaction.refundedAmount || 0);
+    const bookingRefunded = Number(booking.refundedAmount || 0);
+    const requested = Number(
+      ((bookingTotal * (policy.refundPercent || 0)) / 100).toFixed(2),
+    );
+    const txRemaining = Math.max(0, txAmount - txRefunded);
+    const bookingRemaining = Math.max(0, bookingTotal - bookingRefunded);
+    refundAmount = Math.max(
+      0,
+      Number(Math.min(requested, txRemaining, bookingRemaining).toFixed(2)),
+    );
+
+    if (refundAmount > 0) {
+      const paymentIntentId = transaction.stripePaymentIntentId;
+      if (String(paymentIntentId).startsWith("pi_")) {
+        const stripeRefund = await stripe.refunds.create({
+          payment_intent: paymentIntentId,
+          amount: Math.round(refundAmount * 100),
+          metadata: {
+            bookingId: String(booking.id),
+            bookingCode: String(
+              booking.bookingCode || `MWY-${String(booking.id).padStart(6, "0")}`,
+            ),
+            refundType: policy.partialEligible ? "partial" : "full",
+          },
+        });
+        stripeRefundId = stripeRefund?.id || null;
+      } else {
+        // Payment intent not yet normalized (legacy session id kept in field).
+        const stripeSession = await stripe.checkout.sessions.retrieve(
+          paymentIntentId,
+        );
+        if (!stripeSession?.payment_intent) {
+          throw new Error("Unable to process refund for this booking.");
+        }
+        const stripeRefund = await stripe.refunds.create({
+          payment_intent: stripeSession.payment_intent,
+          amount: Math.round(refundAmount * 100),
+          metadata: {
+            bookingId: String(booking.id),
+            bookingCode: String(
+              booking.bookingCode || `MWY-${String(booking.id).padStart(6, "0")}`,
+            ),
+            refundType: policy.partialEligible ? "partial" : "full",
+          },
+        });
+        stripeRefundId = stripeRefund?.id || null;
+      }
+
+      await transaction.update({
+        refundedAmount: Number((txRefunded + refundAmount).toFixed(2)),
+        metadata: {
+          ...(transaction.metadata || {}),
+          lastRefund: {
+            bookingId: booking.id,
+            amount: refundAmount,
+            refundType: policy.partialEligible ? "partial" : "full",
+            stripeRefundId,
+            refundedAt: new Date().toISOString(),
+          },
+        },
+      });
+      refundType = policy.partialEligible ? "partial" : "full";
+    }
+  }
 
   await booking.update({
     cancelledAt: new Date(),
+    status: "CANCELLED",
+    refundedAmount: Number(
+      (Number(booking.refundedAmount || 0) + Number(refundAmount || 0)).toFixed(
+        2,
+      ),
+    ),
   });
 
-  return { success: true };
+  try {
+    const user = await User.findByPk(booking.userId);
+    if (user) {
+      await sendCancellationConfirmation(booking, user);
+    }
+  } catch (err) {
+    console.error("WhatsApp cancellation notification failed:", err);
+  }
+
+  return {
+    success: true,
+    data: {
+      refundType,
+      refundAmount,
+      policy: {
+        partialRefundCutoffHours: PARTIAL_REFUND_CUTOFF_HOURS,
+        partialRefundPercent: PARTIAL_REFUND_PERCENT,
+      },
+    },
+  };
 };
 export const cancelBooking = actionWrapper(cancelBookingHandler);
 
@@ -893,6 +1209,20 @@ const verifyStripeSessionHandler = async (sessionId) => {
           { status: "CONFIRMED" },
           { where: { transactionId: transaction.id } },
         );
+
+        try {
+          const user = await db.models.User.findByPk(transaction.userId);
+          if (user) {
+            const confirmedBookings = await Booking.findAll({
+              where: { transactionId: transaction.id },
+            });
+            await Promise.allSettled(
+              confirmedBookings.map((b) => sendBookingConfirmation(b, user)),
+            );
+          }
+        } catch (notifyError) {
+          console.error("WhatsApp booking confirmation failed:", notifyError);
+        }
 
         // Generate Invoice
         try {
@@ -949,7 +1279,7 @@ const cancelBookingBySessionIdHandler = async (sessionId) => {
       if (t) {
         await t.update({ status: "failed" });
         await Booking.update(
-          { cancelledAt: new Date() },
+          { cancelledAt: new Date(), status: "CANCELLED" },
           { where: { transactionId: t.id } },
         );
         return { success: true };
@@ -960,7 +1290,7 @@ const cancelBookingBySessionIdHandler = async (sessionId) => {
 
   await transaction.update({ status: "failed" });
   await Booking.update(
-    { cancelledAt: new Date() },
+    { cancelledAt: new Date(), status: "CANCELLED" },
     { where: { transactionId: transaction.id } },
   );
 

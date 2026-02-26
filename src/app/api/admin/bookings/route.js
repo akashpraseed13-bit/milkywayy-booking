@@ -10,7 +10,7 @@ export async function GET() {
     const bookings = await Booking.findAll({
       where: {
         status: {
-          [Op.in]: ["DRAFT", "COMPLETED"]
+          [Op.in]: ["DRAFT", "CONFIRMED", "COMPLETED", "CANCELLED"]
         },
       },
       include: [

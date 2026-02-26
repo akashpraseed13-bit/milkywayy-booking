@@ -8,7 +8,7 @@ window.confirm = jest.fn();
 const mockBookings = [
   {
     id: 1,
-    date: '2025-12-25',
+    date: '2099-12-25',
     slot: 1,
     propertyDetails: { unit: '101', building: 'Tower A', community: 'Marina' },
     shootDetails: { services: ['Photography'] },
@@ -43,27 +43,22 @@ describe('BookingList', () => {
   });
 
   it('calls cancelBooking when cancel button is clicked and confirmed', async () => {
-    window.confirm.mockReturnValue(true);
-    
     render(<BookingList bookings={mockBookings} />);
-    
-    // Use stopPropagation in the component means we need to click the button specifically
+
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
-    
-    expect(window.confirm).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /confirm cancel/i }));
+
     await waitFor(() => {
       expect(cancelBooking).toHaveBeenCalledWith(1);
     });
   });
 
-  it('does not call cancelBooking if not confirmed', async () => {
-    window.confirm.mockReturnValue(false);
-    
+  it('does not call cancelBooking if modal is dismissed', async () => {
     render(<BookingList bookings={mockBookings} />);
-    
+
     fireEvent.click(screen.getByRole('button', { name: /cancel/i }));
-    
-    expect(window.confirm).toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('button', { name: /keep booking/i }));
+
     expect(cancelBooking).not.toHaveBeenCalled();
   });
 });
