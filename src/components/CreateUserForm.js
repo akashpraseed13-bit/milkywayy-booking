@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,6 +22,16 @@ const roles = [
 export default function CreateUserForm({ onSubmit, onCancel }) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState("");
+  const errorRef = useRef(null);
+
+  const scrollToError = () => {
+    if (errorRef.current) {
+      errorRef.current.scrollIntoView({ 
+        behavior: 'smooth', 
+        block: 'center' 
+      });
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -41,6 +51,8 @@ export default function CreateUserForm({ onSubmit, onCancel }) {
     if (userData.password !== userData.confirmPassword) {
       setError("Passwords do not match");
       setIsSubmitting(false);
+      // Scroll to error after a short delay to ensure it's rendered
+      setTimeout(scrollToError, 100);
       return;
     }
 
@@ -51,18 +63,23 @@ export default function CreateUserForm({ onSubmit, onCancel }) {
         onSubmit(res.data);
       } else {
         setError(res.message);
+        setTimeout(scrollToError, 100);
       }
     } catch (err) {
       setError("An unexpected error occurred");
+      setTimeout(scrollToError, 100);
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
+    <form onSubmit={handleSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto pr-2">
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+        <div 
+          ref={errorRef}
+          className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded sticky top-0 z-10"
+        >
           {error}
         </div>
       )}

@@ -58,6 +58,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
           propertyType: "",
           propertySize: "",
           services: [],
+          videographySubService: "",
           preferredDate: "",
           timeSlot: "",
           startTime: "",
@@ -91,6 +92,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
             propertyType: draft.propertyDetails?.type || "",
             propertySize: draft.propertyDetails?.size || "",
             services: draft.shootDetails?.services || [],
+            videographySubService: draft.shootDetails?.videographySubService || "",
             preferredDate: draft.date || "",
             timeSlot:
               draft.slot === 1
@@ -200,16 +202,21 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
 
   const updatePropertyField = (index, field, value) => {
     setValue(`properties.${index}.${field}`, value, { shouldValidate: true });
-    
-    // If the changed field affects duration, recalculate it
-    if (['propertyType', 'propertySize', 'services'].includes(field)) {
-      const property = getValues(`properties.${index}`);
+
+    // If changed field affects duration, recalculate it
+    if (["propertyType", "propertySize", "services", "videographySubService"].includes(field)) {
+      const current = getValues(`properties.${index}`);
+      const property = { ...current, [field]: value };
       // Only calculate if we have the minimum required info
       if (property.propertyType && property.propertySize && property.services?.length > 0) {
         const duration = calculateBookingDuration(
           { id: property.services }, // Simulating service object
-          { type: property.propertyType, size: property.propertySize },
-          { community: property.community }
+          {
+            type: property.propertyType,
+            size: property.propertySize,
+            videographySubService: property.videographySubService,
+          },
+          { community: property.community },
         );
         setValue(`properties.${index}.duration`, duration);
       } else {
@@ -222,33 +229,60 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     const newServices = currentServices.includes(serviceName)
       ? currentServices.filter((s) => s !== serviceName)
       : [...currentServices, serviceName];
-    updatePropertyField(index, "services", newServices);
-  };
 
-  const onContinue = async (data) => {
-    if (!authState.isAuthenticated) {
-      login();
-      return;
-    }
-    try {
-      const res = await createBookings(data.properties);
-      if (!res.success) throw new Error(res.message);
-      const ids = res.data;
-      setBookingIds(ids);
-      setStep("payment");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (error) {
-      toast.error(error.message || "Failed to save bookings");
-    }
-  };
+    setValue(`properties.${index}.services`, newServices, {
+      shouldValidate: true,
+      shouldDirty: true,
+    });
 
+    const property = getValues(`properties.${index}`);
+    const hasVideography = newServices.includes("Videography");
+    const nextVideographySubService = hasVideography
+      ? property?.videographySubService || ""
+      : "";
+
+    if (!hasVideography) {
+      setValue(`properties.${index}.videographySubService`, "", {
+        shouldValidate: true,
+        shouldDirty: true,
+      });
+    }
+
+    if (property?.propertyType && property?.propertySize && newServices.length > 0) {
+      const duration = calculateBookingDuration(
+        { id: newServices },
+        {
+          type: property.propertyType,
+          size: property.propertySize,
+          videographySubService: nextVideographySubService,
+        },
+        { community: property.community },
+      );
+      setValue(`properties.${index}.duration`, duration);
+    } else {
+      setValue(`properties.${index}.duration`, 0);
+    }
+
+    await trigger(`properties.${index}.services`);
+  };
+ 
   const handleFinalSubmit = async () => {
+    console.log('handleFinalSubmit called with bookingIds:', bookingIds);
     setIsProcessingPayment(true);
     try {
+      // Extract just IDs for payment processing
+      const idsForPayment = bookingIds.map(b => typeof b === 'object' ? b.id : b);
+      console.log('IDs for payment:', idsForPayment);
+      
+      if (idsForPayment.length === 0) {
+        throw new Error('No booking IDs available for payment');
+      }
+      
       const res = await createTransactionAndPaymentIntent(
-        bookingIds,
+        idsForPayment,
         couponCode,
       );
+      console.log('Payment response:', res);
       if (!res.success) throw new Error(res.message);
       const result = res.data;
       if (result.url) {
@@ -280,8 +314,33 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     );
     if (!sizeConfig) return 0;
 
+    const videographySelections = String(property.videographySubService || "")
+      .split("|")
+      .map((v) => v.trim())
+      .filter(Boolean);
+
     return property.services.reduce((total, service) => {
-      const priceConfig = sizeConfig.prices[service];
+      let priceConfig = sizeConfig.prices[service];
+      
+      // Handle videography sub-services
+      if (service === "Videography" && property.videographySubService && typeof priceConfig === "object") {
+        const videographyTotal = videographySelections.reduce((sum, selection) => {
+          let selectionConfig = priceConfig;
+          if (selection.includes(".")) {
+            const [mainService, category] = selection.split(".");
+            selectionConfig = selectionConfig?.[mainService]?.[category] || selectionConfig?.[mainService];
+          } else {
+            selectionConfig = selectionConfig?.[selection];
+          }
+          const val =
+            typeof selectionConfig === "object"
+              ? Number(selectionConfig?.price || 0)
+              : Number(selectionConfig || 0);
+          return sum + (Number.isFinite(val) ? val : 0);
+        }, 0);
+        return total + videographyTotal;
+      }
+      
       const price =
         typeof priceConfig === "object"
           ? priceConfig.price || 0
@@ -305,8 +364,33 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     let duration = 1;
     let allowEvening = false;
 
+    const videographySelections = String(property.videographySubService || "")
+      .split("|")
+      .map((v) => v.trim())
+      .filter(Boolean);
+
     property.services.forEach((service) => {
-      const config = sizeConfig.prices[service];
+      let config = sizeConfig.prices[service];
+      
+      // Handle videography sub-services
+      if (service === "Videography" && property.videographySubService && typeof config === "object") {
+        videographySelections.forEach((selection) => {
+          let selectionConfig = config;
+          if (selection.includes(".")) {
+            const [mainService, category] = selection.split(".");
+            selectionConfig = selectionConfig?.[mainService]?.[category] || selectionConfig?.[mainService];
+          } else {
+            selectionConfig = selectionConfig?.[selection];
+          }
+          if (selectionConfig && typeof selectionConfig === "object") {
+            const sDuration = selectionConfig.slots || 1;
+            if (sDuration > duration) duration = sDuration;
+            if (selectionConfig.allowEvening) allowEvening = true;
+          }
+        });
+        return;
+      }
+      
       if (config && typeof config === "object") {
         const sDuration = config.slots || 1;
         if (sDuration > duration) duration = sDuration;
@@ -424,6 +508,32 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     }
   };
 
+  const onContinue = async (data) => {
+    console.log('onContinue called with data:', data);
+    try {
+      // Create bookings first
+      const res = await createBookings(data.properties);
+      console.log('Create bookings response:', res);
+      
+      if (!res.success) throw new Error(res.message);
+      const bookingData = res.data;
+      console.log('Booking data received:', bookingData);
+      
+      const newBookingIds = bookingData.map(b => b.id);
+      console.log('Extracted booking IDs:', newBookingIds);
+      console.log('Booking codes generated:', bookingData.map(b => b.bookingCode));
+      
+      // Update state with new booking IDs
+      setBookingIds(newBookingIds);
+      
+      // Move to payment step
+      setStep("payment");
+    } catch (error) {
+      console.error('Booking submission error:', error);
+      toast.error(error.message || "Failed to process booking");
+    }
+  };
+
   const totalAmount = calculateTotal();
   const {
     finalAmount: amountAfterAuto,
@@ -453,90 +563,98 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     <div className="min-h-screen pt-24 py-8 relative">
       <StarBackground />
       <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-8 text-center">
-            <h1 className="font-heading text-white text-2xl sm:text-4xl lg:text-5xl font-bold leading-tight mb-2">
+        <div className="mb-12 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+            <h1 className="font-heading text-white text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4 bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
             Book Your Property Shoot
           </h1>
-          <p className="text-muted-foreground">
-            Add your property details and preferred schedule
+          <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
+            Add your property details and preferred schedule for professional photography services
           </p>
         </div>
 
-        {step === "details"
-          ? <form onSubmit={handleSubmit(onContinue)} className="space-y-6">
-              <div className="space-y-6">
-                {properties?.map((property, index) => (
-                  <PropertyCard
-                    key={index}
-                    index={index}
-                    property={property}
-                    isOpen={index === openPropertyIndex}
-                    onToggle={() =>
-                      setOpenPropertyIndex(
-                        index === openPropertyIndex ? -1 : index,
-                      )
-                    }
-                    onDuplicate={duplicateProperty}
-                    onRemove={removeProperty}
-                    control={control}
-                    setValue={setValue}
-                    errors={errors}
-                    pricingConfig={PRICING_CONFIG}
-                    getPropertyPrice={getPropertyPrice}
-                    getPropertyDurationAndEvening={
-                      getPropertyDurationAndEvening
-                    }
-                    getOccupiedSlots={getOccupiedSlots}
-                    toggleService={toggleService}
-                    updatePropertyField={updatePropertyField}
-                    isOnlyProperty={properties.length === 1}
-                  />
-                ))}
+        {step === "details" ? (
+          <form onSubmit={handleSubmit(onContinue)} className="space-y-6">
+            <div className="space-y-6">
+              {properties?.map((property, index) => (
+                <PropertyCard
+                  key={index}
+                  index={index}
+                  property={property}
+                  isOpen={index === openPropertyIndex}
+                  onToggle={() =>
+                    setOpenPropertyIndex(index === openPropertyIndex ? -1 : index)
+                  }
+                  onDuplicate={duplicateProperty}
+                  onRemove={removeProperty}
+                  control={control}
+                  setValue={setValue}
+                  errors={errors}
+                  pricingConfig={PRICING_CONFIG}
+                  getPropertyPrice={getPropertyPrice}
+                  getPropertyDurationAndEvening={getPropertyDurationAndEvening}
+                  getOccupiedSlots={getOccupiedSlots}
+                  toggleService={toggleService}
+                  updatePropertyField={updatePropertyField}
+                  isOnlyProperty={properties.length === 1}
+                />
+              ))}
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  onClick={addProperty}
-                  className="w-full text-muted-foreground border border-border border-dashed hover:border-solid"
-                >
-                  <Plus size={20} className="mr-2" />
-                  Add Another Property
-                </Button>
-              </div>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={addProperty}
+                className="w-full text-muted-foreground border border-border border-dashed hover:border-solid hover:bg-accent/20 hover:text-foreground transition-all duration-200 group"
+              >
+                <Plus
+                  size={20}
+                  className="mr-2 group-hover:rotate-90 transition-transform duration-200"
+                />
+                Add Another Property
+              </Button>
+            </div>
 
-              <PricingSummary
-                propertyCount={properties.length}
-                totalAmount={totalAmount}
-              />
+            <PricingSummary
+              propertyCount={properties.length}
+              totalAmount={totalAmount}
+            />
 
-              <div className="flex justify-end">
-                <Button
-                  type="submit"
-                  size="lg"
-                  disabled={isSubmitting}
-                  className="px-8 w-full"
-                >
-                  {isSubmitting ? "Submitting..." : "Continue to Payment"}
-                </Button>
-              </div>
-            </form>
-          : <PaymentStep
-              properties={properties}
-              onBack={() => setStep("details")}
-              getPropertyPrice={getPropertyPrice}
-              calculateTotal={calculateTotal}
-              appliedAutoDiscounts={appliedAutoDiscounts}
-              discountAmount={discountAmount}
-              amountAfterAuto={amountAfterAuto}
-              autoWalletCredits={autoWalletCredits}
-              couponCode={couponCode}
-              setCouponCode={setCouponCode}
-              handleApplyCoupon={handleApplyCoupon}
-              couponError={couponError}
-              couponSuccess={couponSuccess}
-              handleFinalSubmit={handleFinalSubmit}
-              isProcessingPayment={isProcessingPayment}
-            />}
+            <div className="flex justify-end">
+              <Button
+                type="submit"
+                size="lg"
+                disabled={isSubmitting}
+                className="px-8 w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Submitting...
+                  </>
+                ) : (
+                  "Continue to Payment"
+                )}
+              </Button>
+            </div>
+          </form>
+        ) : (
+          <PaymentStep
+            properties={properties}
+            onBack={() => setStep("details")}
+            getPropertyPrice={getPropertyPrice}
+            calculateTotal={calculateTotal}
+            appliedAutoDiscounts={appliedAutoDiscounts}
+            discountAmount={discountAmount}
+            amountAfterAuto={amountAfterAuto}
+            autoWalletCredits={autoWalletCredits}
+            couponCode={couponCode}
+            setCouponCode={setCouponCode}
+            handleApplyCoupon={handleApplyCoupon}
+            couponError={couponError}
+            couponSuccess={couponSuccess}
+            handleFinalSubmit={handleFinalSubmit}
+            isProcessingPayment={isProcessingPayment}
+          />
+        )}
       </div>
     </div>
   );

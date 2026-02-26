@@ -165,20 +165,23 @@ export default function BookingsPage() {
                     AED {booking.total}
                   </TableCell>
                   <TableCell>
-                    <Badge
-                      variant={
-                        booking.transaction?.status === "success"
-                          ? "success"
-                          : "secondary"
-                      }
-                      className={
-                        booking.transaction?.status === "success"
-                          ? "bg-green-500/15 text-green-500 hover:bg-green-500/25 border-green-500/20"
-                          : "bg-yellow-500/15 text-yellow-500 hover:bg-yellow-500/25 border-yellow-500/20"
-                      }
-                    >
-                      {booking.transaction?.status || "Pending"}
-                    </Badge>
+                    {booking.cancelledAt ? (
+                      <Badge className="bg-red-500/15 text-red-500 hover:bg-red-500/25 border-red-500/20">
+                        Cancelled
+                      </Badge>
+                    ) : booking.status === "COMPLETED" || booking.completedAt ? (
+                      <Badge className="bg-green-500/15 text-green-500 hover:bg-green-500/25 border-green-500/20">
+                        Completed
+                      </Badge>
+                    ) : booking.status === "CONFIRMED" ? (
+                      <Badge className="bg-blue-500/15 text-blue-400 hover:bg-blue-500/25 border-blue-500/20">
+                        Confirmed
+                      </Badge>
+                    ) : (
+                      <Badge className="bg-yellow-500/15 text-yellow-500 hover:bg-yellow-500/25 border-yellow-500/20">
+                        {booking.transaction?.status || "Pending"}
+                      </Badge>
+                    )}
                   </TableCell>
                 </TableRow>
               ))

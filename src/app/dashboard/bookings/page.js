@@ -12,11 +12,16 @@ export default async function BookingsPage() {
 
   const res = await getBookings(session.id);
   const bookings = res.success ? res.data : [];
-  const plainBookings = bookings.map((b) => b.toJSON());
+  const plainBookings = bookings
+    .map((b) => b.toJSON())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime(),
+    );
 
   return (
-    <div className="min-h-screen text-white p-4 md:p-8">
-      <div className="max-w-4xl mx-auto">
+    <div className="text-white">
+      <div className="w-full">
         <BookingList bookings={plainBookings} />
       </div>
     </div>

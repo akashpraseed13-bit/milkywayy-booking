@@ -52,9 +52,11 @@ export default function UserMenu() {
           <DropdownMenuItem asChild>
             <Link href="/dashboard/invoices">Invoices</Link>
           </DropdownMenuItem>
+          {/* Wallet menu intentionally hidden for now.
           <DropdownMenuItem asChild>
             <Link href="/dashboard/wallet">Wallet</Link>
           </DropdownMenuItem>
+          */}
           <DropdownMenuSeparator />
           <DropdownMenuItem
             onClick={handleLogout}

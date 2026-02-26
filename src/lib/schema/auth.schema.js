@@ -19,4 +19,13 @@ const otpSchema = z.object({
   otp: z.string().min(6, "OTP must be 6 digits").max(6, "OTP must be 6 digits"),
 });
 
-export { signInSchema, phoneSchema, otpSchema };
+const newUserSchema = z.object({
+  fullName: z.string().min(1, "Full name is required").min(2, "Full name must be at least 2 characters"),
+  phone: z
+    .string()
+    .min(1, "Phone number is required")
+    .min(7, "Phone number is too short"),
+  email: z.string().email("Invalid email address").optional().or(z.literal("")),
+});
+
+export { signInSchema, phoneSchema, otpSchema, newUserSchema };

@@ -4,14 +4,14 @@ import { useState, useEffect } from "react";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/logo.png";
-import DashboardLoginModal from "./DashboardLoginModal";
+import { useAuth } from "@/lib/contexts/auth";
 
 const Link = () => {}
 
 const Navbar = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [showLoginModal, setShowLoginModal] = useState(false);
+  const { login, logout, authState } = useAuth();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -52,23 +52,54 @@ const Navbar = () => {
             <button onClick={() => scrollToSection("contact")} className="text-sm font-medium hover:text-accent transition-colors">
               Contact
             </button>
-            <div className="flex items-center space-x-4">
-              <Link to="/booking">
+            {authState.isAuthenticated ? (
+              <div className="flex items-center space-x-4">
+                <span className="text-sm font-medium text-foreground">
+                  Hi, {authState.user?.fullName || authState.user?.email || 'User'}
+                </span>
+                <Link to="/booking">
+                  <Button
+                    variant="default"
+                    className="bg-accent text-accent-foreground hover:bg-accent/90 glow-pulse"
+                  >
+                    Book
+                  </Button>
+                </Link>
+                <Link to="/dashboard">
+                  <Button
+                    variant="outline"
+                    className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                  >
+                    Dashboard
+                  </Button>
+                </Link>
                 <Button
-                  variant="default"
-                  className="bg-accent text-accent-foreground hover:bg-accent/90 glow-pulse"
+                  onClick={logout}
+                  variant="outline"
+                  className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
                 >
-                  Book Now
+                  Logout
                 </Button>
-              </Link>
-              <Button
-                onClick={() => setShowLoginModal(true)}
-                variant="outline"
-                className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
-              >
-                Dashboard
-              </Button>
-            </div>
+              </div>
+            ) : (
+              <div className="flex items-center space-x-4">
+                <Link to="/booking">
+                  <Button
+                    variant="default"
+                    className="bg-accent text-accent-foreground hover:bg-accent/90 glow-pulse"
+                  >
+                    Book Now
+                  </Button>
+                </Link>
+                <Button
+                  onClick={login}
+                  variant="outline"
+                  className="border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                >
+                  Dashboard
+                </Button>
+              </div>
+            )}
           </div>
 
           <button
@@ -90,27 +121,59 @@ const Navbar = () => {
             <button onClick={() => scrollToSection("contact")} className="block w-full text-left text-sm font-medium hover:text-accent transition-colors">
               Contact
             </button>
-            <Link to="/booking" className="block">
-              <Button
-                variant="default"
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
-              >
-                Book Now
-              </Button>
-            </Link>
-            <Button
-              onClick={() => setShowLoginModal(true)}
-              variant="outline"
-              className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
-            >
-              Dashboard
-            </Button>
+            {authState.isAuthenticated ? (
+              <>
+                <div className="text-sm font-medium text-foreground mb-2">
+                  Hi, {authState.user?.fullName || authState.user?.email || 'User'}
+                </div>
+                <Link to="/booking" className="block">
+                  <Button
+                    variant="default"
+                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                  >
+                    Book
+                  </Button>
+                </Link>
+                <Link to="/dashboard" className="block">
+                  <Button
+                    variant="outline"
+                    className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                  >
+                    Dashboard
+                  </Button>
+                </Link>
+                <Button
+                  onClick={logout}
+                  variant="outline"
+                  className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                >
+                  Logout
+                </Button>
+              </>
+            ) : (
+              <>
+                <Link to="/booking" className="block">
+                  <Button
+                    variant="default"
+                    className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                  >
+                    Book Now
+                  </Button>
+                </Link>
+                <Button
+                  onClick={() => login()}
+                  variant="outline"
+                  className="w-full border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+                >
+                  Dashboard
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>
       </nav>
-      <DashboardLoginModal open={showLoginModal} onOpenChange={setShowLoginModal} />
-    </>
+          </>
   );
 };
 

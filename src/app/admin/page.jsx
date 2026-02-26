@@ -59,6 +59,18 @@ export default function AdminDashboard() {
           </Card>
         </Link>
 
+        <Link href="/admin/timeslots">
+          <Card className="hover:scale-105 transition-transform cursor-pointer h-full">
+            <CardHeader>
+              <CardTitle>Time Slots</CardTitle>
+            </CardHeader>
+            <Separator />
+            <CardContent className="pt-4">
+              <p>Manage booking time slots and availability.</p>
+            </CardContent>
+          </Card>
+        </Link>
+
         <Link href="/admin/coupons">
           <Card className="hover:scale-105 transition-transform cursor-pointer h-full">
             <CardHeader>
