@@ -1,6 +1,7 @@
 "use client";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Plus, Loader2 } from "lucide-react";
+import { Loader2, Plus } from "lucide-react";
+import Image from "next/image";
 import { use, useEffect, useState } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { toast } from "sonner";
@@ -14,14 +15,11 @@ import {
 } from "@/lib/actions/bookings";
 import { validateCoupon } from "@/lib/actions/coupons";
 import { PRICING_CONFIG as STATIC_PRICING_CONFIG } from "@/lib/config/pricing";
-import { useAuth } from "@/lib/contexts/auth";
+import { calculateBookingDuration } from "@/lib/helpers/bookingUtils";
 import { bookingSchema } from "@/lib/schema/booking.schema";
-import { calculateBookingDuration, getAvailableSlots } from "@/lib/helpers/bookingUtils";
-
+import { PaymentStep } from "./components/PaymentStep";
 // Modular Components
 import { PropertyCard } from "./components/PropertyCard";
-import { PaymentStep } from "./components/PaymentStep";
-import { PricingSummary } from "./components/PricingSummary";
 
 export default function BookNew({ pricingsPromise, discountsPromise }) {
   const pricingsRes = use(pricingsPromise);
@@ -40,7 +38,6 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
   const [couponSuccess, setCouponSuccess] = useState("");
   const [bookingIds, setBookingIds] = useState([]);
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const { authState, login } = useAuth();
 
   const {
     control,
@@ -92,7 +89,8 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
             propertyType: draft.propertyDetails?.type || "",
             propertySize: draft.propertyDetails?.size || "",
             services: draft.shootDetails?.services || [],
-            videographySubService: draft.shootDetails?.videographySubService || "",
+            videographySubService:
+              draft.shootDetails?.videographySubService || "",
             preferredDate: draft.date || "",
             timeSlot:
               draft.slot === 1
@@ -102,11 +100,15 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                   : draft.slot === 3
                     ? "evening"
                     : "",
-            startTime: 
-              draft.startTime || (
-              draft.slot === 1 ? "10:00" :
-              draft.slot === 2 ? "13:00" :
-              draft.slot === 3 ? "16:00" : ""),
+            startTime:
+              draft.startTime ||
+              (draft.slot === 1
+                ? "10:00"
+                : draft.slot === 2
+                  ? "13:00"
+                  : draft.slot === 3
+                    ? "16:00"
+                    : ""),
             duration: draft.duration || 0,
             building: draft.propertyDetails?.building || "",
             community: draft.propertyDetails?.community || "",
@@ -204,11 +206,22 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
     setValue(`properties.${index}.${field}`, value, { shouldValidate: true });
 
     // If changed field affects duration, recalculate it
-    if (["propertyType", "propertySize", "services", "videographySubService"].includes(field)) {
+    if (
+      [
+        "propertyType",
+        "propertySize",
+        "services",
+        "videographySubService",
+      ].includes(field)
+    ) {
       const current = getValues(`properties.${index}`);
       const property = { ...current, [field]: value };
       // Only calculate if we have the minimum required info
-      if (property.propertyType && property.propertySize && property.services?.length > 0) {
+      if (
+        property.propertyType &&
+        property.propertySize &&
+        property.services?.length > 0
+      ) {
         const duration = calculateBookingDuration(
           { id: property.services }, // Simulating service object
           {
@@ -248,7 +261,11 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
       });
     }
 
-    if (property?.propertyType && property?.propertySize && newServices.length > 0) {
+    if (
+      property?.propertyType &&
+      property?.propertySize &&
+      newServices.length > 0
+    ) {
       const duration = calculateBookingDuration(
         { id: newServices },
         {
@@ -265,24 +282,26 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
 
     await trigger(`properties.${index}.services`);
   };
- 
+
   const handleFinalSubmit = async () => {
-    console.log('handleFinalSubmit called with bookingIds:', bookingIds);
+    console.log("handleFinalSubmit called with bookingIds:", bookingIds);
     setIsProcessingPayment(true);
     try {
       // Extract just IDs for payment processing
-      const idsForPayment = bookingIds.map(b => typeof b === 'object' ? b.id : b);
-      console.log('IDs for payment:', idsForPayment);
-      
+      const idsForPayment = bookingIds.map((b) =>
+        typeof b === "object" ? b.id : b,
+      );
+      console.log("IDs for payment:", idsForPayment);
+
       if (idsForPayment.length === 0) {
-        throw new Error('No booking IDs available for payment');
+        throw new Error("No booking IDs available for payment");
       }
-      
+
       const res = await createTransactionAndPaymentIntent(
         idsForPayment,
         couponCode,
       );
-      console.log('Payment response:', res);
+      console.log("Payment response:", res);
       if (!res.success) throw new Error(res.message);
       const result = res.data;
       if (result.url) {
@@ -320,27 +339,36 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
       .filter(Boolean);
 
     return property.services.reduce((total, service) => {
-      let priceConfig = sizeConfig.prices[service];
-      
+      const priceConfig = sizeConfig.prices[service];
+
       // Handle videography sub-services
-      if (service === "Videography" && property.videographySubService && typeof priceConfig === "object") {
-        const videographyTotal = videographySelections.reduce((sum, selection) => {
-          let selectionConfig = priceConfig;
-          if (selection.includes(".")) {
-            const [mainService, category] = selection.split(".");
-            selectionConfig = selectionConfig?.[mainService]?.[category] || selectionConfig?.[mainService];
-          } else {
-            selectionConfig = selectionConfig?.[selection];
-          }
-          const val =
-            typeof selectionConfig === "object"
-              ? Number(selectionConfig?.price || 0)
-              : Number(selectionConfig || 0);
-          return sum + (Number.isFinite(val) ? val : 0);
-        }, 0);
+      if (
+        service === "Videography" &&
+        property.videographySubService &&
+        typeof priceConfig === "object"
+      ) {
+        const videographyTotal = videographySelections.reduce(
+          (sum, selection) => {
+            let selectionConfig = priceConfig;
+            if (selection.includes(".")) {
+              const [mainService, category] = selection.split(".");
+              selectionConfig =
+                selectionConfig?.[mainService]?.[category] ||
+                selectionConfig?.[mainService];
+            } else {
+              selectionConfig = selectionConfig?.[selection];
+            }
+            const val =
+              typeof selectionConfig === "object"
+                ? Number(selectionConfig?.price || 0)
+                : Number(selectionConfig || 0);
+            return sum + (Number.isFinite(val) ? val : 0);
+          },
+          0,
+        );
         return total + videographyTotal;
       }
-      
+
       const price =
         typeof priceConfig === "object"
           ? priceConfig.price || 0
@@ -370,15 +398,21 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
       .filter(Boolean);
 
     property.services.forEach((service) => {
-      let config = sizeConfig.prices[service];
-      
+      const config = sizeConfig.prices[service];
+
       // Handle videography sub-services
-      if (service === "Videography" && property.videographySubService && typeof config === "object") {
+      if (
+        service === "Videography" &&
+        property.videographySubService &&
+        typeof config === "object"
+      ) {
         videographySelections.forEach((selection) => {
           let selectionConfig = config;
           if (selection.includes(".")) {
             const [mainService, category] = selection.split(".");
-            selectionConfig = selectionConfig?.[mainService]?.[category] || selectionConfig?.[mainService];
+            selectionConfig =
+              selectionConfig?.[mainService]?.[category] ||
+              selectionConfig?.[mainService];
           } else {
             selectionConfig = selectionConfig?.[selection];
           }
@@ -390,7 +424,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
         });
         return;
       }
-      
+
       if (config && typeof config === "object") {
         const sDuration = config.slots || 1;
         if (sDuration > duration) duration = sDuration;
@@ -439,8 +473,22 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
   const getOccupiedSlots = (currentIndex) => {
     const occupied = {};
     const HOURLY_SLOTS = [
-      "10:00", "10:30", "11:00", "11:30", "12:00", "12:30", "13:00", "13:30",
-      "14:00", "14:30", "15:00", "15:30", "16:00", "16:30", "17:00", "17:30"
+      "10:00",
+      "10:30",
+      "11:00",
+      "11:30",
+      "12:00",
+      "12:30",
+      "13:00",
+      "13:30",
+      "14:00",
+      "14:30",
+      "15:00",
+      "15:30",
+      "16:00",
+      "16:30",
+      "17:00",
+      "17:30",
     ];
 
     properties.forEach((p, idx) => {
@@ -452,19 +500,19 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
 
       const duration = p.duration || 1;
       // Handle legacy slots for local blocking
-      if (slotValue === 'morning') {
+      if (slotValue === "morning") {
         if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
-        occupied[p.preferredDate].push('morning');
+        occupied[p.preferredDate].push("morning");
         return;
       }
-      if (slotValue === 'afternoon') {
+      if (slotValue === "afternoon") {
         if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
-        occupied[p.preferredDate].push('afternoon');
+        occupied[p.preferredDate].push("afternoon");
         return;
       }
-      if (slotValue === 'evening') {
+      if (slotValue === "evening") {
         if (!occupied[p.preferredDate]) occupied[p.preferredDate] = [];
-        occupied[p.preferredDate].push('evening');
+        occupied[p.preferredDate].push("evening");
         return;
       }
 
@@ -509,27 +557,30 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
   };
 
   const onContinue = async (data) => {
-    console.log('onContinue called with data:', data);
+    console.log("onContinue called with data:", data);
     try {
       // Create bookings first
       const res = await createBookings(data.properties);
-      console.log('Create bookings response:', res);
-      
+      console.log("Create bookings response:", res);
+
       if (!res.success) throw new Error(res.message);
       const bookingData = res.data;
-      console.log('Booking data received:', bookingData);
-      
-      const newBookingIds = bookingData.map(b => b.id);
-      console.log('Extracted booking IDs:', newBookingIds);
-      console.log('Booking codes generated:', bookingData.map(b => b.bookingCode));
-      
+      console.log("Booking data received:", bookingData);
+
+      const newBookingIds = bookingData.map((b) => b.id);
+      console.log("Extracted booking IDs:", newBookingIds);
+      console.log(
+        "Booking codes generated:",
+        bookingData.map((b) => b.bookingCode),
+      );
+
       // Update state with new booking IDs
       setBookingIds(newBookingIds);
-      
+
       // Move to payment step
       setStep("payment");
     } catch (error) {
-      console.error('Booking submission error:', error);
+      console.error("Booking submission error:", error);
       toast.error(error.message || "Failed to process booking");
     }
   };
@@ -537,7 +588,6 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
   const totalAmount = calculateTotal();
   const {
     finalAmount: amountAfterAuto,
-    directDiscount: autoDirectDiscount,
     walletCredits: autoWalletCredits,
     applied: appliedAutoDiscounts,
   } = calculateAutomaticDiscounts(totalAmount);
@@ -557,104 +607,166 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
         }
       });
     }
-  }, [amountAfterAuto]);
+  }, [amountAfterAuto, couponCode, discountAmount]);
+
+  const primaryProperty = properties?.[0] || {};
+  const primaryTitle = [
+    primaryProperty.propertySize,
+    primaryProperty.propertyType,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const primaryServices =
+    primaryProperty.services?.length > 0
+      ? primaryProperty.services.join(" + ")
+      : "Select services";
 
   return (
-    <div className="min-h-screen pt-24 py-8 relative">
+    <div className="min-h-screen pt-24 pb-8 relative">
       <StarBackground />
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="mb-12 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
-            <h1 className="font-heading text-white text-3xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4 bg-gradient-to-r from-white via-white/90 to-white/70 bg-clip-text text-transparent">
-            Book Your Property Shoot
+      <div className="max-w-[1280px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div className="mb-10 text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
+          <p className="text-xs tracking-[0.24em] uppercase text-muted-foreground mb-3">
+            Milkywayy Portal
+          </p>
+          <h1 className="font-heading text-white text-4xl sm:text-5xl lg:text-6xl font-bold leading-tight mb-4">
+            Book Your Shoot
           </h1>
-          <p className="text-muted-foreground text-lg md:text-xl max-w-2xl mx-auto">
-            Add your property details and preferred schedule for professional photography services
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
+            Premium property media for Dubai&apos;s finest real estate
           </p>
         </div>
 
-        {step === "details" ? (
-          <form onSubmit={handleSubmit(onContinue)} className="space-y-6">
-            <div className="space-y-6">
-              {properties?.map((property, index) => (
-                <PropertyCard
-                  key={index}
-                  index={index}
-                  property={property}
-                  isOpen={index === openPropertyIndex}
-                  onToggle={() =>
-                    setOpenPropertyIndex(index === openPropertyIndex ? -1 : index)
-                  }
-                  onDuplicate={duplicateProperty}
-                  onRemove={removeProperty}
-                  control={control}
-                  setValue={setValue}
-                  errors={errors}
-                  pricingConfig={PRICING_CONFIG}
-                  getPropertyPrice={getPropertyPrice}
-                  getPropertyDurationAndEvening={getPropertyDurationAndEvening}
-                  getOccupiedSlots={getOccupiedSlots}
-                  toggleService={toggleService}
-                  updatePropertyField={updatePropertyField}
-                  isOnlyProperty={properties.length === 1}
-                />
-              ))}
+        {step === "details"
+          ? <form onSubmit={handleSubmit(onContinue)}>
+              <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_300px] gap-6 items-start">
+                <div className="space-y-6">
+                  {properties?.map((property, index) => (
+                    <PropertyCard
+                      key={`${property.community || "property"}_${property.building || "building"}_${property.unitNumber || "unit"}_${property.propertyType || "type"}_${property.propertySize || "size"}_${index}`}
+                      index={index}
+                      property={property}
+                      isOpen={index === openPropertyIndex}
+                      onToggle={() =>
+                        setOpenPropertyIndex(
+                          index === openPropertyIndex ? -1 : index,
+                        )
+                      }
+                      onDuplicate={duplicateProperty}
+                      onRemove={removeProperty}
+                      control={control}
+                      setValue={setValue}
+                      errors={errors}
+                      pricingConfig={PRICING_CONFIG}
+                      getPropertyPrice={getPropertyPrice}
+                      getPropertyDurationAndEvening={
+                        getPropertyDurationAndEvening
+                      }
+                      getOccupiedSlots={getOccupiedSlots}
+                      toggleService={toggleService}
+                      updatePropertyField={updatePropertyField}
+                      isOnlyProperty={properties.length === 1}
+                    />
+                  ))}
 
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={addProperty}
-                className="w-full text-muted-foreground border border-border border-dashed hover:border-solid hover:bg-accent/20 hover:text-foreground transition-all duration-200 group"
-              >
-                <Plus
-                  size={20}
-                  className="mr-2 group-hover:rotate-90 transition-transform duration-200"
-                />
-                Add Another Property
-              </Button>
-            </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={addProperty}
+                    className="w-full text-muted-foreground border border-border border-dashed hover:border-solid hover:bg-accent/20 hover:text-foreground transition-all duration-200 group py-6 rounded-xl"
+                  >
+                    <Plus
+                      size={18}
+                      className="mr-2 group-hover:rotate-90 transition-transform duration-200"
+                    />
+                    Add Another Property
+                  </Button>
+                </div>
 
-            <PricingSummary
-              propertyCount={properties.length}
-              totalAmount={totalAmount}
+                <aside className="xl:sticky xl:top-28 rounded-2xl border border-border bg-card/70 p-5 backdrop-blur-sm">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-4">
+                    Order Summary
+                  </p>
+
+                  <div className="rounded-xl border border-border bg-background/40 p-4 mb-6">
+                    <div className="flex items-start justify-between gap-3">
+                      <div>
+                        <p className="font-semibold text-sm">
+                          {primaryTitle || "Property Summary"}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {primaryServices}
+                        </p>
+                      </div>
+                      <span className="font-semibold text-sm whitespace-nowrap">
+                        AED {totalAmount.toLocaleString()}
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between mb-6">
+                    <p className="text-muted-foreground">Grand Total</p>
+                    <p className="text-3xl font-semibold">
+                      AED {totalAmount.toLocaleString()}
+                    </p>
+                  </div>
+
+                  <Button
+                    type="submit"
+                    size="lg"
+                    disabled={isSubmitting}
+                    className="w-full rounded-xl bg-accent text-accent-foreground hover:bg-accent/90 font-medium"
+                  >
+                    {isSubmitting
+                      ? <>
+                          <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                          Submitting...
+                        </>
+                      : "Continue to Payment"}
+                  </Button>
+
+                  <p className="text-[11px] leading-relaxed text-muted-foreground/70 mt-4">
+                    Media is licensed for client marketing use. Milkywayy may
+                    showcase selected work for portfolio and promotional
+                    purposes.
+                  </p>
+                </aside>
+              </div>
+            </form>
+          : <PaymentStep
+              properties={properties}
+              onBack={() => setStep("details")}
+              getPropertyPrice={getPropertyPrice}
+              calculateTotal={calculateTotal}
+              appliedAutoDiscounts={appliedAutoDiscounts}
+              discountAmount={discountAmount}
+              amountAfterAuto={amountAfterAuto}
+              autoWalletCredits={autoWalletCredits}
+              couponCode={couponCode}
+              setCouponCode={setCouponCode}
+              handleApplyCoupon={handleApplyCoupon}
+              couponError={couponError}
+              couponSuccess={couponSuccess}
+              handleFinalSubmit={handleFinalSubmit}
+              isProcessingPayment={isProcessingPayment}
+            />}
+
+        <footer className="mt-24 border-t border-border/40 pt-14 pb-6 text-center">
+          <div className="flex items-center justify-center mb-4">
+            <Image
+              src="/logo-texxt.png"
+              height={40}
+              width={220}
+              alt="Milkywayy"
             />
-
-            <div className="flex justify-end">
-              <Button
-                type="submit"
-                size="lg"
-                disabled={isSubmitting}
-                className="px-8 w-full bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white font-semibold shadow-lg hover:shadow-xl transition-all duration-200 transform hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Submitting...
-                  </>
-                ) : (
-                  "Continue to Payment"
-                )}
-              </Button>
-            </div>
-          </form>
-        ) : (
-          <PaymentStep
-            properties={properties}
-            onBack={() => setStep("details")}
-            getPropertyPrice={getPropertyPrice}
-            calculateTotal={calculateTotal}
-            appliedAutoDiscounts={appliedAutoDiscounts}
-            discountAmount={discountAmount}
-            amountAfterAuto={amountAfterAuto}
-            autoWalletCredits={autoWalletCredits}
-            couponCode={couponCode}
-            setCouponCode={setCouponCode}
-            handleApplyCoupon={handleApplyCoupon}
-            couponError={couponError}
-            couponSuccess={couponSuccess}
-            handleFinalSubmit={handleFinalSubmit}
-            isProcessingPayment={isProcessingPayment}
-          />
-        )}
+          </div>
+          <p className="text-muted-foreground mb-10">
+            Don&apos;t Just List. Dominate.
+          </p>
+          <p className="text-sm text-muted-foreground/80">
+            &copy; 2026 Milkywayy LLC | All Rights Reserved
+          </p>
+        </footer>
       </div>
     </div>
   );

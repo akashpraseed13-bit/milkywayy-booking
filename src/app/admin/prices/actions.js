@@ -1,5 +1,6 @@
 "use server";
 
+import { revalidatePath } from "next/cache";
 import { actionWrapper } from "@/lib/actions/utils";
 import { DynamicConfig } from "@/lib/db/models";
 import { getPricingConfig as fetchPricingConfig } from "@/lib/helpers/pricing";
@@ -19,6 +20,9 @@ const savePricingConfigHandler = async (newConfig) => {
     config.value = newConfig;
     await config.save();
   }
+
+  revalidatePath("/booking");
+  revalidatePath("/admin/prices");
 
   return { success: true };
 };

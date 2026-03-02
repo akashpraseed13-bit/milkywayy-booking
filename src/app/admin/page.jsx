@@ -22,7 +22,6 @@ export default function AdminDashboard() {
           </Card>
         </Link>
 
-        {/* Add more admin links here */}
         <Link href="/admin/users">
           <Card className="hover:scale-105 transition-transform cursor-pointer h-full">
             <CardHeader>
@@ -103,6 +102,18 @@ export default function AdminDashboard() {
             <Separator />
             <CardContent className="pt-4">
               <p>Manage 'Our Works' portfolio items.</p>
+            </CardContent>
+          </Card>
+        </Link>
+
+        <Link href="/admin/reviews">
+          <Card className="hover:scale-105 transition-transform cursor-pointer h-full">
+            <CardHeader>
+              <CardTitle>Reviews</CardTitle>
+            </CardHeader>
+            <Separator />
+            <CardContent className="pt-4">
+              <p>Manage landing page testimonial reviews.</p>
             </CardContent>
           </Card>
         </Link>

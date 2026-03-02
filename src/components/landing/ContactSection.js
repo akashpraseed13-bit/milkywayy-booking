@@ -1,4 +1,5 @@
-"use client";
+﻿"use client";
+
 import {
   Instagram,
   Linkedin,
@@ -29,36 +30,33 @@ const ContactSection = () => {
     service: "",
     message: "",
   });
+
   const handleSubmit = (e) => {
     e.preventDefault();
-    // Handle form submission
     console.log(formData);
   };
+
   return (
     <section id="contact" className="py-24 relative">
       <div className="starfield opacity-10" />
       <div className="container mx-auto px-6 relative z-10">
         <div className="text-center mb-12 fade-in">
-          <h2 className="font-heading text-3xl md:text-4xl font-bold mb-4">
+          <h2 className="font-heading text-5xl md:text-6xl font-bold mb-4">
             Get in Touch
           </h2>
-          <p className="text-muted-foreground">
-            Have questions? We're here to help.
+          <p className="text-muted-foreground text-2xl">
+            Have questions? We&apos;re here to help.
           </p>
         </div>
 
-        <div className="grid lg:grid-cols-2 gap-12 max-w-5xl mx-auto">
-          {/* Form */}
-          <div className="bg-card border border-border rounded-2xl p-8 fade-in">
+        <div className="grid lg:grid-cols-2 gap-12 max-w-6xl mx-auto">
+          <div className="bg-card/60 border border-border rounded-2xl p-8 fade-in">
             <form onSubmit={handleSubmit} className="space-y-4">
               <Input
                 placeholder="Name *"
                 value={formData.name}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    name: e.target.value,
-                  })
+                  setFormData({ ...formData, name: e.target.value })
                 }
                 className="bg-secondary border-border focus:border-accent"
                 required
@@ -67,10 +65,7 @@ const ContactSection = () => {
                 placeholder="Company (optional)"
                 value={formData.company}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    company: e.target.value,
-                  })
+                  setFormData({ ...formData, company: e.target.value })
                 }
                 className="bg-secondary border-border focus:border-accent"
               />
@@ -90,10 +85,7 @@ const ContactSection = () => {
                 type="email"
                 value={formData.email}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    email: e.target.value,
-                  })
+                  setFormData({ ...formData, email: e.target.value })
                 }
                 className="bg-secondary border-border focus:border-accent"
                 required
@@ -101,10 +93,7 @@ const ContactSection = () => {
               <Select
                 value={formData.service}
                 onValueChange={(value) =>
-                  setFormData({
-                    ...formData,
-                    service: value,
-                  })
+                  setFormData({ ...formData, service: value })
                 }
               >
                 <SelectTrigger className="bg-secondary border-border">
@@ -114,46 +103,37 @@ const ContactSection = () => {
                   <SelectItem value="photography">Photography</SelectItem>
                   <SelectItem value="videography">Videography</SelectItem>
                   <SelectItem value="360-tour">360 Virtual Tour</SelectItem>
-                  <SelectItem value="other">Others</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
               <Textarea
                 placeholder="Message"
                 value={formData.message}
                 onChange={(e) =>
-                  setFormData({
-                    ...formData,
-                    message: e.target.value,
-                  })
+                  setFormData({ ...formData, message: e.target.value })
                 }
-                className="bg-secondary border-border focus:border-accent min-h-[100px]"
+                className="bg-secondary border-border focus:border-accent min-h-[120px]"
               />
               <Button
                 type="submit"
-                className="w-full bg-accent text-accent-foreground hover:bg-accent/90"
+                className="w-full bg-accent text-accent-foreground hover:bg-accent/90 rounded-xl"
               >
                 Send Message
               </Button>
             </form>
           </div>
 
-          {/* Contact info */}
-          <div
-            className="space-y-6 fade-in"
-            style={{
-              animationDelay: "0.1s",
-            }}
-          >
-            <div className="bg-card border border-border rounded-xl p-6 hover:border-accent/50 transition-colors">
+          <div className="space-y-6 fade-in" style={{ animationDelay: "0.1s" }}>
+            <div className="bg-card/60 border border-border rounded-xl p-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
                   <Mail className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Email</p>
+                  <p className="text-xl text-muted-foreground">Email</p>
                   <a
                     href="mailto:hello@milkywayy.ae"
-                    className="font-medium hover:text-accent transition-colors"
+                    className="text-2xl font-medium hover:text-accent transition-colors"
                   >
                     hello@milkywayy.ae
                   </a>
@@ -161,16 +141,16 @@ const ContactSection = () => {
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-6 hover:border-accent/50 transition-colors">
+            <div className="bg-card/60 border border-border rounded-xl p-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
                   <Phone className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">Phone</p>
+                  <p className="text-xl text-muted-foreground">Phone</p>
                   <a
                     href="tel:+971507263306"
-                    className="font-medium hover:text-accent transition-colors"
+                    className="text-2xl font-medium hover:text-accent transition-colors"
                   >
                     +971 50 726 3306
                   </a>
@@ -178,18 +158,18 @@ const ContactSection = () => {
               </div>
             </div>
 
-            <div className="bg-card border border-border rounded-xl p-6 hover:border-accent/50 transition-colors">
+            <div className="bg-card/60 border border-border rounded-xl p-6">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-secondary flex items-center justify-center">
                   <MessageCircle className="w-5 h-5 text-accent" />
                 </div>
                 <div>
-                  <p className="text-sm text-muted-foreground">WhatsApp</p>
+                  <p className="text-xl text-muted-foreground">WhatsApp</p>
                   <a
                     href="https://wa.me/971507263306"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="font-medium hover:text-accent transition-colors"
+                    className="text-2xl font-medium hover:text-accent transition-colors"
                   >
                     Tap to chat
                   </a>
@@ -197,13 +177,12 @@ const ContactSection = () => {
               </div>
             </div>
 
-            <p className="text-sm text-muted-foreground">
-              Prefer WhatsApp?  Tap to chat - we typically respond within
+            <p className="text-lg text-muted-foreground">
+              Prefer WhatsApp? Tap to chat - we typically respond within
               minutes.
             </p>
 
-            {/* Social icons */}
-            <div className="flex gap-4 pt-4">
+            <div className="flex gap-4 pt-2">
               {[
                 {
                   icon: Instagram,
@@ -213,10 +192,13 @@ const ContactSection = () => {
                   icon: Linkedin,
                   href: "https://www.linkedin.com/company/milkywayy-com/",
                 },
-              ].map((social, i) => (
+                { icon: Youtube, href: "https://www.youtube.com" },
+              ].map((social) => (
                 <a
-                  key={i}
+                  key={social.href}
                   href={social.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="w-10 h-10 rounded-lg bg-secondary flex items-center justify-center hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
                   <social.icon className="w-5 h-5" />
@@ -229,4 +211,5 @@ const ContactSection = () => {
     </section>
   );
 };
+
 export default ContactSection;

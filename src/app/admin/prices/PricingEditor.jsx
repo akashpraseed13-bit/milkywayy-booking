@@ -83,19 +83,35 @@ export default function PricingEditor({ initialConfig }) {
       const currentLongForm = typeof currentVideography[VIDEOGRAPHY_SUB_SERVICES.LONG_FORM] === "object"
         ? { ...currentVideography[VIDEOGRAPHY_SUB_SERVICES.LONG_FORM] }
         : {};
-      
-      const currentCategory = typeof currentLongForm[category] === "object"
-        ? { ...currentLongForm[category] }
-        : { price: 0, slots: 2, allowEvening: true };
-      
-      if (field === "price" || field === "slots") {
-        currentCategory[field] = Number(value);
+
+      // Commercial stores Long Form as a direct object (no categories).
+      if (!category) {
+        const directLongForm =
+          "price" in currentLongForm || "slots" in currentLongForm
+            ? { ...currentLongForm }
+            : { price: 0, slots: 1, allowEvening: true };
+
+        if (field === "price" || field === "slots") {
+          directLongForm[field] = Number(value);
+        } else {
+          directLongForm[field] = value;
+        }
+
+        currentVideography[VIDEOGRAPHY_SUB_SERVICES.LONG_FORM] = directLongForm;
       } else {
-        currentCategory[field] = value;
+        const currentCategory = typeof currentLongForm[category] === "object"
+          ? { ...currentLongForm[category] }
+          : { price: 0, slots: 2, allowEvening: true };
+
+        if (field === "price" || field === "slots") {
+          currentCategory[field] = Number(value);
+        } else {
+          currentCategory[field] = value;
+        }
+
+        currentLongForm[category] = currentCategory;
+        currentVideography[VIDEOGRAPHY_SUB_SERVICES.LONG_FORM] = currentLongForm;
       }
-      
-      currentLongForm[category] = currentCategory;
-      currentVideography[VIDEOGRAPHY_SUB_SERVICES.LONG_FORM] = currentLongForm;
     }
 
     currentPrices[SERVICES.VIDEOGRAPHY] = currentVideography;
