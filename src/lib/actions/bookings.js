@@ -790,10 +790,18 @@ const getDraftsHandler = async () => {
         userId: session.id,
         status: "DRAFT",
       },
+      include: [{ model: Transaction, as: "transaction" }],
       order: [["id", "ASC"]],
     });
 
-    return drafts.map((d) => d.get({ plain: true }));
+    // Only restore editable drafts. If a draft already has an active/successful
+    // transaction, treat it as an in-payment booking and don't prefill form.
+    return drafts
+      .filter((d) => {
+        const txStatus = d.transaction?.status;
+        return !txStatus || txStatus === "failed";
+      })
+      .map((d) => d.get({ plain: true }));
   } catch (error) {
     console.error("Error fetching drafts:", error);
     return [];

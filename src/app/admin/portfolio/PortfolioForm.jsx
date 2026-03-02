@@ -1,9 +1,8 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DragDropContext, Draggable, Droppable } from "@hello-pangea/dnd";
 import { Loader2, Upload, X, GripVertical } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import * as z from "zod";
@@ -34,6 +33,7 @@ const formSchema = z.object({
 export default function PortfolioForm({ onSuccess, initialData }) {
   const [isUploading, setIsUploading] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const dragSourceIndexRef = useRef(null);
 
   const {
     register,
@@ -113,14 +113,20 @@ export default function PortfolioForm({ onSuccess, initialData }) {
     setValue("mediaContent", newContent.length === 0 ? "" : newContent);
   };
 
-  const onDragEnd = (result) => {
-    if (!result.destination || !Array.isArray(watchMediaContent)) return;
+  const handleDragStart = (index) => {
+    dragSourceIndexRef.current = index;
+  };
+
+  const handleDropOnImage = (targetIndex) => {
+    if (!Array.isArray(watchMediaContent)) return;
+    const sourceIndex = dragSourceIndexRef.current;
+    if (sourceIndex === null || sourceIndex === targetIndex) return;
 
     const items = Array.from(watchMediaContent);
-    const [reorderedItem] = items.splice(result.source.index, 1);
-    items.splice(result.destination.index, 0, reorderedItem);
-
+    const [moved] = items.splice(sourceIndex, 1);
+    items.splice(targetIndex, 0, moved);
     setValue("mediaContent", items);
+    dragSourceIndexRef.current = null;
   };
 
   const onSubmit = async (values) => {
@@ -206,73 +212,58 @@ export default function PortfolioForm({ onSuccess, initialData }) {
         
         {watchType === OUR_WORK_TYPES.IMAGE ? (
           <div className="space-y-4">
-            <DragDropContext onDragEnd={onDragEnd}>
-              <Droppable droppableId="images" direction="horizontal">
-                {(provided) => (
-                  <div
-                    {...provided.droppableProps}
-                    ref={provided.innerRef}
-                    className="flex flex-wrap gap-2 p-2 border rounded-md min-h-[100px] bg-muted/20"
-                  >
-                    {Array.isArray(watchMediaContent) && watchMediaContent.map((url, index) => (
-                      <Draggable key={url} draggableId={url} index={index}>
-                        {(provided) => (
-                          <div
-                            ref={provided.innerRef}
-                            {...provided.draggableProps}
-                            className="relative group w-24 h-24 border rounded-md overflow-hidden bg-background"
-                          >
-                            <img
-                              src={url}
-                              alt={`Work ${index}`}
-                              className="w-full h-full object-cover"
-                            />
-                            <div
-                              {...provided.dragHandleProps}
-                              className="absolute top-1 left-1 p-0.5 bg-black/50 rounded text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-grab"
-                            >
-                              <GripVertical className="h-3 w-3" />
-                            </div>
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute top-1 right-1 p-0.5 bg-destructive rounded text-white opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="h-3 w-3" />
-                            </button>
-                          </div>
-                        )}
-                      </Draggable>
-                    ))}
-                    {provided.placeholder}
-                    <div className="w-24 h-24 border-2 border-dashed rounded-md flex items-center justify-center">
-                      <Input
-                        type="file"
-                        className="hidden"
-                        id="portfolio-upload"
-                        accept="image/*"
-                        multiple
-                        onChange={handleFileUpload}
-                        disabled={isUploading}
-                      />
-                      <label
-                        htmlFor="portfolio-upload"
-                        className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/50 transition-colors"
-                      >
-                        {isUploading ? (
-                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        ) : (
-                          <>
-                            <Upload className="h-6 w-6 text-muted-foreground" />
-                            <span className="text-[10px] text-muted-foreground mt-1">Upload</span>
-                          </>
-                        )}
-                      </label>
-                    </div>
+            <div className="grid grid-cols-4 gap-2 p-2 border rounded-md min-h-[100px] bg-muted/20">
+              {Array.isArray(watchMediaContent) && watchMediaContent.map((url, index) => (
+                <div
+                  key={`${url}_${index}`}
+                  className="relative group w-24 h-24 border rounded-md overflow-hidden bg-background"
+                  draggable
+                  onDragStart={() => handleDragStart(index)}
+                  onDragOver={(event) => event.preventDefault()}
+                  onDrop={() => handleDropOnImage(index)}
+                >
+                  <img
+                    src={url}
+                    alt={`Work ${index}`}
+                    className="w-full h-full object-cover"
+                  />
+                  <div className="absolute top-1 left-1 p-0.5 bg-black/50 rounded text-white opacity-0 group-hover:opacity-100 transition-opacity cursor-grab">
+                    <GripVertical className="h-3 w-3" />
                   </div>
-                )}
-              </Droppable>
-            </DragDropContext>
+                  <button
+                    type="button"
+                    onClick={() => removeImage(index)}
+                    className="absolute top-1 right-1 p-0.5 bg-destructive rounded text-white opacity-0 group-hover:opacity-100 transition-opacity"
+                  >
+                    <X className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+              <div className="w-24 h-24 border-2 border-dashed rounded-md flex items-center justify-center">
+                <Input
+                  type="file"
+                  className="hidden"
+                  id="portfolio-upload"
+                  accept="image/*"
+                  multiple
+                  onChange={handleFileUpload}
+                  disabled={isUploading}
+                />
+                <label
+                  htmlFor="portfolio-upload"
+                  className="flex flex-col items-center justify-center w-full h-full cursor-pointer hover:bg-muted/50 transition-colors"
+                >
+                  {isUploading ? (
+                    <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                  ) : (
+                    <>
+                      <Upload className="h-6 w-6 text-muted-foreground" />
+                      <span className="text-[10px] text-muted-foreground mt-1">Upload</span>
+                    </>
+                  )}
+                </label>
+              </div>
+            </div>
           </div>
         ) : (
           <div className="flex gap-2">
