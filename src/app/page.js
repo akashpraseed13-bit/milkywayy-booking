@@ -11,8 +11,6 @@ import PainSolutionSection from "@/components/landing/PainSolutionSection";
 import PortalUSPSection from "@/components/landing/PortalUSPSection";
 import ReviewsSection from "@/components/landing/ReviewsSection";
 import SeeItInActionSection from "@/components/landing/SeeItInActionSection";
-import ServicesSection from "@/components/landing/ServicesSection";
-import SocialProofStrip from "@/components/landing/SocialProofStrip";
 import NewNavbar from "@/components/NewNavbar";
 import StarBackground from "@/components/StarBackground";
 import VideoModal from "@/components/VideoModal";
@@ -34,7 +32,6 @@ export default function Page() {
           <PainSolutionSection />
           <SeeItInActionSection onWatchVideo={() => setShowVideoModal(true)} />
           <PortalUSPSection />
-          <ServicesSection />
           <OurWorkPreview />
           <ReviewsSection />
           <FAQSection />
