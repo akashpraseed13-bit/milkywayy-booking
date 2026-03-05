@@ -76,7 +76,7 @@
 }
 
 body {
-  background: var(--color-background);
+  background: hsl(0 0% 0%);
   color: var(--color-foreground);
   font-family: var(--font-sans);
 }

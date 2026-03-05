@@ -529,13 +529,13 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
       <StarBackground />
       <div className="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="mx-auto mb-8 max-w-3xl text-center animate-in fade-in slide-in-from-bottom-8 duration-700">
-          <p className="text-xs tracking-[0.24em] uppercase text-muted-foreground mb-3">
+          <p className="text-xs tracking-[0.24em] uppercase text-white/60 mb-3">
             Milkywayy Portal
           </p>
           <h1 className="font-heading text-white text-4xl sm:text-5xl lg:text-7xl font-bold leading-tight mb-4">
             Book Your Shoot
           </h1>
-          <p className="text-muted-foreground text-base md:text-xl max-w-2xl mx-auto">
+          <p className="text-white/80 text-base md:text-xl max-w-2xl mx-auto">
             Premium property media for Dubai&apos;s finest real estate
           </p>
         </div>
@@ -586,32 +586,32 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                 </div>
 
                 <aside className="xl:sticky xl:top-28 rounded-2xl border border-white/10 bg-[#141519]/90 p-5 backdrop-blur-sm">
-                  <p className="text-xs uppercase tracking-wider text-muted-foreground mb-4">
+                  <p className="text-xs uppercase tracking-wider text-white/60 mb-4">
                     Order Summary
                   </p>
 
                   <div className="rounded-xl border border-white/10 bg-black/20 p-4 mb-6">
                     <div className="flex items-start justify-between gap-3">
                       <div>
-                        <p className="font-semibold text-sm">
+                        <p className="font-semibold text-sm text-white">
                           {primaryTitle || "Property Summary"}
                         </p>
-                        <p className="text-xs text-muted-foreground mt-1">
+                        <p className="text-xs text-white/60 mt-1">
                           {primaryServices}
                         </p>
-                        <p className="text-[11px] text-muted-foreground/80 mt-2">
+                        <p className="text-[11px] text-white/60 mt-2">
                           {primarySchedule || "Select date and time"}
                         </p>
                       </div>
-                      <span className="font-semibold text-sm whitespace-nowrap">
+                      <span className="font-semibold text-sm whitespace-nowrap text-white">
                         AED {totalAmount.toLocaleString()}
                       </span>
                     </div>
                   </div>
 
                   <div className="flex items-center justify-between mb-6 pt-2 border-t border-white/10">
-                    <p className="text-muted-foreground">Grand Total</p>
-                    <p className="text-3xl font-semibold">
+                    <p className="text-white/60">Grand Total</p>
+                    <p className="text-3xl font-semibold text-white">
                       AED {totalAmount.toLocaleString()}
                     </p>
                   </div>
@@ -630,7 +630,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
                       : "Continue to Payment"}
                   </Button>
 
-                  <p className="text-[11px] leading-relaxed text-muted-foreground/70 mt-4">
+                  <p className="text-[11px] leading-relaxed text-white/60 mt-4">
                     Media is licensed for client marketing use. Milkywayy may
                     showcase selected work for portfolio and promotional
                     purposes.
@@ -639,7 +639,7 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
               </div>
             </form>
 
-        <footer className="mt-24 border-t border-border/40 pt-14 pb-6 text-center">
+        <footer className="mt-24 border-t border-white/10 pt-14 pb-6 text-center">
           <div className="flex items-center justify-center mb-4">
             <Image
               src="/logo-texxt.png"
@@ -648,10 +648,10 @@ export default function BookNew({ pricingsPromise, discountsPromise }) {
               alt="Milkywayy"
             />
           </div>
-          <p className="text-muted-foreground mb-10">
+          <p className="text-white/60 mb-10">
             Don&apos;t Just List. Dominate.
           </p>
-          <p className="text-sm text-muted-foreground/80">
+          <p className="text-sm text-white/40">
             &copy; 2026 Milkywayy LLC | All Rights Reserved
           </p>
         </footer>
