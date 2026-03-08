@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Star, ExternalLink } from "lucide-react";
 import Link from "next/link";
@@ -68,9 +68,9 @@ const ReviewsSection = () => {
             <div className="flex items-center gap-1">
               {renderStars(5, "headline", "w-4 h-4")}
             </div>
-            <span className="text-muted-foreground text-sm">
+            {/* <span className="text-muted-foreground text-sm">
               {reviewsCount > 0 ? `${reviewsCount} review${reviewsCount === 1 ? "" : "s"} on Google` : "251 reviews on Google"}
-            </span>
+            </span> */}
           </div>
           <h2 className="text-3xl md:text-4xl font-semibold mb-3 tracking-tight text-foreground">
             Trusted by Real Estate Professionals Across Dubai
