@@ -65,7 +65,7 @@ const ReviewsSection = () => {
           <div className="flex items-center justify-center gap-3 mb-5">
             <GoogleGMark />
             <span className="text-4xl font-semibold leading-none text-foreground">5.0</span>
-            <div className="flex items-center gap-1">
+            <div className="flex  items-center gap-1">
               {renderStars(5, "headline", "w-4 h-4")}
             </div>
             {/* <span className="text-muted-foreground text-sm">
